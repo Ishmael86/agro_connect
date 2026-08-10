@@ -1,0 +1,31 @@
+<div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+    <a href="{% url 'product_list' %}?category={{ category.slug }}" class="category-card">
+        {% if category.image %}
+            <img src="{{ category.image.url }}" alt="{{ category.name }}" class="category-img">
+        {% else %}
+            {% if category.slug == 'fruits' %}
+                <img src="https://images.unsplash.com/photo-1550258987-190a2d41a8ba?q=80&w=150&auto=format&fit=crop" alt="{{ category.name }}" class="category-img">
+            {% elif category.slug == 'vegetables' %}
+                <img src="https://images.unsplash.com/photo-1592924357228-91a4daadcfea?q=80&w=150&auto=format&fit=crop" alt="{{ category.name }}" class="category-img">
+            {% elif category.slug == 'grains-cereals' %}
+                <img src="https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?q=80&w=150&auto=format&fit=crop" alt="{{ category.name }}" class="category-img">
+            {% elif category.slug == 'tubers' %}
+                <img src="https://images.unsplash.com/photo-1590779037664-647895318ab4?q=80&w=150&auto=format&fit=crop" alt="{{ category.name }}" class="category-img">
+            {% elif category.slug == 'legumes' %}
+                <img src="https://images.unsplash.com/photo-1546964124-0cce460f38ef?q=80&w=150&auto=format&fit=crop" alt="{{ category.name }}" class="category-img">
+            {% elif category.slug == 'herbs-spices' %}
+                <img src="https://images.unsplash.com/photo-1596797038530-2c107229654b?q=80&w=150&auto=format&fit=crop" alt="{{ category.name }}" class="category-img">
+            {% elif category.slug == 'dairy-eggs' %}
+                <img src="https://images.unsplash.com/photo-1516448424440-9dbca97779c1?q=80&w=150&auto=format&fit=crop" alt="{{ category.name }}" class="category-img">
+            {% elif category.slug == 'meat-poultry' %}
+                <img src="https://images.unsplash.com/photo-1604503468506-a8da13d82791?q=80&w=150&auto=format&fit=crop" alt="{{ category.name }}" class="category-img">
+            {% elif category.slug == 'seeds-inputs' %}
+                <img src="https://images.unsplash.com/photo-1530595467537-0b5996c41f2d?q=80&w=150&auto=format&fit=crop" alt="{{ category.name }}" class="category-img">
+            {% else %}
+                <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=150&auto=format&fit=crop" alt="{{ category.name }}" class="category-img">
+            {% endif %}
+        {% endif %}
+        <h5 class="category-name">{{ category.name }}</h5>
+        <span class="category-count">{{ category.product_count|default:0 }} Products</span>
+    </a>
+</div>

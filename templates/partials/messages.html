@@ -1,0 +1,11 @@
+{% if messages %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        {% for message in messages %}
+            if (window.showAgroToast) {
+                window.showAgroToast("{{ message|escapejs }}", {% if 'error' in message.tags %}true{% else %}false{% endif %});
+            }
+        {% endfor %}
+    });
+</script>
+{% endif %}

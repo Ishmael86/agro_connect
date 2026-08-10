@@ -1,0 +1,210 @@
+{% extends "farmer/base_farmer.html" %}
+{% load static %}
+
+{% block buyer_content %}
+<div class="mb-4">
+    <h4 class="fw-bold text-dark mb-1">Earnings Analytics</h4>
+    <span class="text-muted font-xs">Analyze your farm revenue trends and crop-wise sales splits.</span>
+</div>
+
+<!-- Stats Row -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="stats-card card-sales">
+            <div class="stats-icon-box bg-sales-light me-3">
+                <i class="fas fa-wallet"></i>
+            </div>
+            <div>
+                <span class="stats-card-title">Total Earnings</span>
+                <h3 class="stats-card-number">GHS {{ total_sales|floatformat:2 }}</h3>
+                <span class="text-muted font-xs">All-time sales</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="stats-card card-completed">
+            <div class="stats-icon-box bg-completed-light me-3">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div>
+                <span class="stats-card-title">Available Balance</span>
+                <h3 class="stats-card-number">GHS {{ available_balance|floatformat:2 }}</h3>
+                <span class="text-success font-xs fw-semibold">Withdrawal ready</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="stats-card card-pending">
+            <div class="stats-icon-box bg-pending-light me-3">
+                <i class="fas fa-hourglass-half"></i>
+            </div>
+            <div>
+                <span class="stats-card-title">Pending Payouts</span>
+                <h3 class="stats-card-number">GHS {{ pending_payouts|floatformat:2 }}</h3>
+                <span class="text-warning font-xs">In processing</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Area Chart: Monthly Trends (Left) -->
+    <div class="col-lg-8">
+        <div class="agro-card h-100">
+            <h5 class="fw-bold text-dark mb-4">Monthly Earnings</h5>
+            <div style="height: 300px;">
+                <canvas id="monthlyEarningsChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Doughnut Chart: Category Splits (Right) -->
+    <div class="col-lg-4">
+        <div class="agro-card h-100">
+            <h5 class="fw-bold text-dark mb-4">Earnings by Category</h5>
+            <div style="height: 220px; position: relative;">
+                <canvas id="categoryEarningsChart"></canvas>
+            </div>
+            <div class="text-center mt-3">
+                <span class="text-muted font-xs">Breakdown of crop sales shares</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Transactions History List -->
+<div class="agro-card">
+    <h5 class="fw-bold text-dark mb-4">Transaction History</h5>
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Transaction Date</th>
+                    <th>Order Number</th>
+                    <th>Crop / Product</th>
+                    <th>Quantity</th>
+                    <th class="text-end">Earnings Share</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in page_obj %}
+                    <tr>
+                        <td>{{ item.order.created_at|date:"M d, Y" }}</td>
+                        <td><span class="fw-bold text-dark">{{ item.order.order_number }}</span></td>
+                        <td>{{ item.product.name }}</td>
+                        <td>{{ item.quantity }} {{ item.product.unit }}</td>
+                        <td class="text-end fw-bold text-success">GHS {{ item.subtotal|floatformat:2 }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">
+                            <i class="fas fa-receipt fa-2x mb-2 text-success opacity-50"></i>
+                            <p class="mb-0 font-sm">No transaction records found.</p>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Pagination component -->
+{% if page_obj.has_other_pages %}
+    <nav class="d-flex justify-content-center mt-5">
+        <ul class="pagination pagination-sm">
+            {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+                <li class="page-item {% if page_obj.number == num %}active{% endif %}"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+            {% endfor %}
+            {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endif %}
+{% endblock %}
+
+{% block farmer_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Line/Area Chart for Monthly Earnings
+        const lineCtx = document.getElementById('monthlyEarningsChart').getContext('2d');
+        const monthsLabels = {{ months_labels|safe }};
+        const monthsValues = {{ months_values|safe }};
+        
+        new Chart(lineCtx, {
+            type: 'line',
+            data: {
+                labels: monthsLabels,
+                datasets: [{
+                    label: 'Earnings (GHS)',
+                    data: monthsValues,
+                    borderColor: '#0E5A34',
+                    backgroundColor: 'rgba(14, 90, 52, 0.05)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.3,
+                    pointBackgroundColor: '#0E5A34',
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) { return 'GHS ' + value; }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Doughnut Chart for Category Splits
+        const pieCtx = document.getElementById('categoryEarningsChart').getContext('2d');
+        const pieLabels = {{ pie_labels|safe }};
+        const pieValues = {{ pie_values|safe }};
+        
+        new Chart(pieCtx, {
+            type: 'doughnut',
+            data: {
+                labels: pieLabels,
+                datasets: [{
+                    data: pieValues,
+                    backgroundColor: [
+                        '#0E5A34',
+                        '#2ec4b6',
+                        '#e71d36',
+                        '#ff9f1c',
+                        '#011627',
+                        '#7209b7'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 12,
+                            font: { size: 10 }
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

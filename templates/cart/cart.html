@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Your Cart | AgroConnect{% endblock %}
+
+{% block content %}
+<div class="container" id="cart-container">
+    <!-- Breadcrumbs -->
+    <nav aria-label="breadcrumb" class="py-2">
+        <ol class="breadcrumb mb-4 align-items-center" style="font-size: 0.9rem;">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-success"><i class="fas fa-home me-1"></i> Home</a></li>
+            <li class="breadcrumb-item active text-muted" aria-current="page">Your Cart</li>
+        </ol>
+    </nav>
+
+    <div class="mb-4 d-flex justify-content-between align-items-center">
+        <h1 class="h3 fw-bold mb-0">Your Cart</h1>
+        <span class="badge bg-success rounded-pill px-3 py-2 fs-6">
+            <span class="cart-badge bg-transparent p-0 position-static">{{ cart.total_items|default:0 }}</span> Items
+        </span>
+    </div>
+
+    {% if items %}
+        <div class="row g-4">
+            <!-- 1. LEFT - CART ITEMS LIST -->
+            <div class="col-lg-8">
+                <div class="table-responsive cart-table shadow-sm mb-4">
+                    <table class="table mb-0 align-middle">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Farmer</th>
+                                <th>Price</th>
+                                <th style="width: 130px;">Quantity</th>
+                                <th>Subtotal</th>
+                                <th style="width: 80px;" class="text-center">Remove</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in items %}
+                                <tr id="cart-row-{{ item.id }}" style="transition: all 0.3s ease;">
+                                    <!-- Product Info -->
+                                    <td>
+                                        <div class="d-flex align-items-center gap-3">
+                                            {% if item.product.main_image %}
+                                                <img src="{{ item.product.main_image.url }}" alt="{{ item.product.name }}" class="cart-item-img border">
+                                            {% else %}
+                                                <img src="https://images.unsplash.com/photo-1595855759920-86582396756a?q=80&w=150&auto=format&fit=crop" alt="Placeholder" class="cart-item-img border">
+                                            {% endif %}
+                                            <div>
+                                                <h4 class="h6 fw-bold mb-1"><a href="{% url 'product_detail' item.product.slug %}" class="text-dark">{{ item.product.name }}</a></h4>
+                                                <span class="text-muted small">Unit: {{ item.product.unit }}</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    
+                                    <!-- Farmer info -->
+                                    <td>
+                                        <a href="{% url 'farmer_detail' item.product.farmer.id %}" class="small fw-semibold text-success">
+                                            {{ item.product.farmer.farm_name }}
+                                        </a>
+                                    </td>
+                                    
+                                    <!-- Price -->
+                                    <td>
+                                        <span class="small fw-semibold text-dark">GHS {{ item.product.final_price|floatformat:2 }}</span>
+                                    </td>
+                                    
+                                    <!-- Quantity Modifier -->
+                                    <td>
+                                        <div class="qty-control-wrapper">
+                                            <button class="qty-btn cart-qty-btn" type="button" data-item-id="{{ item.id }}" data-action="decrease">-</button>
+                                            <input type="text" class="qty-input cart-qty-input" value="{{ item.quantity }}" readonly>
+                                            <button class="qty-btn cart-qty-btn" type="button" data-item-id="{{ item.id }}" data-action="increase">+</button>
+                                        </div>
+                                    </td>
+                                    
+                                    <!-- Subtotal -->
+                                    <td>
+                                        <strong class="cart-item-subtotal text-success">GHS {{ item.subtotal|floatformat:2 }}</strong>
+                                    </td>
+                                    
+                                    <!-- Actions -->
+                                    <td class="text-center">
+                                        <button class="btn btn-sm btn-outline-danger cart-remove-btn" data-item-id="{{ item.id }}" aria-label="Remove item">
+                                            <i class="far fa-trash-can"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 2. RIGHT - ORDER SUMMARY -->
+            <div class="col-lg-4">
+                <div class="summary-box shadow-sm mb-4">
+                    <h3 class="h5 fw-bold mb-4 border-bottom pb-2">Order Summary</h3>
+                    
+                    <div class="d-flex justify-content-between mb-3 text-muted small">
+                        <span>Subtotal</span>
+                        <span id="cart-subtotal-summary" class="fw-semibold text-dark">GHS {{ cart.total_price|floatformat:2 }}</span>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mb-3 text-muted small">
+                        <span>Delivery Fee</span>
+                        <span class="fw-semibold text-dark">GHS 10.00</span>
+                    </div>
+                    
+                    <hr style="border-color: var(--border-color);">
+                    
+                    <div class="d-flex justify-content-between mb-4">
+                        <span class="fw-bold">Total</span>
+                        <!-- Delivery fee flat GHS 10 -->
+                        <strong id="cart-total-summary" class="fs-5 text-success">GHS {{ cart.total_with_delivery|floatformat:2 }}</strong>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'checkout' %}" class="btn btn-primary-green w-100 py-3 text-center">Proceed to Checkout</a>
+                        <a href="{% url 'product_list' %}" class="btn btn-outline-green w-100 py-3 text-center">Continue Shopping</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <!-- Empty State -->
+        <div class="text-center py-5 shadow-sm bg-white rounded-4 border p-5">
+            <div class="mb-4">
+                <i class="fas fa-shopping-basket fa-4x text-muted" style="color: var(--primary-green-light) !important;"></i>
+            </div>
+            <h3>Your cart is empty! 🌱</h3>
+            <p class="text-muted mb-4">Discover fresh products directly from local farmers.</p>
+            <a href="{% url 'product_list' %}" class="btn btn-primary-green px-5 py-3">Shop Fresh Produce</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

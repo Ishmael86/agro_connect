@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Login | AgroConnect{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0 mt-n4 mt-md-n5">
+    <div class="split-screen-container">
+        <!-- 1. LEFT SIDE - ILLUSTRATION / GRAPHIC -->
+        <div class="split-bg-side" style="background-image: url('https://images.unsplash.com/photo-1592924357228-91a4daadcfea?q=80&w=800&auto=format&fit=crop');">
+            <div class="split-bg-content">
+                <!-- Top Brand Logo -->
+                <div>
+                    <a class="navbar-brand text-white fs-3" href="{% url 'home' %}">
+                        <i class="fas fa-leaf text-white me-2"></i>
+                        <span>Agro<span style="color: #FFFFFF; font-weight: 400;">Connect</span></span>
+                    </a>
+                </div>
+
+                <!-- Middle Content -->
+                <div class="my-auto pt-5">
+                    <h2 class="display-5 fw-bold text-white mb-3" style="font-family: var(--font-heading);">Welcome Back!</h2>
+                    <p class="lead" style="color: rgba(255, 255, 255, 0.9);">Log in to your account and continue connecting with verified local farmers.</p>
+                    
+                    <ul class="list-unstyled d-flex flex-column gap-3 mt-4" style="font-size: 1.05rem;">
+                        <li class="d-flex align-items-center gap-3">
+                            <i class="fas fa-check-circle fs-5"></i>
+                            <span>Quality fresh agricultural products</span>
+                        </li>
+                        <li class="d-flex align-items-center gap-3">
+                            <i class="fas fa-check-circle fs-5"></i>
+                            <span>Secure Mobile Money payments</span>
+                        </li>
+                        <li class="d-flex align-items-center gap-3">
+                            <i class="fas fa-check-circle fs-5"></i>
+                            <span>Fast, verified shipping options</span>
+                        </li>
+                        <li class="d-flex align-items-center gap-3">
+                            <i class="fas fa-check-circle fs-5"></i>
+                            <span>Support local farming communities</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Footer tagline -->
+                <div>
+                    <span class="text-white-50 small">&copy; 2026 AgroConnect marketplace system.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. RIGHT SIDE - FORM -->
+        <div class="split-form-side">
+            <div class="auth-form-card">
+                <div class="mb-4">
+                    <h1 class="h3 fw-bold mb-2">Welcome Back! 👋</h1>
+                    <p class="text-muted">Login to your account and continue connecting.</p>
+                </div>
+
+                <form action="{% url 'login' %}" method="POST" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    
+                    <!-- Username/Email -->
+                    <div class="mb-3">
+                        <label for="id_username" class="form-label fw-semibold small text-muted">Email or Username</label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                            <div class="invalid-feedback d-block">{{ form.username.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Password -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label for="id_password" class="form-label fw-semibold small text-muted mb-0">Password</label>
+                            <a href="#" onclick="showAgroToast('Password reset link is not active for this phase.', true)" class="small text-success">Forgot Password?</a>
+                        </div>
+                        <div class="input-group">
+                            {{ form.password }}
+                            <button class="btn btn-outline-secondary password-toggle-btn" type="button" style="border-color: var(--border-color); color: var(--text-muted);"><i class="fas fa-eye"></i></button>
+                        </div>
+                        {% if form.password.errors %}
+                            <div class="invalid-feedback d-block">{{ form.password.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Remember Me -->
+                    <div class="mb-4 form-check">
+                        {{ form.remember_me }}
+                        <label class="form-check-label small text-muted" for="remember_me">Remember me</label>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-primary-green w-100 py-3 mb-4">Login</button>
+                </form>
+
+                <!-- Social login separator -->
+                <div class="text-center position-relative my-4">
+                    <hr style="border-color: var(--border-color);">
+                    <span class="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted small">or continue with</span>
+                </div>
+
+                <!-- Social login buttons -->
+                <div class="row g-2 mb-4">
+                    <div class="col-4">
+                        <button class="social-login-btn w-100" onclick="showAgroToast('Google Social login placeholder', false)">
+                            <i class="fab fa-google text-danger"></i> <span class="d-none d-sm-inline">Google</span>
+                        </button>
+                    </div>
+                    <div class="col-4">
+                        <button class="social-login-btn w-100" onclick="showAgroToast('Facebook Social login placeholder', false)">
+                            <i class="fab fa-facebook-f text-primary"></i> <span class="d-none d-sm-inline">Facebook</span>
+                        </button>
+                    </div>
+                    <div class="col-4">
+                        <button class="social-login-btn w-100" onclick="showAgroToast('Apple Social login placeholder', false)">
+                            <i class="fab fa-apple text-dark"></i> <span class="d-none d-sm-inline">Apple</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Navigation link -->
+                <div class="text-center mt-3">
+                    <span class="text-muted small">Don't have an account? </span>
+                    <a href="{% url 'register' %}" class="small text-success fw-bold">Register</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

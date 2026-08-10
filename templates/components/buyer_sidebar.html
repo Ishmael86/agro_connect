@@ -1,0 +1,167 @@
+{% load static %}
+<div class="sidebar" id="dashboardSidebar">
+    <!-- Sidebar Header / Logo -->
+    <div class="sidebar-header d-flex align-items-center justify-content-between p-4">
+        <div>
+            <div class="d-flex align-items-center gap-2">
+                <i class="fas fa-leaf text-success fs-3"></i>
+                <span class="fs-4 fw-bold text-dark logo-text">AgroConnect</span>
+            </div>
+            <span class="text-muted small uppercase fw-semibold tracking-wider d-block mt-1">Buyer Dashboard</span>
+        </div>
+        <button class="btn btn-close d-lg-none" id="closeSidebarBtn" aria-label="Close Sidebar"></button>
+    </div>
+
+    <!-- Active User Profile Card -->
+    <div class="px-4 mb-4">
+        <div class="user-profile-card d-flex align-items-center gap-3 p-3" style="background-color: var(--agro-background); border-radius: var(--agro-radius);">
+            <div class="position-relative">
+                {% if buyer_profile.profile_image %}
+                    <img src="{{ buyer_profile.profile_image.url }}" alt="Profile Avatar" class="rounded-circle" style="width: 50px; height: 50px; object-fit: cover;">
+                {% else %}
+                    <!-- Female/male fallback portrait directly matching user info -->
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="Profile Fallback" class="rounded-circle" style="width: 50px; height: 50px; object-fit: cover;">
+                {% endif %}
+                <span class="status-indicator-online position-absolute bottom-0 end-0 rounded-circle border border-2 border-white" style="width: 12px; height: 12px; background-color: #2ec4b6;"></span>
+            </div>
+            <div>
+                <h6 class="fw-bold mb-0 text-dark text-truncate" style="max-width: 120px;">{{ request.user.get_full_name|default:request.user.username }}</h6>
+                <span class="badge bg-success-light text-success d-inline-flex align-items-center gap-1 mt-1" style="font-size: 0.7rem; font-weight: 600;">
+                    <i class="fas fa-crown text-warning" style="font-size: 0.65rem;"></i> Premium Member
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Menu Links -->
+    <div class="sidebar-menu px-3">
+        <ul class="list-unstyled mb-0 d-flex flex-column gap-1">
+            <!-- Dashboard Overview -->
+            <li>
+                <a href="{% url 'buyer_dashboard' %}" class="menu-item d-flex align-items-center justify-content-between p-3 rounded-3 {% if request.resolver_match.url_name == 'buyer_dashboard' %}active{% endif %}">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="fas fa-home menu-icon"></i>
+                        <span class="menu-label">Dashboard</span>
+                    </span>
+                </a>
+            </li>
+
+            <!-- My Orders -->
+            <li>
+                <a href="{% url 'buyer_orders' %}" class="menu-item d-flex align-items-center justify-content-between p-3 rounded-3 {% if request.resolver_match.url_name == 'buyer_orders' or request.resolver_match.url_name == 'buyer_order_detail' %}active{% endif %}">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="fas fa-box menu-icon"></i>
+                        <span class="menu-label">My Orders</span>
+                    </span>
+                </a>
+            </li>
+
+            <!-- My Wishlist -->
+            <li>
+                <a href="{% url 'buyer_wishlist' %}" class="menu-item d-flex align-items-center justify-content-between p-3 rounded-3 {% if request.resolver_match.url_name == 'buyer_wishlist' %}active{% endif %}">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="fas fa-heart menu-icon"></i>
+                        <span class="menu-label">My Wishlist</span>
+                    </span>
+                </a>
+            </li>
+
+            <!-- My Cart -->
+            <li>
+                <a href="{% url 'buyer_cart' %}" class="menu-item d-flex align-items-center justify-content-between p-3 rounded-3 {% if request.resolver_match.url_name == 'buyer_cart' %}active{% endif %}">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="fas fa-shopping-cart menu-icon"></i>
+                        <span class="menu-label">My Cart</span>
+                    </span>
+                    {% if cart_count > 0 %}
+                        <span class="badge rounded-pill bg-success-light text-success fw-bold font-sm" style="font-size: 0.75rem;">{{ cart_count }}</span>
+                    {% endif %}
+                </a>
+            </li>
+
+            <!-- Addresses -->
+            <li>
+                <a href="{% url 'buyer_addresses' %}" class="menu-item d-flex align-items-center justify-content-between p-3 rounded-3 {% if request.resolver_match.url_name == 'buyer_addresses' %}active{% endif %}">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="fas fa-map-marker-alt menu-icon"></i>
+                        <span class="menu-label">Addresses</span>
+                    </span>
+                </a>
+            </li>
+
+            <!-- Messages -->
+            <li>
+                <a href="{% url 'buyer_messages' %}" class="menu-item d-flex align-items-center justify-content-between p-3 rounded-3 {% if request.resolver_match.url_name == 'buyer_messages' %}active{% endif %}">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="fas fa-comment-dots menu-icon"></i>
+                        <span class="menu-label">Messages</span>
+                    </span>
+                    {% if unread_messages > 0 %}
+                        <span class="badge rounded-pill bg-success-light text-success fw-bold font-sm" style="font-size: 0.75rem;">{{ unread_messages }}</span>
+                    {% endif %}
+                </a>
+            </li>
+
+            <!-- Payments -->
+            <li>
+                <a href="{% url 'buyer_payments' %}" class="menu-item d-flex align-items-center justify-content-between p-3 rounded-3 {% if request.resolver_match.url_name == 'buyer_payments' %}active{% endif %}">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="fas fa-credit-card menu-icon"></i>
+                        <span class="menu-label">Payments</span>
+                    </span>
+                </a>
+            </li>
+
+            <!-- Reviews -->
+            <li>
+                <a href="{% url 'buyer_reviews' %}" class="menu-item d-flex align-items-center justify-content-between p-3 rounded-3 {% if request.resolver_match.url_name == 'buyer_reviews' %}active{% endif %}">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="fas fa-star menu-icon"></i>
+                        <span class="menu-label">Reviews</span>
+                    </span>
+                </a>
+            </li>
+
+            <!-- Notifications -->
+            <li>
+                <a href="{% url 'buyer_notifications' %}" class="menu-item d-flex align-items-center justify-content-between p-3 rounded-3 {% if request.resolver_match.url_name == 'buyer_notifications' %}active{% endif %}">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="fas fa-bell menu-icon"></i>
+                        <span class="menu-label">Notifications</span>
+                    </span>
+                    {% if unread_notifications > 0 %}
+                        <span class="badge rounded-pill bg-success-light text-success fw-bold font-sm" style="font-size: 0.75rem;">{{ unread_notifications }}</span>
+                    {% endif %}
+                </a>
+            </li>
+
+            <!-- Settings -->
+            <li>
+                <a href="{% url 'buyer_settings' %}" class="menu-item d-flex align-items-center justify-content-between p-3 rounded-3 {% if request.resolver_match.url_name == 'buyer_settings' or request.resolver_match.url_name == 'buyer_profile' or request.resolver_match.url_name == 'buyer_change_password' %}active{% endif %}">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="fas fa-user-cog menu-icon"></i>
+                        <span class="menu-label">Account Settings</span>
+                    </span>
+                </a>
+            </li>
+
+            <!-- Help & Support -->
+            <li>
+                <a href="{% url 'buyer_help' %}" class="menu-item d-flex align-items-center justify-content-between p-3 rounded-3 {% if request.resolver_match.url_name == 'buyer_help' %}active{% endif %}">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="fas fa-question-circle menu-icon"></i>
+                        <span class="menu-label">Help & Support</span>
+                    </span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Bottom Logout -->
+    <div class="mt-auto p-3">
+        <a href="{% url 'logout' %}" class="menu-item text-danger d-flex align-items-center gap-3 p-3 rounded-3 w-100 border-0 bg-transparent text-start">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+        </a>
+    </div>
+</div>

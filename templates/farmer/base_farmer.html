@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Farmer Dashboard | AgroConnect{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/farmer-dashboard.css' %}?v=1.2">
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Render Django messages aligned in layout container -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" style="border-radius: var(--agro-radius);">
+                <i class="fas {% if message.tags == 'error' %}fa-exclamation-circle{% else %}fa-check-circle{% endif %} me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Mobile Header Toggler Bar (Screen < 992px Only) -->
+    <div class="d-flex d-lg-none justify-content-between align-items-center bg-white p-3 rounded-3 shadow-sm mb-4 border">
+        <div class="d-flex align-items-center gap-3">
+            <button id="sidebarToggle" class="btn btn-light rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; padding: 0;">
+                <i class="fas fa-bars fs-5 text-success"></i>
+            </button>
+            <h5 class="fw-bold text-dark mb-0">AgroConnect</h5>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <!-- Messages Badge icon -->
+            <a href="{% url 'farmer_messages' %}" class="position-relative text-decoration-none btn btn-light rounded-circle p-2" style="width: 38px; height: 38px;">
+                <i class="far fa-comment-dots text-muted"></i>
+                {% if unread_messages_count > 0 %}
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem;">
+                        {{ unread_messages_count }}
+                    </span>
+                {% endif %}
+            </a>
+            <!-- Notifications Badge icon -->
+            <a href="{% url 'farmer_notifications' %}" class="position-relative text-decoration-none btn btn-light rounded-circle p-2" style="width: 38px; height: 38px;">
+                <i class="far fa-bell text-muted"></i>
+                {% if unread_notifications_count > 0 %}
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem;">
+                        {{ unread_notifications_count }}
+                    </span>
+                {% endif %}
+            </a>
+        </div>
+    </div>
+
+    <!-- Background overlay for Mobile Sidebar -->
+    <div class="sidebar-overlay"></div>
+
+    <div class="row g-4">
+        <!-- Sidebar Navigation Column (Left) -->
+        <div class="col-lg-3 farmer-sidebar">
+            <div class="farmer-sidebar-sticky w-100">
+                <!-- Brand/Role Header inside sidebar -->
+                <div class="brand-section text-center text-lg-start">
+                    <h5 class="fw-bold text-white mb-0"><i class="fas fa-seedling me-2 text-success"></i>AgroConnect</h5>
+                    <span class="text-success small fw-semibold">Farmer Dashboard</span>
+                </div>
+
+                <!-- Farmer Profile Card -->
+                <div class="farmer-profile-card d-flex align-items-center gap-3">
+                    <div class="position-relative" style="width: 48px; height: 48px; flex-shrink: 0;">
+                        {% if farmer_profile.profile_image %}
+                            <img src="{{ farmer_profile.profile_image.url }}" alt="Avatar" class="w-100 h-100 object-fit-cover rounded-circle border border-2 border-success shadow-sm">
+                        {% else %}
+                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80" alt="Avatar" class="w-100 h-100 object-fit-cover rounded-circle border border-2 border-success shadow-sm">
+                        {% endif %}
+                        <span class="position-absolute bottom-0 end-0 rounded-circle border border-2 border-white" style="width: 12px; height: 12px; background-color: #10b981; right: 2px; bottom: 2px;"></span>
+                    </div>
+                    <div class="overflow-hidden">
+                        <h6 class="fw-bold text-white mb-0 text-truncate font-sm">{{ request.user.get_full_name|default:request.user.username }}</h6>
+                        <span class="text-muted d-block text-truncate small mb-1">{{ farmer_profile.farm_name }}</span>
+                        {% if farmer_profile.verified %}
+                            <span class="badge bg-success-light text-success font-xs fw-semibold py-1" style="font-size: 0.65rem;">
+                                <i class="fas fa-check-circle me-1"></i> Verified Farmer
+                            </span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark font-xs fw-semibold py-1" style="font-size: 0.65rem;">
+                                <i class="fas fa-clock me-1"></i> Pending Verification
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Navigation List -->
+                <div class="sidebar-menu mt-2">
+                    <a href="{% url 'farmer_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'farmer_dashboard' %}active{% endif %}">
+                        <i class="fas fa-chart-pie"></i> Dashboard
+                    </a>
+                    
+                    <a href="{% url 'farmer_products' %}" class="nav-link {% if 'products' in request.path %}active{% endif %}">
+                        <i class="fas fa-leaf"></i> My Products
+                    </a>
+                    
+                    <a href="{% url 'farmer_orders' %}" class="nav-link {% if 'orders' in request.path %}active{% endif %}">
+                        <i class="fas fa-shopping-basket"></i> Orders
+                        {% if pending_orders_count > 0 %}
+                            <span class="badge bg-warning text-dark ms-auto font-xs">{{ pending_orders_count }}</span>
+                        {% endif %}
+                    </a>
+                    
+                    <a href="{% url 'farmer_earnings' %}" class="nav-link {% if request.resolver_match.url_name == 'farmer_earnings' %}active{% endif %}">
+                        <i class="fas fa-wallet"></i> Earnings
+                    </a>
+                    
+                    <a href="{% url 'farmer_customers' %}" class="nav-link {% if 'customers' in request.path %}active{% endif %}">
+                        <i class="fas fa-users"></i> Customers
+                    </a>
+                    
+                    <a href="{% url 'farmer_messages' %}" class="nav-link {% if request.resolver_match.url_name == 'farmer_messages' %}active{% endif %}">
+                        <i class="fas fa-comments"></i> Messages
+                        {% if unread_messages_count > 0 %}
+                            <span class="badge bg-danger ms-auto font-xs">{{ unread_messages_count }}</span>
+                        {% endif %}
+                    </a>
+                    
+                    <a href="{% url 'farmer_reviews' %}" class="nav-link {% if request.resolver_match.url_name == 'farmer_reviews' %}active{% endif %}">
+                        <i class="fas fa-star"></i> Reviews
+                    </a>
+                    
+                    <a href="{% url 'farmer_payouts' %}" class="nav-link {% if request.resolver_match.url_name == 'farmer_payouts' %}active{% endif %}">
+                        <i class="fas fa-credit-card"></i> Payouts
+                    </a>
+                    
+                    <a href="{% url 'farmer_profile' %}" class="nav-link {% if request.resolver_match.url_name == 'farmer_profile' %}active{% endif %}">
+                        <i class="fas fa-tractor"></i> Farm Profile
+                    </a>
+                    
+                    <a href="{% url 'farmer_settings' %}" class="nav-link {% if request.resolver_match.url_name == 'farmer_settings' %}active{% endif %}">
+                        <i class="fas fa-cog"></i> Settings
+                    </a>
+
+                    <a href="{% url 'farmer_notifications' %}" class="nav-link {% if request.resolver_match.url_name == 'farmer_notifications' %}active{% endif %}">
+                        <i class="fas fa-bell"></i> Notifications
+                        {% if unread_notifications_count > 0 %}
+                            <span class="badge bg-danger ms-auto font-xs">{{ unread_notifications_count }}</span>
+                        {% endif %}
+                    </a>
+                    
+                    <a href="{% url 'farmer_support' %}" class="nav-link {% if request.resolver_match.url_name == 'farmer_support' %}active{% endif %}">
+                        <i class="fas fa-question-circle"></i> Support Help
+                    </a>
+                    
+                    <hr class="mx-3 my-2" style="border-color: rgba(255,255,255,0.08);">
+                    
+                    <a href="{% url 'logout' %}" class="nav-link text-danger">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Area Column (Right) -->
+        <div class="col-lg-9">
+            <!-- Desktop Header Header (Screen >= 992px Only) -->
+            <div class="d-none d-lg-flex justify-content-between align-items-center bg-white p-4 rounded-3 shadow-sm mb-4 border" style="border-radius: var(--agro-radius-lg) !important;">
+                <div>
+                    <h5 class="fw-bold text-dark mb-1">Good morning, {{ request.user.first_name|default:request.user.username }}! 👋</h5>
+                    <span class="text-muted font-xs">Here is what is happening with your farm business today.</span>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Messages Icon -->
+                    <a href="{% url 'farmer_messages' %}" class="position-relative text-decoration-none btn btn-light rounded-circle p-2" style="width: 40px; height: 40px;" title="Messages">
+                        <i class="far fa-comment-dots text-muted fs-5"></i>
+                        {% if unread_messages_count > 0 %}
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem;">
+                                {{ unread_messages_count }}
+                            </span>
+                        {% endif %}
+                    </a>
+                    
+                    <!-- Notifications Icon -->
+                    <a href="{% url 'farmer_notifications' %}" class="position-relative text-decoration-none btn btn-light rounded-circle p-2" style="width: 40px; height: 40px;" title="Notifications">
+                        <i class="far fa-bell text-muted fs-5"></i>
+                        {% if unread_notifications_count > 0 %}
+                            <span id="headerNotificationCount" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem;">
+                                {{ unread_notifications_count }}
+                            </span>
+                        {% endif %}
+                    </a>
+                </div>
+            </div>
+
+            <!-- Page Specific Content -->
+            {% block buyer_content %}{% endblock %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <!-- ChartJS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{% static 'js/farmer-dashboard.js' %}?v=1.2"></script>
+    {% block farmer_js %}{% endblock %}
+{% endblock %}

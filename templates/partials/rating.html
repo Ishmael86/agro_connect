@@ -1,0 +1,10 @@
+<div class="d-flex align-items-center gap-1" style="font-size: 0.9rem;">
+    <span class="text-warning">
+        <i class="{% if rating >= 0.5 %}fas fa-star{% else %}far fa-star{% endif %}"></i>
+        <i class="{% if rating >= 1.5 %}fas fa-star{% else %}far fa-star{% endif %}"></i>
+        <i class="{% if rating >= 2.5 %}fas fa-star{% else %}far fa-star{% endif %}"></i>
+        <i class="{% if rating >= 3.5 %}fas fa-star{% else %}far fa-star{% endif %}"></i>
+        <i class="{% if rating >= 4.5 %}fas fa-star{% else %}far fa-star{% endif %}"></i>
+    </span>
+    <span class="text-muted fw-semibold ms-1">({{ rating|floatformat:1 }})</span>
+</div>

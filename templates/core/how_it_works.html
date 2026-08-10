@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}How It Works | AgroConnect{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumbs -->
+    {% include 'partials/breadcrumb.html' with breadcrumbs=breadcrumbs %}
+
+    <div class="text-center max-width-600 mx-auto mb-5 py-3">
+        <h1 class="display-5 fw-bold mb-3">How AgroConnect Works</h1>
+        <p class="lead text-muted">We provide an intuitive, direct bridge for agricultural trade. Learn how you can get started as a Buyer or a Farmer.</p>
+    </div>
+
+    <!-- For Buyers / For Farmers Grid -->
+    <div class="row g-5">
+        <!-- For Buyers -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm p-4 h-100" style="border-radius: var(--radius-lg);">
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <span class="benefit-icon"><i class="fas fa-shopping-basket"></i></span>
+                    <h2 class="h3 fw-bold mb-0">For Buyers</h2>
+                </div>
+                <p class="text-muted mb-4">Fresh agricultural produce sourced directly from Ghanaian farms, delivered directly to your kitchen.</p>
+                
+                <div class="d-flex flex-column gap-4">
+                    <div class="d-flex gap-3">
+                        <div class="fw-bold text-success fs-5">01</div>
+                        <div>
+                            <h4 class="h6 fw-bold mb-1">Create an Account</h4>
+                            <p class="text-muted small mb-0">Register as a Buyer in seconds. Provide your delivery preferences and contact information.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-3">
+                        <div class="fw-bold text-success fs-5">02</div>
+                        <div>
+                            <h4 class="h6 fw-bold mb-1">Browse Fresh Produce</h4>
+                            <p class="text-muted small mb-0">Explore products sorted by category, region, and price. View detailed farm pages and verified reviews.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-3">
+                        <div class="fw-bold text-success fs-5">03</div>
+                        <div>
+                            <h4 class="h6 fw-bold mb-1">Add to Cart & Checkout</h4>
+                            <p class="text-muted small mb-0">Compile products from multiple local farms. Choose secure Mobile Money, Card, or Cash on Delivery.</p>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-3">
+                        <div class="fw-bold text-success fs-5">04</div>
+                        <div>
+                            <h4 class="h6 fw-bold mb-1">Receive & Confirm Delivery</h4>
+                            <p class="text-muted small mb-0">Our delivery partners bring the fresh produce to your door. You check the items and complete the transaction.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-5 text-center">
+                    <a href="{% url 'product_list' %}" class="btn btn-primary-green px-4 py-2">Start Shopping Now</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- For Farmers -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm p-4 h-100" style="border-radius: var(--radius-lg);">
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <span class="benefit-icon"><i class="fas fa-tractor"></i></span>
+                    <h2 class="h3 fw-bold mb-0">For Farmers</h2>
+                </div>
+                <p class="text-muted mb-4">Gain direct access to buyers in major cities. Get fair prices and scale up your farming operations.</p>
+                
+                <div class="d-flex flex-column gap-4">
+                    <div class="d-flex gap-3">
+                        <div class="fw-bold text-success fs-5">01</div>
+                        <div>
+                            <h4 class="h6 fw-bold mb-1">Register Your Profile</h4>
+                            <p class="text-muted small mb-0">Sign up as a Farmer. List your farm name, location, contact number, and region of operations.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-3">
+                        <div class="fw-bold text-success fs-5">02</div>
+                        <div>
+                            <h4 class="h6 fw-bold mb-1">Verify Your Farm</h4>
+                            <p class="text-muted small mb-0">Our representatives will contact you to verify your operations and award the "Verified Farmer" badge.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-3">
+                        <div class="fw-bold text-success fs-5">03</div>
+                        <div>
+                            <h4 class="h6 fw-bold mb-1">List Your Harvest</h4>
+                            <p class="text-muted small mb-0">List your crops, specify prices per unit (e.g. GHS per bag or bunch), describe stock quantity, and add images.</p>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-3">
+                        <div class="fw-bold text-success fs-5">04</div>
+                        <div>
+                            <h4 class="h6 fw-bold mb-1">Get Paid Directly</h4>
+                            <p class="text-muted small mb-0">Receive orders from retail buyers. We pick up the produce and transfer payments directly to your Mobile Money account.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-5 text-center">
+                    <a href="{% url 'register' %}?type=farmer" class="btn btn-outline-green px-4 py-2">Register as a Farmer</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

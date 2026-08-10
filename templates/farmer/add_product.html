@@ -1,0 +1,128 @@
+{% extends "farmer/base_farmer.html" %}
+{% load static %}
+
+{% block buyer_content %}
+<div class="mb-4">
+    <a href="{% url 'farmer_products' %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3 mb-3"><i class="fas fa-arrow-left me-1"></i>Back to Products</a>
+    <h4 class="fw-bold text-dark mb-1">Add New Product</h4>
+    <span class="text-muted font-xs">Create a new product listing for buyers in the public marketplace.</span>
+</div>
+
+<div class="row g-4">
+    <!-- Form Area -->
+    <div class="col-lg-8">
+        <div class="agro-card">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="row g-3">
+                    <!-- Name & Category -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-dark small">Crop / Product Name *</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                            <div class="text-danger small mt-1">{{ form.name.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-dark small">Category *</label>
+                        {{ form.category }}
+                        {% if form.category.errors %}
+                            <div class="text-danger small mt-1">{{ form.category.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Pricing & Unit -->
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold text-dark small">Price (GHS) *</label>
+                        {{ form.price }}
+                        {% if form.price.errors %}
+                            <div class="text-danger small mt-1">{{ form.price.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold text-dark small">Discount Price (GHS)</label>
+                        {{ form.discount_price }}
+                        {% if form.discount_price.errors %}
+                            <div class="text-danger small mt-1">{{ form.discount_price.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold text-dark small">Unit *</label>
+                        {{ form.unit }}
+                        {% if form.unit.errors %}
+                            <div class="text-danger small mt-1">{{ form.unit.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Stock & Location -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-dark small">Initial Stock *</label>
+                        {{ form.stock_quantity }}
+                        {% if form.stock_quantity.errors %}
+                            <div class="text-danger small mt-1">{{ form.stock_quantity.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-dark small">Location / Market *</label>
+                        {{ form.location }}
+                        {% if form.location.errors %}
+                            <div class="text-danger small mt-1">{{ form.location.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Description -->
+                    <div class="col-12">
+                        <label class="form-label fw-bold text-dark small">Crop Details / Description *</label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="text-danger small mt-1">{{ form.description.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Image Selection -->
+                    <div class="col-12">
+                        <label class="form-label fw-bold text-dark small">Crop Cover Image *</label>
+                        {{ form.main_image }}
+                        {% if form.main_image.errors %}
+                            <div class="text-danger small mt-1">{{ form.main_image.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Checkboxes -->
+                    <div class="col-12 d-flex gap-4 my-2">
+                        <div class="form-check">
+                            {{ form.is_available }}
+                            <label class="form-check-label text-dark small">Available for Sale</label>
+                        </div>
+                        <div class="form-check">
+                            {{ form.is_featured }}
+                            <label class="form-check-label text-dark small">Featured Crop</label>
+                        </div>
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="col-12 d-flex gap-3 pt-3 border-top">
+                        <button type="submit" class="btn btn-success rounded-pill px-4 py-2 font-sm shadow-sm">Save Crop Product</button>
+                        <a href="{% url 'farmer_products' %}" class="btn btn-outline-secondary rounded-pill px-4 py-2 font-sm">Cancel</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Image Preview Column -->
+    <div class="col-lg-4">
+        <div class="agro-card text-center">
+            <h6 class="fw-bold text-dark mb-3">Crop Image Preview</h6>
+            <div id="imagePreview" class="border rounded-3 p-3 bg-light d-flex align-items-center justify-content-center" style="min-height: 200px;">
+                <span class="text-muted small">Select an image to see preview</span>
+            </div>
+            <div class="mt-3 text-start">
+                <span class="text-muted font-xs d-block"><i class="fas fa-info-circle me-1"></i>Supports JPG, PNG formats.</span>
+                <span class="text-muted font-xs d-block"><i class="fas fa-info-circle me-1"></i>Maximum file size is 5MB.</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

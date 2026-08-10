@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}{{ farmer.farm_name }} | Farmers | AgroConnect{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumbs -->
+    <nav aria-label="breadcrumb" class="py-2">
+        <ol class="breadcrumb mb-4 align-items-center" style="font-size: 0.9rem;">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-success"><i class="fas fa-home me-1"></i> Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'farmer_list' %}" class="text-success">Farmers</a></li>
+            <li class="breadcrumb-item active text-muted" aria-current="page">{{ farmer.farm_name }}</li>
+        </ol>
+    </nav>
+
+    <!-- Farmer Header Panel -->
+    <div class="card border-0 shadow-sm p-4 p-md-5 mb-5" style="border-radius: var(--radius-lg); background-color: #FFFFFF;">
+        <div class="row align-items-center g-4">
+            <!-- Farmer Avatar -->
+            <div class="col-md-3 text-center text-md-start">
+                {% if farmer.profile_image %}
+                    <img src="{{ farmer.profile_image.url }}" alt="{{ farmer.farm_name }}" class="farmer-avatar shadow" style="width: 160px; height: 160px; border: 4px solid var(--primary-green-light); object-fit: cover; border-radius: 50%;">
+                {% else %}
+                    {% if farmer.user.username == 'ama' %}
+                        <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=200&auto=format&fit=crop" alt="{{ farmer.farm_name }}" class="farmer-avatar shadow" style="width: 160px; height: 160px; border: 4px solid var(--primary-green-light); object-fit: cover; border-radius: 50%;">
+                    {% elif farmer.user.username == 'salomey' %}
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop" alt="{{ farmer.farm_name }}" class="farmer-avatar shadow" style="width: 160px; height: 160px; border: 4px solid var(--primary-green-light); object-fit: cover; border-radius: 50%;">
+                    {% elif farmer.user.username == 'abena' %}
+                        <img src="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f9b?q=80&w=200&auto=format&fit=crop" alt="{{ farmer.farm_name }}" class="farmer-avatar shadow" style="width: 160px; height: 160px; border: 4px solid var(--primary-green-light); object-fit: cover; border-radius: 50%;">
+                    {% elif farmer.user.username == 'kwame' %}
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop" alt="{{ farmer.farm_name }}" class="farmer-avatar shadow" style="width: 160px; height: 160px; border: 4px solid var(--primary-green-light); object-fit: cover; border-radius: 50%;">
+                    {% elif farmer.user.username == 'kofi' %}
+                        <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=200&auto=format&fit=crop" alt="{{ farmer.farm_name }}" class="farmer-avatar shadow" style="width: 160px; height: 160px; border: 4px solid var(--primary-green-light); object-fit: cover; border-radius: 50%;">
+                    {% else %}
+                        <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=200&auto=format&fit=crop" alt="{{ farmer.farm_name }}" class="farmer-avatar shadow" style="width: 160px; height: 160px; border: 4px solid var(--primary-green-light); object-fit: cover; border-radius: 50%;">
+                    {% endif %}
+                {% endif %}
+            </div>
+            
+            <!-- Farmer info details -->
+            <div class="col-md-9">
+                <div class="d-flex flex-wrap align-items-center gap-3 mb-2 justify-content-center justify-content-md-start">
+                    <h1 class="display-6 fw-bold mb-0 text-dark">{{ farmer.farm_name }}</h1>
+                    {% if farmer.verified %}
+                        <span class="badge-verified"><i class="fas fa-check-circle"></i> Verified Farmer</span>
+                    {% endif %}
+                </div>
+                
+                <p class="text-muted text-center text-md-start mb-3">
+                    Managed by <strong>{{ farmer.user.get_full_name|default:farmer.user.username }}</strong>
+                </p>
+
+                <!-- Rating & Location -->
+                <div class="d-flex flex-wrap gap-4 align-items-center justify-content-center justify-content-md-start mb-4">
+                    <div>
+                        {% include 'partials/rating.html' with rating=farmer.rating %}
+                    </div>
+                    <div class="text-muted small">
+                        <i class="fas fa-map-marker-alt text-success me-1"></i> {{ farmer.location }}, {{ farmer.region }} Region
+                    </div>
+                    <div class="text-muted small">
+                        <i class="fas fa-phone-alt text-success me-1"></i> {{ farmer.phone }}
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <p class="text-muted text-center text-md-start mb-4" style="max-width: 800px;">
+                    {{ farmer.description|default:"Welcome to our farm page! We are dedicated to providing the freshest produce grown using sustainable methods. Thank you for supporting our farm and local agricultural community." }}
+                </p>
+                
+                <!-- CTA buttons -->
+                <div class="text-center text-md-start">
+                    <button class="btn btn-primary-green px-4 py-2" onclick="showAgroToast('Farmer contact requested! Phone: {{ farmer.phone }}')">
+                        <i class="fas fa-phone-alt me-2"></i> Contact Farmer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inventory & Messaging Split Layout -->
+    <div class="row g-4 mb-5">
+        <!-- Products Grid (Left) -->
+        <div class="col-lg-8 col-md-7">
+            <h2 class="fw-bold mb-4">Products from {{ farmer.farm_name }}</h2>
+            <div class="row g-4">
+                {% for product in products %}
+                    <div class="col-lg-4 col-md-6 col-sm-6">
+                        {% include 'partials/product_card.html' with product=product %}
+                    </div>
+                {% empty %}
+                    <div class="col-12 text-center py-5">
+                        <i class="fas fa-shopping-basket fa-3x text-muted mb-3" style="color: var(--primary-green-light) !important;"></i>
+                        <h3>No products listed yet! 🌱</h3>
+                        <p class="text-muted">This farmer is currently preparing their next harvest. Please check back later.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Message Farmer Form (Right) -->
+        <div class="col-lg-4 col-md-5">
+            <div class="card border-0 shadow-sm p-4" style="border-radius: var(--radius-lg); background-color: #FFFFFF; position: sticky; top: 100px;">
+                <h3 class="fw-bold mb-3" style="font-size: 1.25rem;"><i class="fas fa-envelope text-success me-2"></i>Message Farmer</h3>
+                <p class="text-muted small mb-4">Send a direct message to {{ farmer.farm_name }}. They will receive your email and contact details.</p>
+                
+                <form action="{% url 'contact' %}" method="POST" id="messageFarmerForm" onsubmit="event.preventDefault(); showAgroToast('Message sent to farmer successfully! 📩'); this.reset();">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Your Name</label>
+                        <input type="text" class="form-control form-control-sm" placeholder="Enter your name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Your Email</label>
+                        <input type="email" class="form-control form-control-sm" placeholder="Enter your email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Your Phone</label>
+                        <input type="tel" class="form-control form-control-sm" placeholder="Enter your phone number">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Message</label>
+                        <textarea class="form-control form-control-sm" rows="4" placeholder="Ask about crop availability, bulk pricing, or delivery..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary-green btn-sm w-100 py-2">
+                        <i class="fas fa-paper-plane me-2"></i>Send Message
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

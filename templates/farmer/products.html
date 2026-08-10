@@ -1,0 +1,134 @@
+{% extends "farmer/base_farmer.html" %}
+{% load static %}
+
+{% block buyer_content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+        <h4 class="fw-bold text-dark mb-1">My Products</h4>
+        <span class="text-muted font-xs">Manage your farm crops, inventory, and pricing.</span>
+    </div>
+    <div>
+        <a href="{% url 'farmer_add_product' %}" class="btn btn-success rounded-pill px-4 py-2 font-sm shadow-sm"><i class="fas fa-plus me-2"></i>Add New Product</a>
+    </div>
+</div>
+
+<!-- Search & Filters Block -->
+<div class="agro-card mb-4">
+    <form method="GET" action="" class="row g-3">
+        <!-- Search bar -->
+        <div class="col-md-5">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0 text-muted"><i class="fas fa-search"></i></span>
+                <input type="text" name="search" class="form-control border-start-0 font-sm" placeholder="Search crops by name, description..." value="{{ search_query }}">
+            </div>
+        </div>
+        
+        <!-- Category Filter -->
+        <div class="col-md-3">
+            <select name="category" class="form-select font-sm" onchange="this.form.submit()">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.slug }}" {% if selected_category == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <!-- Status Filter -->
+        <div class="col-md-3">
+            <select name="status" class="form-select font-sm" onchange="this.form.submit()">
+                <option value="">All Statuses</option>
+                <option value="active" {% if selected_status == 'active' %}selected{% endif %}>Active / In Stock</option>
+                <option value="outofstock" {% if selected_status == 'outofstock' %}selected{% endif %}>Out of Stock</option>
+                <option value="inactive" {% if selected_status == 'inactive' %}selected{% endif %}>Inactive / Draft</option>
+            </select>
+        </div>
+        
+        <!-- Submit reset buttons -->
+        <div class="col-md-1 d-flex gap-2">
+            <button type="submit" class="btn btn-success w-100 font-sm rounded-3"><i class="fas fa-filter"></i></button>
+            {% if search_query or selected_category or selected_status %}
+                <a href="{% url 'farmer_products' %}" class="btn btn-outline-secondary font-sm rounded-3"><i class="fas fa-undo"></i></a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- Product Grid -->
+<div class="row g-4">
+    {% for product in page_obj %}
+        <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
+            <div class="product-card">
+                <!-- Image Wrapper -->
+                <div class="product-img-wrapper">
+                    {% if product.main_image %}
+                        <img src="{{ product.main_image.url }}" alt="{{ product.name }}">
+                    {% else %}
+                        <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=300&q=80" alt="Fallback">
+                    {% endif %}
+                    <span class="position-absolute top-0 start-0 m-2 badge-status {% if product.is_available and product.stock_quantity > 0 %}badge-active{% elif product.stock_quantity == 0 %}badge-outofstock{% else %}badge-draft{% endif %}">
+                        {% if product.is_available and product.stock_quantity > 0 %}Active{% elif product.stock_quantity == 0 %}Out of Stock{% else %}Draft{% endif %}
+                    </span>
+                </div>
+                
+                <!-- Body details -->
+                <div class="product-card-body">
+                    <span class="stats-card-title mb-1">{{ product.category.name|default:"Crop Produce" }}</span>
+                    <h5 class="fw-bold text-dark font-sm text-truncate mb-1"><a href="{% url 'product_detail' product.slug %}" class="text-decoration-none text-dark">{{ product.name }}</a></h5>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-success fw-bold font-sm">
+                            GHS {{ product.final_price|floatformat:2 }}
+                            <span class="text-muted fw-normal" style="font-size: 0.75rem;">/ {{ product.unit }}</span>
+                        </span>
+                        <span class="small text-warning" style="font-size: 0.75rem;"><i class="fas fa-star me-1"></i>{{ product.rating|default:"4.5" }}</span>
+                    </div>
+                    
+                    <!-- Stock Warnings -->
+                    <div class="my-2 py-1">
+                        {% if product.stock_quantity == 0 %}
+                            <span class="text-danger small fw-bold"><i class="fas fa-exclamation-circle me-1"></i>Out of Stock</span>
+                        {% elif product.stock_quantity <= 10 %}
+                            <span class="text-warning small fw-bold"><i class="fas fa-exclamation-triangle me-1"></i>Low Stock: {{ product.stock_quantity }} {{ product.unit }}</span>
+                        {% else %}
+                            <span class="text-muted small">In Stock: <strong>{{ product.stock_quantity }} {{ product.unit }}</strong></span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="d-flex gap-2 mt-auto pt-3 border-top">
+                        <a href="{% url 'farmer_edit_product' product.slug %}" class="btn btn-sm btn-outline-success rounded-pill px-3 flex-grow-1"><i class="far fa-edit me-1"></i>Edit</a>
+                        <a href="{% url 'farmer_delete_product' product.slug %}" class="btn btn-sm btn-outline-danger rounded-pill px-3" title="Delete"><i class="far fa-trash-alt"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <!-- Empty State -->
+        <div class="col-12 text-center py-5">
+            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 80px; height: 80px;">
+                <i class="fas fa-leaf text-success fs-3"></i>
+            </div>
+            <h5 class="fw-bold text-dark">Your farm has no products yet.</h5>
+            <p class="text-muted font-sm px-4">Add your crops and start selling directly to local buyers today!</p>
+            <a href="{% url 'farmer_add_product' %}" class="btn btn-success rounded-pill px-4 mt-3">Add Your First Product</a>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination component -->
+{% if page_obj.has_other_pages %}
+    <nav class="d-flex justify-content-center mt-5">
+        <ul class="pagination pagination-sm">
+            {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}">Previous</a></li>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+                <li class="page-item {% if page_obj.number == num %}active{% endif %}"><a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}">{{ num }}</a></li>
+            {% endfor %}
+            {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}">Next</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endif %}
+{% endblock %}

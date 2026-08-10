@@ -1,0 +1,172 @@
+{% extends "admin_panel/base_admin.html" %}
+
+{% block title %}Farm Detail: {{ profile.farm_name }} - AgroConnect Admin{% endblock %}
+
+{% block admin_content %}
+<div class="mb-4">
+    <a href="{% url 'admin_farmers' %}" class="btn btn-light rounded-pill border btn-sm mb-3"><i class="fas fa-arrow-left me-1"></i> Back to Farmers</a>
+    <h4 class="fw-bold mb-1">Manage Farmer Profile</h4>
+    <p class="text-muted small mb-0">Review details, verified status, and product listings for <strong>{{ profile.farm_name }}</strong>.</p>
+</div>
+
+<div class="row g-4">
+    <!-- Left Column: Farmer profile summary -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: var(--agro-radius); background-color: var(--agro-white);">
+            <!-- Farm Header Image -->
+            <div class="position-relative mb-3" style="height: 140px; border-radius: 12px; overflow: hidden; background-color: var(--agro-light);">
+                {% if profile.cover_image %}
+                    <img src="{{ profile.cover_image.url }}" alt="Cover" class="w-100 h-100 object-fit-cover">
+                {% else %}
+                    <img src="https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?auto=format&fit=crop&w=300&q=80" alt="Cover" class="w-100 h-100 object-fit-cover">
+                {% endif %}
+            </div>
+
+            <h5 class="fw-bold mb-1 text-dark">{{ profile.farm_name }}</h5>
+            <p class="text-muted small mb-3"><i class="fas fa-user-circle me-1"></i> {{ profile.user.get_full_name }}</p>
+            
+            <div class="mb-4">
+                {% if profile.verified %}
+                    <span class="badge bg-success-light text-success fw-semibold font-sm px-3 py-2"><i class="fas fa-check-circle me-1"></i> Verified Partner</span>
+                {% else %}
+                    <span class="badge bg-warning-light text-warning fw-semibold font-sm px-3 py-2"><i class="fas fa-clock me-1"></i> Pending Verification</span>
+                {% endif %}
+            </div>
+
+            <!-- Profile Parameters -->
+            <div class="border-top pt-3 text-start small mb-4">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Ghana Region:</span>
+                    <span class="fw-semibold text-dark">{{ profile.region }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">District/City:</span>
+                    <span class="fw-semibold text-dark">{{ profile.district }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Location Address:</span>
+                    <span class="fw-semibold text-dark">{{ profile.location }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Phone Number:</span>
+                    <span class="fw-semibold text-dark">{{ profile.phone|default:profile.user.phone }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Average Rating:</span>
+                    <span class="fw-semibold text-warning"><i class="fas fa-star me-1"></i> {{ profile.rating|floatformat:1 }}</span>
+                </div>
+            </div>
+
+            <!-- Farmer description -->
+            <div class="mb-4">
+                <h6 class="fw-bold text-dark font-sm mb-2">Farm Description</h6>
+                <p class="text-muted small mb-0">{{ profile.description|default:"No description provided." }}</p>
+            </div>
+
+            <!-- Admin Verification Toggles -->
+            <div class="d-grid gap-2 border-top pt-3">
+                <form method="POST" action="{% url 'admin_farmer_detail' profile.id %}">
+                    {% csrf_csrf_token %}
+                    {% if profile.verified %}
+                        <input type="hidden" name="action" value="reject_farmer">
+                        <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill w-100" data-confirm="Are you sure you want to revoke verification status for this farmer?">
+                            <i class="fas fa-times-circle me-1"></i> Revoke Verification
+                        </button>
+                    {% else %}
+                        <input type="hidden" name="action" value="verify_farmer">
+                        <button type="submit" class="btn btn-success btn-sm rounded-pill w-100">
+                            <i class="fas fa-check-circle me-1"></i> Verify Farm Profile
+                        </button>
+                    {% endif %}
+                </form>
+                <!-- Direct user manager shortcut -->
+                <a href="{% url 'admin_user_detail' profile.user.id %}" class="btn btn-light btn-sm rounded-pill border w-100 mt-2">
+                    <i class="fas fa-user-cog me-1"></i> Manage User Account
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Crop listings & Sales stats -->
+    <div class="col-lg-8">
+        <!-- Sales metrics dashboard row -->
+        <div class="row g-3 mb-4">
+            <div class="col-sm-6">
+                <div class="card border-0 shadow-sm p-3 bg-white text-center" style="border-radius: var(--agro-radius);">
+                    <div class="text-muted small mb-1">Delivered Sales Revenue</div>
+                    <h4 class="fw-bold text-success mb-0">GHS {{ sales_total|floatformat:2 }}</h4>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="card border-0 shadow-sm p-3 bg-white text-center" style="border-radius: var(--agro-radius);">
+                    <div class="text-muted small mb-1">Total Sales Transactions</div>
+                    <h4 class="fw-bold text-dark mb-0">{{ orders_count }} orders</h4>
+                </div>
+            </div>
+        </div>
+
+        <!-- Listed Crop products -->
+        <div class="table-card">
+            <div class="table-card-header">
+                <h5 class="fw-bold text-dark mb-0">Listed Crop Products</h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table admin-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Category</th>
+                            <th>Unit Price</th>
+                            <th>Stock</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for crop in crops %}
+                        <tr>
+                            <td>
+                                <div class="user-avatar-cell">
+                                    {% if crop.image %}
+                                        <img src="{{ crop.image.url }}" alt="Crop" class="user-avatar-img rounded-3">
+                                    {% else %}
+                                        <img src="https://images.unsplash.com/photo-1592417817098-8f3d6eb19675?auto=format&fit=crop&w=100&q=80" alt="Crop" class="user-avatar-img rounded-3">
+                                    {% endif %}
+                                    <div>
+                                        <div class="fw-bold text-dark">{{ crop.name }}</div>
+                                        <div style="font-size: 0.75rem;" class="text-muted">Slug: {{ crop.slug }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ crop.category.name }}</td>
+                            <td class="fw-bold">GHS {{ crop.price|floatformat:2 }} / {{ crop.unit }}</td>
+                            <td>
+                                <div class="fw-semibold">{{ crop.stock_quantity }} {{ crop.unit }}s</div>
+                                {% if crop.stock_quantity == 0 %}
+                                    <span class="badge bg-danger-light text-danger font-xs px-2 mt-1">Out of stock</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge-status badge-status-{% if crop.is_available and crop.stock_quantity > 0 %}active{% else %}inactive{% endif %}">
+                                    {% if crop.is_available and crop.stock_quantity > 0 %}Active{% else %}Inactive{% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{% url 'admin_product_detail' crop.id %}" class="btn btn-light btn-sm rounded-pill border"><i class="fas fa-seedling text-muted me-1"></i> Manage</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="fas fa-seedling fs-2 mb-3 d-block text-secondary"></i>
+                                This farmer has not listed any crop products.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

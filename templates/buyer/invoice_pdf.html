@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        @page {
+            size: a4 portrait;
+            margin: 1.5cm;
+        }
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            color: #2d3748;
+            font-size: 9.5pt;
+            line-height: 1.4;
+        }
+        .header-table {
+            width: 100%;
+            border-bottom: 2px solid #0E5A34;
+            padding-bottom: 12px;
+            margin-bottom: 25px;
+        }
+        .header-logo {
+            font-size: 20pt;
+            font-weight: bold;
+            color: #0E5A34;
+        }
+        .header-meta {
+            text-align: right;
+        }
+        .info-table {
+            width: 100%;
+            margin-bottom: 30px;
+        }
+        .info-col {
+            width: 50%;
+            vertical-align: top;
+        }
+        .section-title {
+            font-weight: bold;
+            color: #718096;
+            font-size: 8pt;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+        }
+        .items-table th {
+            background-color: #f4f7f6;
+            font-weight: bold;
+            text-align: left;
+            padding: 8px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        .items-table td {
+            padding: 8px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .text-right {
+            text-align: right;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .totals-table {
+            width: 100%;
+        }
+        .totals-col-left {
+            width: 60%;
+            vertical-align: top;
+        }
+        .totals-col-right {
+            width: 40%;
+            vertical-align: top;
+        }
+        .totals-right-table {
+            width: 100%;
+        }
+        .totals-right-table td {
+            padding: 4px 0;
+        }
+        .grand-total {
+            font-size: 13pt;
+            font-weight: bold;
+            color: #0E5A34;
+        }
+        .badge {
+            font-size: 8pt;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 5px;
+            background-color: #e2e8f0;
+        }
+        .badge-paid {
+            background-color: #e6fffa;
+            color: #319795;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <table class="header-table">
+        <tr>
+            <td>
+                <span class="header-logo">AgroConnect</span><br>
+                <span style="color: #718096; font-size: 8pt;">Fair pricing direct from local Ghanaian growers.</span>
+            </td>
+            <td class="header-meta">
+                <span style="font-size: 14pt; font-weight: bold;">INVOICE</span><br>
+                <span>Order Reference: <strong>{{ order.order_number }}</strong></span><br>
+                <span>Date Issued: {{ order.created_at|date:"M d, Y" }}</span>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Info Block -->
+    <table class="info-table">
+        <tr>
+            <td class="info-col">
+                <div class="section-title">Issued By:</div>
+                <strong>AgroConnect Ltd.</strong><br>
+                Accra Mall Office Suite 4B<br>
+                Greater Accra, Ghana<br>
+                Support: +233 24 123 4567<br>
+                Email: billing@agroconnect.com.gh
+            </td>
+            <td class="info-col">
+                <div class="section-title">Billed To:</div>
+                <strong>{{ order.full_name }}</strong><br>
+                Phone: {{ order.phone }}<br>
+                Delivery Address:<br>
+                {{ order.delivery_address }}<br>
+                {{ order.city }}, {{ order.region }}
+            </td>
+        </tr>
+    </table>
+
+    <!-- Items Listing -->
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th style="width: 5%;">#</th>
+                <th style="width: 35%;">Produce Item</th>
+                <th style="width: 20%;">Category</th>
+                <th style="width: 15%;">Farm</th>
+                <th class="text-right" style="width: 12%;">Price</th>
+                <th class="text-center" style="width: 5%;">Qty</th>
+                <th class="text-right" style="width: 13%;">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td><strong>{{ item.product.name }}</strong></td>
+                    <td>{{ item.product.category.name }}</td>
+                    <td>{{ item.farmer.farm_name }}</td>
+                    <td class="text-right">GHS {{ item.unit_price|floatformat:2 }}</td>
+                    <td class="text-center">{{ item.quantity }}</td>
+                    <td class="text-right"><strong>GHS {{ item.subtotal|floatformat:2 }}</strong></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Totals & Summary Block -->
+    <table class="totals-table">
+        <tr>
+            <td class="totals-col-left">
+                <div style="background-color: #f7faf9; padding: 12px; border-radius: 6px; margin-right: 25px;">
+                    <span style="font-size: 8pt; color: #718096; display: block; margin-bottom: 4px;">Payment Method:</span>
+                    <strong>{{ order.get_payment_method_display|default:order.payment_method }}</strong>
+                    <br><br>
+                    <span style="font-size: 8pt; color: #718096; display: block; margin-bottom: 4px;">Transaction Status:</span>
+                    {% if order.status == 'DELIVERED' or order.status == 'SHIPPED' %}
+                        <span class="badge badge-paid">PAID</span>
+                    {% else %}
+                        <span class="badge">PENDING</span>
+                    {% endif %}
+                </div>
+                <div style="margin-top: 15px; font-size: 8pt; color: #718096; line-height: 1.4; margin-right: 25px;">
+                    Thank you for supporting Ghanaian growers. Re-check crop quantities on arrival. For billing queries, write to support@agroconnect.com.gh.
+                </div>
+            </td>
+            <td class="totals-col-right">
+                <table class="totals-right-table">
+                    <tr>
+                        <td style="color: #718096;">Subtotal:</td>
+                        <td class="text-right">GHS {{ order.subtotal|floatformat:2 }}</td>
+                    </tr>
+                    <tr>
+                        <td style="color: #718096;">Delivery Fee:</td>
+                        <td class="text-right">
+                            {% if order.delivery_fee == 0 %}
+                                FREE
+                            {% else %}
+                                GHS {{ order.delivery_fee|floatformat:2 }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="color: #718096;">Discount:</td>
+                        <td class="text-right">- GHS 0.00</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2"><hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 5px 0;"></td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: bold;">Grand Total:</td>
+                        <td class="text-right grand-total">GHS {{ order.total|floatformat:2 }}</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

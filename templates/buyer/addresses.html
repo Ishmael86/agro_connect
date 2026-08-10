@@ -1,0 +1,147 @@
+{% extends "buyer/base_buyer.html" %}
+{% load static %}
+
+{% block title %}My Addresses | AgroConnect{% endblock %}
+
+{% block page_title %}My Addresses{% endblock %}
+
+{% block buyer_content %}
+<div class="card border-0 shadow-sm p-4" style="border-radius: var(--agro-radius); min-height: 480px;">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <h5 class="fw-bold text-dark mb-0">Delivery Addresses</h5>
+            <span class="text-muted small">Manage your default locations for faster checkouts.</span>
+        </div>
+        <button class="btn btn-success btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#addAddressModal">
+            <i class="fas fa-plus me-2"></i>Add New Address
+        </button>
+    </div>
+
+    <!-- Address Cards Grid -->
+    <div class="row g-4">
+        {% for addr in addresses %}
+            <div class="col-md-6">
+                <div class="border rounded-3 p-4 position-relative h-100 {% if addr.is_default %}border-success{% endif %}" style="background-color: var(--agro-background);">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="badge {% if addr.is_default %}bg-success text-white{% else %}bg-secondary text-white{% endif %} rounded-pill px-3 py-1 font-xs fw-bold">
+                            {{ addr.label }}
+                        </span>
+                        {% if addr.is_default %}
+                            <span class="text-success small fw-semibold"><i class="fas fa-check-circle me-1"></i>Default</span>
+                        {% endif %}
+                    </div>
+
+                    <h6 class="fw-bold text-dark mb-1">{{ addr.full_name }}</h6>
+                    <span class="text-muted font-sm d-block mb-3"><i class="fas fa-phone-alt me-2 text-success"></i>{{ addr.phone }}</span>
+                    
+                    <p class="font-sm text-dark mb-2" style="line-height: 1.6;">
+                        {{ addr.address }}<br>
+                        {{ addr.city }}, {{ addr.region }}
+                    </p>
+
+                    {% if addr.additional_information %}
+                        <div class="bg-white p-2 rounded border font-xs text-muted mb-4">
+                            <strong>Note:</strong> {{ addr.additional_information }}
+                        </div>
+                    {% endif %}
+
+                    <!-- Card Footer Actions -->
+                    <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+                        <div class="d-flex gap-2">
+                            {% if not addr.is_default %}
+                                <form action="{% url 'buyer_addresses' %}" method="POST">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="set_default">
+                                    <input type="hidden" name="address_id" value="{{ addr.id }}">
+                                    <button type="submit" class="btn btn-link text-success p-0 font-sm text-decoration-none">Set Default</button>
+                                </form>
+                            {% endif %}
+                        </div>
+
+                        <form action="{% url 'buyer_addresses' %}" method="POST" onsubmit="return confirm('Delete this address?');">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="address_id" value="{{ addr.id }}">
+                            <button type="submit" class="btn btn-link text-danger p-0 font-sm text-decoration-none"><i class="far fa-trash-alt me-1"></i>Delete</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <!-- Empty State -->
+            <div class="col-12 text-center py-5">
+                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 80px; height: 80px;">
+                    <i class="fas fa-map-marked-alt text-success fs-3"></i>
+                </div>
+                <h5 class="fw-bold text-dark">No saved addresses yet.</h5>
+                <p class="text-muted font-sm px-4">Add your shipping details here so you don't have to fill them in at checkout.</p>
+                <button class="btn btn-success px-4 py-2 mt-2 rounded-pill" data-bs-toggle="modal" data-bs-target="#addAddressModal">
+                    Add Address Now
+                </button>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Add Address Bootstrap Modal -->
+<div class="modal fade" id="addAddressModal" tabindex="-1" aria-labelledby="addAddressModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: var(--agro-radius);">
+            <div class="modal-header border-bottom">
+                <h5 class="modal-title fw-bold text-dark" id="addAddressModalLabel">Add New Address</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{% url 'buyer_addresses' %}" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add">
+                
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label font-sm">Address Label</label>
+                            {{ form.label }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label font-sm">Recipient Name</label>
+                            {{ form.full_name }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label font-sm">Phone Number</label>
+                            {{ form.phone }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label font-sm">Region</label>
+                            {{ form.region }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label font-sm">City / District</label>
+                            {{ form.city }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label font-sm">Street Address / Landmark Details</label>
+                            {{ form.address }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label font-sm">Additional Delivery Notes (Optional)</label>
+                            {{ form.additional_information }}
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check">
+                                {{ form.is_default }}
+                                <label class="form-check-label font-sm text-muted" for="id_is_default">
+                                    Set this address as default
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-top">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success rounded-pill px-4">Save Address</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

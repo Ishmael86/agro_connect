@@ -1,0 +1,125 @@
+{% extends "buyer/base_buyer.html" %}
+{% load static %}
+
+{% block title %}Payment Methods | AgroConnect{% endblock %}
+
+{% block page_title %}Payment Methods{% endblock %}
+
+{% block buyer_content %}
+<div class="card border-0 shadow-sm p-4" style="border-radius: var(--agro-radius); min-height: 480px;">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <h5 class="fw-bold text-dark mb-0">Saved Payment Methods</h5>
+            <span class="text-muted small">Select your default payment source for faster processing.</span>
+        </div>
+        <button class="btn btn-success btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#addPaymentModal">
+            <i class="fas fa-plus me-2"></i>Add Payment Method
+        </button>
+    </div>
+
+    <!-- Payments List Grid -->
+    <div class="row g-4">
+        {% for pm in payments %}
+            <div class="col-md-6">
+                <div class="border rounded-3 p-4 position-relative h-100 {% if pm.is_default %}border-success{% endif %}" style="background-color: var(--agro-background);">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            {% if pm.payment_type == 'CARD' %}
+                                <i class="fas fa-credit-card text-success fs-4"></i>
+                            {% else %}
+                                <i class="fas fa-wallet text-success fs-4"></i>
+                            {% endif %}
+                            <strong class="text-dark">{{ pm.provider }}</strong>
+                        </div>
+                        {% if pm.is_default %}
+                            <span class="badge bg-success text-white rounded-pill px-3 py-1 font-xs fw-bold">Default</span>
+                        {% endif %}
+                    </div>
+
+                    <h5 class="fw-bold text-dark mb-3 tracking-wider">{{ pm.masked_reference }}</h5>
+                    <span class="text-muted font-sm d-block">Type: {{ pm.get_payment_type_display }}</span>
+
+                    <!-- Card Footer Actions -->
+                    <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                        <div class="d-flex gap-2">
+                            {% if not pm.is_default %}
+                                <form action="{% url 'buyer_payments' %}" method="POST">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="set_default">
+                                    <input type="hidden" name="payment_id" value="{{ pm.id }}">
+                                    <button type="submit" class="btn btn-link text-success p-0 font-sm text-decoration-none">Set Default</button>
+                                </form>
+                            {% endif %}
+                        </div>
+
+                        <form action="{% url 'buyer_payments' %}" method="POST" onsubmit="return confirm('Remove this payment method?');">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="payment_id" value="{{ pm.id }}">
+                            <button type="submit" class="btn btn-link text-danger p-0 font-sm text-decoration-none"><i class="far fa-trash-alt me-1"></i>Remove</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <!-- Empty State -->
+            <div class="col-12 text-center py-5">
+                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 80px; height: 80px;">
+                    <i class="fas fa-credit-card text-success fs-3"></i>
+                </div>
+                <h5 class="fw-bold text-dark">No saved payment methods yet.</h5>
+                <p class="text-muted font-sm px-4">Save your Mobile Money account details or card references securely.</p>
+                <button class="btn btn-success px-4 py-2 mt-2 rounded-pill" data-bs-toggle="modal" data-bs-target="#addPaymentModal">
+                    Add Method Now
+                </button>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Add Payment Modal -->
+<div class="modal fade" id="addPaymentModal" tabindex="-1" aria-labelledby="addPaymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: var(--agro-radius);">
+            <div class="modal-header border-bottom">
+                <h5 class="modal-title fw-bold text-dark" id="addPaymentModalLabel">Add Payment Method</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{% url 'buyer_payments' %}" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add">
+                
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label font-sm">Payment Type</label>
+                            {{ form.payment_type }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label font-sm">Provider (e.g. MTN, Telecel, Visa)</label>
+                            {{ form.provider }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label font-sm">Masked Reference (e.g. **** 1234)</label>
+                            {{ form.masked_reference }}
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check">
+                                {{ form.is_default }}
+                                <label class="form-check-label font-sm text-muted" for="id_is_default">
+                                    Set this payment method as default
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-top">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success rounded-pill px-4">Save Method</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

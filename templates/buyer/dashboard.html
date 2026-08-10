@@ -1,0 +1,218 @@
+{% extends "buyer/base_buyer.html" %}
+{% load static %}
+
+{% block title %}Buyer Dashboard | AgroConnect{% endblock %}
+
+{% block buyer_content %}
+<!-- Dashboard Header Greeting -->
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+        <h3 class="fw-bold text-dark mb-1">Good morning, {{ request.user.first_name|default:request.user.username }}! 👋</h3>
+        <p class="text-muted font-sm mb-0">Here's what's happening with your orders and favorites today.</p>
+    </div>
+    <!-- Search Bar in Header -->
+    <div class="d-flex align-items-center gap-2">
+        <form action="{% url 'product_list' %}" method="GET" class="position-relative">
+            <input type="text" name="search" class="form-control rounded-pill px-4 py-2 font-sm border-0 shadow-sm" placeholder="Search products, farmers..." style="width: 260px;">
+            <button type="submit" class="btn position-absolute top-50 end-0 translate-middle-y border-0 text-success me-2" style="background: none;">
+                <i class="fas fa-search"></i>
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Statistics Cards Row (5 Cards) -->
+<div class="row g-3 mb-4">
+    <!-- Stat 1: Total Orders -->
+    <div class="col">
+        <a href="{% url 'buyer_orders' %}" class="text-decoration-none d-block h-100">
+            <div class="stats-card card-orders">
+                <div class="stats-icon-box bg-orders-light me-3">
+                    <i class="fas fa-shopping-bag"></i>
+                </div>
+                <div>
+                    <span class="stats-card-title">Total Orders</span>
+                    <h3 class="stats-card-number">{{ total_orders }}</h3>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- Stat 2: Completed -->
+    <div class="col">
+        <a href="{% url 'buyer_orders' %}?status=delivered" class="text-decoration-none d-block h-100">
+            <div class="stats-card card-completed">
+                <div class="stats-icon-box bg-completed-light me-3">
+                    <i class="fas fa-circle-check"></i>
+                </div>
+                <div>
+                    <span class="stats-card-title">Completed</span>
+                    <h3 class="stats-card-number">{{ completed_orders }}</h3>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- Stat 3: Pending -->
+    <div class="col">
+        <a href="{% url 'buyer_orders' %}?status=pending" class="text-decoration-none d-block h-100">
+            <div class="stats-card card-pending">
+                <div class="stats-icon-box bg-pending-light me-3">
+                    <i class="fas fa-hourglass-half"></i>
+                </div>
+                <div>
+                    <span class="stats-card-title">Pending</span>
+                    <h3 class="stats-card-number">{{ pending_orders }}</h3>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- Stat 4: Wishlist -->
+    <div class="col">
+        <a href="{% url 'buyer_wishlist' %}" class="text-decoration-none d-block h-100">
+            <div class="stats-card card-wishlist">
+                <div class="stats-icon-box bg-wishlist-light me-3">
+                    <i class="fas fa-heart"></i>
+                </div>
+                <div>
+                    <span class="stats-card-title">Wishlist</span>
+                    <h3 class="stats-card-number">{{ wishlist_count }}</h3>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- Stat 5: Reward Points -->
+    <div class="col">
+        <div class="stats-card card-rewards">
+            <div class="stats-icon-box bg-rewards-light me-3">
+                <i class="fas fa-gift"></i>
+            </div>
+            <div>
+                <span class="stats-card-title">Rewards</span>
+                <h3 class="stats-card-number">{{ reward_points }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Left: Recent Orders Card -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm p-4 h-100" style="border-radius: var(--agro-radius);">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="fw-bold text-dark mb-0">Recent Orders</h5>
+                <a href="{% url 'buyer_orders' %}" class="text-success font-sm fw-semibold text-decoration-none">View All Orders</a>
+            </div>
+
+            {% if recent_orders %}
+                <div class="table-responsive">
+                    <table class="table table-borderless align-middle mb-0">
+                        <thead>
+                            <tr class="text-muted font-xs border-bottom">
+                                <th class="pb-3 ps-0">Order ID</th>
+                                <th class="pb-3">Date</th>
+                                <th class="pb-3 text-end">Amount</th>
+                                <th class="pb-3 text-end">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in recent_orders %}
+                                <tr class="border-bottom-light">
+                                    <td class="py-3 ps-0 fw-semibold text-dark font-xs">
+                                        <a href="{% url 'buyer_order_detail' order.order_number %}" class="text-decoration-none text-success">
+                                            {{ order.order_number }}
+                                        </a>
+                                    </td>
+                                    <td class="py-3 text-muted font-xs">{{ order.created_at|date:"M d, Y" }}</td>
+                                    <td class="py-3 text-dark text-end font-xs fw-semibold">GHS {{ order.total }}</td>
+                                    <td class="py-3 text-end">
+                                        <span class="badge px-3 py-2 rounded-pill font-xs
+                                            {% if order.status == 'DELIVERED' %}bg-success-light text-success
+                                            {% elif order.status == 'PENDING' %}bg-warning-light text-warning
+                                            {% elif order.status == 'PROCESSING' %}bg-info-light text-info
+                                            {% elif order.status == 'SHIPPED' %}bg-success-light text-success
+                                            {% else %}bg-danger-light text-danger{% endif %}">
+                                            {{ order.get_status_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <div class="text-muted mb-3"><i class="fas fa-receipt fs-1"></i></div>
+                    <p class="text-muted mb-0">No recent orders yet.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Right: Recommended for You Card -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm p-4 h-100" style="border-radius: var(--agro-radius);">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="fw-bold text-dark mb-0">Recommended for You</h5>
+                <a href="{% url 'product_list' %}" class="text-success font-sm fw-semibold text-decoration-none">View All</a>
+            </div>
+
+            {% if recommended_products %}
+                <div class="row row-cols-1 row-cols-sm-3 g-3">
+                    {% for prod in recommended_products %}
+                        <div class="col">
+                            <div class="product-card h-100 position-relative card-category-{{ prod.category.slug }} p-2 text-center">
+                                <!-- Wishlist heart overlay -->
+                                <button class="btn toggle-wishlist-btn p-1 position-absolute top-0 end-0 me-2 mt-2 bg-white rounded-circle shadow-sm font-xs border-0" data-product-id="{{ prod.id }}">
+                                    <i class="far fa-heart text-muted"></i>
+                                </button>
+                                
+                                <div class="ratio ratio-4x3 mb-2 rounded-3 overflow-hidden">
+                                    {% if prod.image %}
+                                        <img src="{{ prod.image.url }}" alt="{{ prod.name }}" class="object-fit-cover">
+                                    {% else %}
+                                        <img src="https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=200&q=80" alt="{{ prod.name }}" class="object-fit-cover">
+                                    {% endif %}
+                                </div>
+                                <h6 class="fw-bold text-dark text-truncate mb-1 font-xs">{{ prod.name }}</h6>
+                                <p class="text-success fw-bold font-xs mb-1">GHS {{ prod.price }}/{{ prod.unit|default:"pc" }}</p>
+                                <div class="d-flex align-items-center justify-content-center gap-1 mb-2 font-xs text-warning">
+                                    <i class="fas fa-star"></i>
+                                    <span class="text-dark font-xs fw-semibold">{{ prod.rating|default:"4.5" }}</span>
+                                </div>
+                                <form action="{% url 'cart_add' prod.id %}" method="POST">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-success btn-sm rounded-pill w-100 font-xs">
+                                        <i class="fas fa-shopping-cart me-1"></i> Add
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <div class="text-muted mb-3"><i class="fas fa-carrot fs-1"></i></div>
+                    <p class="text-muted mb-0">No recommendations available.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Promo Banner at Bottom -->
+<div class="card border-0 shadow-sm p-4 bg-success-light" style="border-radius: var(--agro-radius);">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+            <div class="text-success display-6"><i class="fas fa-shipping-fast"></i></div>
+            <div>
+                <h6 class="fw-bold text-dark mb-1" style="font-size: 1.05rem;">Free Delivery on Orders Over GHS 300!</h6>
+                <p class="text-muted font-sm mb-0">Shop more from your favorite farmers and enjoy free delivery straight to your doorstep.</p>
+            </div>
+        </div>
+        <a href="{% url 'product_list' %}" class="btn btn-success rounded-pill px-4 py-2 font-sm fw-semibold shadow-sm">Shop Now</a>
+    </div>
+</div>
+{% endblock %}

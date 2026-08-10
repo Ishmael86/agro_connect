@@ -1,0 +1,92 @@
+{% extends "farmer/base_farmer.html" %}
+{% load static %}
+
+{% block buyer_content %}
+<div class="mb-4">
+    <h4 class="fw-bold text-dark mb-1">Customer Reviews</h4>
+    <span class="text-muted font-xs">View rating metrics, feedback comments, and quality scores from buyers.</span>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Ratings summary (Left) -->
+    <div class="col-lg-4">
+        <div class="agro-card text-center mb-4 h-100">
+            <h6 class="fw-bold text-dark mb-3">Average Rating</h6>
+            <h1 class="fw-extrabold text-success display-4 mb-2">{{ avg_rating }}</h1>
+            
+            <div class="mb-2 text-warning">
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star-half-alt"></i>
+            </div>
+            
+            <span class="text-muted small">Based on {{ total_reviews }} reviews</span>
+        </div>
+    </div>
+    
+    <!-- Stars rating progress bar breakdown (Right) -->
+    <div class="col-lg-8">
+        <div class="agro-card h-100">
+            <h6 class="fw-bold text-dark mb-3">Ratings Distribution</h6>
+            <div class="d-flex flex-column gap-2 mt-3">
+                {% for score, breakdown in rating_breakdown.items %}
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="small text-dark fw-semibold" style="width: 50px;">{{ score }} Star</span>
+                        <div class="progress flex-grow-1" style="height: 8px;">
+                            <div class="progress-bar bg-warning" role="progressbar" style="width: {{ breakdown.percentage }}%;"></div>
+                        </div>
+                        <span class="small text-muted" style="width: 40px; text-align: right;">{{ breakdown.count }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reviews Comment list -->
+<div class="agro-card">
+    <h5 class="fw-bold text-dark mb-4">Recent Reviews</h5>
+    <div class="d-flex flex-column gap-4">
+        {% for rev in reviews %}
+            <div class="border-bottom pb-4">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center text-success fw-bold shadow-sm" style="width: 44px; height: 44px; border: 1px solid var(--agro-border);">
+                            {{ rev.buyer.username|slice:":1"|upper }}
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-dark mb-0 font-sm">
+                                {{ rev.buyer.get_full_name|default:rev.buyer.username }}
+                            </h6>
+                            <span class="text-muted font-xs">Ordered: <strong>{{ rev.product.name }}</strong></span>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <div class="text-warning small mb-1">
+                            {% if rev.rating >= 1 %}<i class="fas fa-star"></i>{% endif %}
+                            {% if rev.rating >= 2 %}<i class="fas fa-star"></i>{% endif %}
+                            {% if rev.rating >= 3 %}<i class="fas fa-star"></i>{% endif %}
+                            {% if rev.rating >= 4 %}<i class="fas fa-star"></i>{% endif %}
+                            {% if rev.rating >= 5 %}<i class="fas fa-star"></i>{% endif %}
+                        </div>
+                        <span class="text-muted font-xs" style="font-size: 0.65rem;">{{ rev.created_at|date:"M d, Y" }}</span>
+                    </div>
+                </div>
+                <p class="text-muted small mt-2 mb-0 px-2" style="line-height: 1.5; font-style: italic;">
+                    "{{ rev.comment }}"
+                </p>
+            </div>
+        {% empty %}
+            <div class="text-center py-5 text-muted">
+                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 70px; height: 70px;">
+                    <i class="far fa-star text-success fs-4"></i>
+                </div>
+                <h6 class="fw-bold text-dark mb-1">No reviews received yet.</h6>
+                <p class="text-muted font-sm px-4">When customers purchase your crops and write ratings, they will be shown here.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

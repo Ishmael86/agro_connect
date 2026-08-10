@@ -1,0 +1,235 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AgroConnect Admin Panel{% endblock %}</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="{% static 'css/admin-dashboard.css' %}" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- Responsive Overlay for Mobile Menu drawer -->
+    <div class="sidebar-overlay"></div>
+
+    <div class="admin-container">
+        
+        <!-- Sticky Sidebar Navigation (Left) -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-header text-center text-md-start">
+                <a href="{% url 'admin_dashboard' %}" class="sidebar-brand">
+                    <span class="fs-4">🌱</span> AgroConnect
+                </a>
+                <span class="admin-badge">Admin Panel</span>
+            </div>
+            
+            <!-- Quick Operator User Profile -->
+            <div class="sidebar-profile d-none d-md-flex">
+                <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=100&q=80" alt="Admin avatar" class="sidebar-profile-avatar">
+                <div class="overflow-hidden">
+                    <h6 class="mb-0 text-white fw-bold text-truncate">{{ request.user.get_full_name|default:request.user.username }}</h6>
+                    <span style="font-size: 0.7rem;" class="text-white-50 fw-semibold text-uppercase">
+                        {% if request.user.is_superuser %}Super Administrator{% else %}Administrator{% endif %}
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Sidebar Navigation Links -->
+            <nav class="sidebar-menu">
+                <div class="menu-label">Main Menu</div>
+                
+                <a href="{% url 'admin_dashboard' %}" class="menu-item {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                
+                <div class="menu-label">Platform Management</div>
+                
+                <a href="{% url 'admin_users' %}" class="menu-item {% if request.resolver_match.url_name == 'admin_users' or request.resolver_match.url_name == 'admin_user_detail' %}active{% endif %}">
+                    <i class="fas fa-users-cog"></i>
+                    <span>Users Management</span>
+                </a>
+                
+                <a href="{% url 'admin_farmers' %}" class="menu-item {% if request.resolver_match.url_name == 'admin_farmers' or request.resolver_match.url_name == 'admin_farmer_detail' %}active{% endif %}">
+                    <i class="fas fa-tractor"></i>
+                    <span>Farmers</span>
+                </a>
+                
+                <a href="{% url 'admin_buyers' %}" class="menu-item {% if request.resolver_match.url_name == 'admin_buyers' or request.resolver_match.url_name == 'admin_buyer_detail' %}active{% endif %}">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span>Buyers</span>
+                </a>
+                
+                <a href="{% url 'admin_products' %}" class="menu-item {% if request.resolver_match.url_name == 'admin_products' or request.resolver_match.url_name == 'admin_product_detail' %}active{% endif %}">
+                    <i class="fas fa-seedling"></i>
+                    <span>Products</span>
+                </a>
+                
+                <a href="{% url 'admin_categories' %}" class="menu-item {% if request.resolver_match.url_name == 'admin_categories' %}active{% endif %}">
+                    <i class="fas fa-tags"></i>
+                    <span>Categories</span>
+                </a>
+                
+                <a href="{% url 'admin_orders' %}" class="menu-item {% if request.resolver_match.url_name == 'admin_orders' or request.resolver_match.url_name == 'admin_order_detail' %}active{% endif %}">
+                    <i class="fas fa-box-open"></i>
+                    <span>Orders</span>
+                </a>
+                
+                <div class="menu-label">Financials & Support</div>
+                
+                <a href="{% url 'admin_earnings' %}" class="menu-item {% if request.resolver_match.url_name == 'admin_earnings' %}active{% endif %}">
+                    <i class="fas fa-wallet"></i>
+                    <span>Earnings & Payouts</span>
+                </a>
+                
+                <a href="{% url 'admin_payouts' %}" class="menu-item {% if request.resolver_match.url_name == 'admin_payouts' %}active{% endif %}">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    <span>Payout Requests</span>
+                    {% if pending_payouts_count > 0 %}
+                        <span class="badge bg-danger ms-auto rounded-pill">{{ pending_payouts_count }}</span>
+                    {% endif %}
+                </a>
+                
+                <a href="{% url 'admin_reviews' %}" class="menu-item {% if request.resolver_match.url_name == 'admin_reviews' %}active{% endif %}">
+                    <i class="fas fa-star-half-alt"></i>
+                    <span>Reviews</span>
+                </a>
+                
+                <a href="{% url 'admin_messages' %}" class="menu-item {% if request.resolver_match.url_name == 'admin_messages' %}active{% endif %}">
+                    <i class="fas fa-comments"></i>
+                    <span>Messages</span>
+                </a>
+                
+                <a href="{% url 'admin_support' %}" class="menu-item {% if request.resolver_match.url_name == 'admin_support' or request.resolver_match.url_name == 'admin_ticket_detail' %}active{% endif %}">
+                    <i class="fas fa-headset"></i>
+                    <span>Support Tickets</span>
+                    {% if open_tickets_count > 0 %}
+                        <span class="badge bg-warning text-dark ms-auto rounded-pill">{{ open_tickets_count }}</span>
+                    {% endif %}
+                </a>
+                
+                <div class="menu-label">System Admin</div>
+                
+                <a href="{% url 'admin_promotions' %}" class="menu-item {% if request.resolver_match.url_name == 'admin_promotions' %}active{% endif %}">
+                    <i class="fas fa-bullhorn"></i>
+                    <span>Promotions</span>
+                </a>
+                
+                <a href="{% url 'admin_pages' %}" class="menu-item {% if request.resolver_match.url_name == 'admin_pages' %}active{% endif %}">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Page Management</span>
+                </a>
+                
+                <a href="{% url 'admin_settings' %}" class="menu-item {% if request.resolver_match.url_name == 'admin_settings' %}active{% endif %}">
+                    <i class="fas fa-sliders-h"></i>
+                    <span>System Settings</span>
+                </a>
+                
+                <a href="{% url 'admin_notifications' %}" class="menu-item {% if request.resolver_match.url_name == 'admin_notifications' %}active{% endif %}">
+                    <i class="fas fa-bell"></i>
+                    <span>Notifications</span>
+                    {% if unread_notifications_count > 0 %}
+                        <span class="badge bg-danger ms-auto rounded-pill">{{ unread_notifications_count }}</span>
+                    {% endif %}
+                </a>
+                
+                <a href="{% url 'admin_logs' %}" class="menu-item {% if request.resolver_match.url_name == 'admin_logs' %}active{% endif %}">
+                    <i class="fas fa-history"></i>
+                    <span>Activity Logs</span>
+                </a>
+                
+                <a href="{% url 'admin_profile' %}" class="menu-item {% if request.resolver_match.url_name == 'admin_profile' %}active{% endif %}">
+                    <i class="fas fa-user-circle"></i>
+                    <span>Admin Profile</span>
+                </a>
+                
+                <hr class="my-3 text-white-50">
+                
+                <a href="{% url 'logout' %}" class="menu-item text-danger">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </nav>
+        </aside>
+        
+        <!-- Content Container Area (Right) -->
+        <main class="admin-main">
+            <!-- Header Nav -->
+            <header class="admin-header">
+                <div class="d-flex align-items-center gap-3">
+                    <button id="sidebarToggle" class="btn btn-light d-lg-none rounded-circle p-2">
+                        <i class="fas fa-bars fs-5"></i>
+                    </button>
+                    <!-- Search input -->
+                    <form method="GET" action="{% url 'admin_products' %}" class="header-search d-none d-md-block">
+                        <i class="fas fa-search"></i>
+                        <input type="text" name="search" placeholder="Search crops, users, orders...">
+                    </form>
+                </div>
+                
+                <div class="header-actions">
+                    <!-- Notifications -->
+                    <a href="{% url 'admin_notifications' %}" class="action-btn">
+                        <i class="far fa-bell"></i>
+                        {% if unread_notifications_count > 0 %}
+                            <span class="badge-dot"></span>
+                        {% endif %}
+                    </a>
+                    
+                    <!-- Support Messages -->
+                    <a href="{% url 'admin_support' %}" class="action-btn">
+                        <i class="far fa-envelope"></i>
+                        {% if open_tickets_count > 0 %}
+                            <span class="badge-dot" style="background-color: var(--agro-warning);"></span>
+                        {% endif %}
+                    </a>
+                    
+                    <!-- User Admin Profile Dropdown -->
+                    <div class="dropdown">
+                        <a href="#" class="d-flex align-items-center gap-2 text-decoration-none dropdown-toggle text-dark" id="adminDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="fw-semibold d-none d-md-inline">Admin</span>
+                            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=100&q=80" alt="Admin" class="rounded-circle border" style="width: 36px; height: 36px; object-fit: cover;">
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm" aria-labelledby="adminDropdown">
+                            <li><a class="dropdown-item" href="{% url 'admin_profile' %}"><i class="fas fa-user-edit me-2"></i> Update Profile</a></li>
+                            <li><a class="dropdown-item" href="{% url 'admin_settings' %}"><i class="fas fa-cog me-2"></i> Site Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Inner Content Layout -->
+            <div class="admin-content">
+                <!-- Render messages framework alerts -->
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" style="border-radius: var(--agro-radius);">
+                            <i class="fas {% if message.tags == 'error' %}fa-exclamation-circle{% else %}fa-check-circle{% endif %} me-2"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                {% block admin_content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom admin JS -->
+    <script src="{% static 'js/admin-dashboard.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

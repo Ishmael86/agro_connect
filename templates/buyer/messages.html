@@ -1,0 +1,139 @@
+{% extends "buyer/base_buyer.html" %}
+{% load static %}
+
+{% block title %}Messages | AgroConnect{% endblock %}
+
+{% block page_title %}Messages{% endblock %}
+
+{% block buyer_content %}
+<div class="card border-0 shadow-sm overflow-hidden" style="border-radius: var(--agro-radius); height: calc(100vh - 200px); min-height: 500px;">
+    <div class="row g-0 h-100">
+        <!-- Conversation List (Left Panel) -->
+        <div class="col-md-4 border-end h-100 d-flex flex-column {% if request.GET.conv %}d-none d-md-flex{% endif %}" style="background-color: #FFFFFF;">
+            <div class="p-3 border-bottom">
+                <h6 class="fw-bold text-dark mb-0">Conversations</h6>
+            </div>
+            
+            <div class="flex-grow-1 overflow-y-auto" style="max-height: calc(100vh - 260px);">
+                {% for conv in conversations %}
+                    <a href="?conv={{ conv.id }}" class="conversation-item d-flex align-items-center gap-3 p-3 border-bottom text-decoration-none {% if active_conversation.id == conv.id %}active{% endif %}">
+                        <div class="position-relative" style="width: 48px; height: 48px; flex-shrink: 0;">
+                            {% if conv.farmer.profile_image %}
+                                <img src="{{ conv.farmer.profile_image.url }}" alt="{{ conv.farmer.farm_name }}" class="w-100 h-100 object-fit-cover rounded-circle border">
+                            {% else %}
+                                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80" alt="Fallback" class="w-100 h-100 object-fit-cover rounded-circle border">
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1 min-w-0">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <h6 class="fw-bold text-dark mb-0 text-truncate font-sm" style="max-width: 140px;">{{ conv.farmer.farm_name }}</h6>
+                                <span class="text-muted font-xs">{{ conv.updated_at|date:"M d" }}</span>
+                            </div>
+                            <p class="text-muted mb-0 small text-truncate">
+                                {% if conv.messages.exists %}
+                                    {{ conv.messages.last.message }}
+                                {% else %}
+                                    No messages in thread.
+                                {% endif %}
+                            </p>
+                        </div>
+                    </a>
+                {% empty %}
+                    <!-- Empty Conversations State -->
+                    <div class="text-center py-5 text-muted px-3">
+                        <i class="fas fa-comments fa-2x mb-3 opacity-50 text-success"></i>
+                        <p class="mb-0 font-sm">No conversations yet.</p>
+                        <a href="{% url 'farmer_list' %}" class="btn btn-success btn-sm mt-3 rounded-pill px-3">Explore Farmers</a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Chat Conversation Window (Right Panel) -->
+        <div class="col-md-8 h-100 d-flex flex-column {% if not request.GET.conv %}d-none d-md-flex{% endif %}" style="background-color: var(--agro-background);">
+            {% if active_conversation %}
+                <!-- Active Header -->
+                <div class="p-3 bg-white border-bottom d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-3">
+                        <!-- Mobile Back Arrow Button -->
+                        <a href="{% url 'buyer_messages' %}" class="btn btn-outline-secondary btn-sm d-md-none rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; padding: 0;">
+                            <i class="fas fa-arrow-left"></i>
+                        </a>
+                        <div style="width: 42px; height: 42px; flex-shrink: 0;">
+                            {% if active_conversation.farmer.profile_image %}
+                                <img src="{{ active_conversation.farmer.profile_image.url }}" alt="{{ active_conversation.farmer.farm_name }}" class="w-100 h-100 object-fit-cover rounded-circle border">
+                            {% else %}
+                                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80" alt="Fallback" class="w-100 h-100 object-fit-cover rounded-circle border">
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-dark mb-0">{{ active_conversation.farmer.farm_name }}</h6>
+                            <span class="text-success small fw-semibold"><i class="fas fa-check-circle me-1"></i>Verified Farmer</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat History Messages Scroll -->
+                <div class="flex-grow-1 p-4 overflow-y-auto" id="chatMessageList" style="max-height: calc(100vh - 360px);">
+                    <div class="d-flex flex-column gap-3">
+                        {% for msg in messages_list %}
+                            {% if msg.sender == request.user %}
+                                <!-- Outgoing Message (Right) -->
+                                <div class="align-self-end text-end" style="max-width: 75%;">
+                                    <div class="p-3 bg-success text-white rounded-3 shadow-sm font-sm text-start" style="border-radius: 18px 18px 0px 18px !important;">
+                                        {{ msg.message }}
+                                    </div>
+                                    <span class="text-muted font-xs d-block mt-1">{{ msg.created_at|date:"H:i A" }}</span>
+                                </div>
+                            {% else %}
+                                <!-- Incoming Message (Left) -->
+                                <div class="align-self-start" style="max-width: 75%;">
+                                    <div class="p-3 bg-white text-dark rounded-3 shadow-sm font-sm" style="border-radius: 18px 18px 18px 0px !important;">
+                                        {{ msg.message }}
+                                    </div>
+                                    <span class="text-muted font-xs d-block mt-1">{{ msg.created_at|date:"H:i A" }}</span>
+                                </div>
+                            {% endif %}
+                        {% empty %}
+                            <p class="text-muted text-center py-5 small mb-0">Send a greeting message to start the conversation.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Active Message Input Form -->
+                <div class="p-3 bg-white border-top">
+                    <form action="" method="POST" class="d-flex gap-2">
+                        {% csrf_token %}
+                        <input type="text" name="message_text" class="form-control rounded-pill px-4 border" placeholder="Type your message here..." required style="height: 48px; font-size: 0.9rem;">
+                        <button type="submit" class="btn btn-success rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; padding: 0;">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            {% else %}
+                <!-- Idle State (No Active Conversation loaded) -->
+                <div class="flex-grow-1 d-flex flex-column align-items-center justify-content-center text-center p-4">
+                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                        <i class="fas fa-paper-plane text-success fs-3"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark">Your Mailbox</h5>
+                    <p class="text-muted font-sm px-4">Select a farmer conversation from the list or browse local profiles to make inquiries.</p>
+                    <a href="{% url 'farmer_list' %}" class="btn btn-success px-4 py-2 mt-2 rounded-pill font-sm">Explore Farmers Directory</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto scroll messages to the bottom
+        const chatWindow = document.getElementById('chatMessageList');
+        if (chatWindow) {
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+    });
+</script>
+{% endblock %}

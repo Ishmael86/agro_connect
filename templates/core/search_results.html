@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Search Results for "{{ query }}" | AgroConnect{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumbs -->
+    <nav aria-label="breadcrumb" class="py-2">
+        <ol class="breadcrumb mb-4 align-items-center" style="font-size: 0.9rem;">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-success"><i class="fas fa-home me-1"></i> Home</a></li>
+            <li class="breadcrumb-item active text-muted" aria-current="page">Search Results</li>
+        </ol>
+    </nav>
+
+    <div class="mb-5">
+        <h1 class="h3 fw-bold">Search Results for <span class="text-success">"{{ query }}"</span></h1>
+        <p class="text-muted mb-0">We found the following matches across the AgroConnect marketplace.</p>
+    </div>
+
+    <!-- 1. MATCHING PRODUCTS SECTION -->
+    <div class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+            <h2 class="h5 fw-bold mb-0"><i class="fas fa-shopping-basket text-success me-2"></i> Products ({{ products|length }})</h2>
+        </div>
+        {% if products %}
+            <div class="row g-4">
+                {% for product in products %}
+                    <div class="col-lg-3 col-md-6 col-sm-6">
+                        {% include 'partials/product_card.html' with product=product %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-muted small">No matching products found.</p>
+        {% endif %}
+    </div>
+
+    <!-- 2. MATCHING FARMERS SECTION -->
+    <div class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+            <h2 class="h5 fw-bold mb-0"><i class="fas fa-tractor text-success me-2"></i> Farmers ({{ farmers|length }})</h2>
+        </div>
+        {% if farmers %}
+            <div class="row g-4">
+                {% for farmer in farmers %}
+                    {% include 'partials/farmer_card.html' with farmer=farmer %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-muted small">No matching farmers found.</p>
+        {% endif %}
+    </div>
+
+    <!-- 3. MATCHING CATEGORIES SECTION -->
+    <div class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+            <h2 class="h5 fw-bold mb-0"><i class="fas fa-tags text-success me-2"></i> Categories ({{ categories|length }})</h2>
+        </div>
+        {% if categories %}
+            <div class="row g-4">
+                {% for category in categories %}
+                    {% include 'partials/category_card.html' with category=category %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-muted small">No matching categories found.</p>
+        {% endif %}
+    </div>
+
+    <!-- Global empty state -->
+    {% if not products and not farmers and not categories %}
+        <div class="text-center py-5 shadow-sm bg-white rounded-4 border p-5 my-5">
+            <i class="fas fa-search fa-3x text-muted mb-3" style="color: var(--primary-green-light) !important;"></i>
+            <h3>No results found!</h3>
+            <p class="text-muted">We couldn't find anything matching "{{ query }}". Try checking the spelling or searching other terms.</p>
+            <div class="mt-4 d-flex justify-content-center gap-3">
+                <a href="{% url 'product_list' %}" class="btn btn-primary-green">Browse Catalog</a>
+                <a href="{% url 'home' %}" class="btn btn-outline-green">Back to Home</a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}404 - Page Not Found | AgroConnect{% endblock %}
+
+{% block content %}
+<div class="container py-5 my-5">
+    <div class="row justify-content-center align-items-center">
+        <div class="col-lg-6 text-center">
+            <div class="mb-4">
+                <!-- Large agricultural styled icon -->
+                <i class="fas fa-seedling text-success" style="font-size: 7rem; opacity: 0.8; animation: bounce 2s infinite;"></i>
+            </div>
+            <h1 class="display-4 fw-bold mb-3" style="font-family: var(--font-heading);">Oops! This field is empty. 🌱</h1>
+            <p class="lead text-muted mb-5">The page you're looking for couldn't be found or may have been moved.</p>
+            <a href="{% url 'home' %}" class="btn btn-primary-green px-5 py-3 fs-6">Back to Home</a>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+</style>
+{% endblock %}

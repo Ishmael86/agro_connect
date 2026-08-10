@@ -1,0 +1,135 @@
+{% extends "farmer/base_farmer.html" %}
+{% load static %}
+
+{% block buyer_content %}
+<div class="mb-4">
+    <h4 class="fw-bold text-dark mb-1">Farm Profile</h4>
+    <span class="text-muted font-xs">Configure your public farm profile displayed to marketplace buyers.</span>
+</div>
+
+<div class="agro-card p-0 overflow-hidden mb-4 border">
+    <!-- Cover banner block -->
+    <div style="height: 180px; position: relative; background-color: var(--agro-green-light);">
+        {% if farmer_profile.cover_image %}
+            <img src="{{ farmer_profile.cover_image.url }}" alt="Cover" class="w-100 h-100 object-fit-cover">
+        {% else %}
+            <img src="https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1000&q=80" alt="Cover" class="w-100 h-100 object-fit-cover opacity-75">
+        {% endif %}
+    </div>
+    
+    <!-- Profile metadata details overlay -->
+    <div class="px-4 pb-4 position-relative" style="margin-top: -40px;">
+        <div class="d-flex align-items-end justify-content-between flex-wrap gap-3">
+            <div class="d-flex align-items-end gap-3 flex-wrap">
+                <div class="rounded-circle border border-4 border-white overflow-hidden shadow" style="width: 100px; height: 100px; background-color: #FFFFFF; flex-shrink: 0; z-index: 10;">
+                    {% if farmer_profile.profile_image %}
+                        <img src="{{ farmer_profile.profile_image.url }}" alt="Avatar" class="w-100 h-100 object-fit-cover">
+                    {% else %}
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80" alt="Avatar" class="w-100 h-100 object-fit-cover">
+                    {% endif %}
+                </div>
+                <div>
+                    <h5 class="fw-extrabold text-dark mb-0">{{ farmer_profile.farm_name }}</h5>
+                    <span class="text-muted small"><i class="fas fa-map-marker-alt me-1 text-success"></i>{{ farmer_profile.location }}, {{ farmer_profile.region }}</span>
+                </div>
+            </div>
+            <div>
+                {% if farmer_profile.verified %}
+                    <span class="badge bg-success-light text-success fs-6 px-3 py-2 rounded-pill fw-bold shadow-sm">
+                        <i class="fas fa-check-circle me-1"></i> Verified Farm Business
+                    </span>
+                {% else %}
+                    <span class="badge bg-warning text-dark fs-6 px-3 py-2 rounded-pill fw-bold shadow-sm">
+                        <i class="fas fa-clock me-1"></i> Pending Verification
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Form -->
+<div class="agro-card">
+    <h5 class="fw-bold text-dark mb-4">Edit Profile Information</h5>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="row g-3">
+            <!-- Farm Name -->
+            <div class="col-md-6">
+                <label class="form-label fw-bold text-dark small">Farm / Business Name *</label>
+                {{ form.farm_name }}
+                {% if form.farm_name.errors %}
+                    <div class="text-danger small mt-1">{{ form.farm_name.errors.0 }}</div>
+                {% endif %}
+            </div>
+            
+            <!-- Phone -->
+            <div class="col-md-6">
+                <label class="form-label fw-bold text-dark small">Contact Phone Number *</label>
+                {{ form.phone }}
+                {% if form.phone.errors %}
+                    <div class="text-danger small mt-1">{{ form.phone.errors.0 }}</div>
+                {% endif %}
+            </div>
+            
+            <!-- Region Selection & District -->
+            <div class="col-md-6">
+                <label class="form-label fw-bold text-dark small">Region (Ghana) *</label>
+                {{ form.region }}
+                {% if form.region.errors %}
+                    <div class="text-danger small mt-1">{{ form.region.errors.0 }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="col-md-6">
+                <label class="form-label fw-bold text-dark small">District / City</label>
+                {{ form.district }}
+                {% if form.district.errors %}
+                    <div class="text-danger small mt-1">{{ form.district.errors.0 }}</div>
+                {% endif %}
+            </div>
+            
+            <!-- Location Address -->
+            <div class="col-12">
+                <label class="form-label fw-bold text-dark small">Farm physical address location *</label>
+                {{ form.location }}
+                {% if form.location.errors %}
+                    <div class="text-danger small mt-1">{{ form.location.errors.0 }}</div>
+                {% endif %}
+            </div>
+            
+            <!-- Description -->
+            <div class="col-12">
+                <label class="form-label fw-bold text-dark small">About Your Farm (Describe crop cultivation methods, history, etc.)</label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                    <div class="text-danger small mt-1">{{ form.description.errors.0 }}</div>
+                {% endif %}
+            </div>
+            
+            <!-- Upload Images files inputs -->
+            <div class="col-md-6">
+                <label class="form-label fw-bold text-dark small">Farm Logo Profile Picture</label>
+                {{ form.profile_image }}
+                {% if form.profile_image.errors %}
+                    <div class="text-danger small mt-1">{{ form.profile_image.errors.0 }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="col-md-6">
+                <label class="form-label fw-bold text-dark small">Farm Cover Header Banner</label>
+                {{ form.cover_image }}
+                {% if form.cover_image.errors %}
+                    <div class="text-danger small mt-1">{{ form.cover_image.errors.0 }}</div>
+                {% endif %}
+            </div>
+            
+            <!-- Form Submission Actions -->
+            <div class="col-12 border-top pt-3 mt-4">
+                <button type="submit" class="btn btn-success rounded-pill px-5 py-2 font-sm shadow-sm">Save Profile Details</button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

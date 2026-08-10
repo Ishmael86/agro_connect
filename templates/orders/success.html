@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Order Confirmed | AgroConnect{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 text-center mb-5">
+            <!-- Animated Success Icon -->
+            <div class="mb-4">
+                <i class="fas fa-circle-check text-success" style="font-size: 6rem; animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);"></i>
+            </div>
+            <h1 class="display-5 fw-bold mb-2">Order Placed Successfully! 🎉</h1>
+            <p class="lead text-muted">Thank you for your purchase. We are coordinating with the farmers to process your delivery.</p>
+            <div class="d-inline-block bg-success text-white px-4 py-2 rounded-pill fw-bold fs-5 mt-3 shadow-sm">
+                Order Number: # {{ order.order_number }}
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+        <!-- 1. LEFT - ORDER DETAIL INFORMATION -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm p-4 h-100" style="border-radius: var(--radius-lg);">
+                <h2 class="h5 fw-bold mb-4 border-bottom pb-2">Delivery & Payment details</h2>
+                
+                <table class="table table-borderless align-middle small mb-0">
+                    <tbody>
+                        <tr>
+                            <td class="text-muted" style="width: 150px;">Recipient Name</td>
+                            <td class="fw-semibold text-dark">{{ order.full_name }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Phone Number</td>
+                            <td class="fw-semibold text-dark">{{ order.phone }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Delivery Address</td>
+                            <td class="fw-semibold text-dark">{{ order.delivery_address }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">City / Town</td>
+                            <td class="fw-semibold text-dark">{{ order.city }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Region</td>
+                            <td class="fw-semibold text-dark">{{ order.get_region_display }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Payment Method</td>
+                            <td class="fw-semibold text-dark">{{ order.get_payment_method_display }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Order Status</td>
+                            <td>
+                                <span class="badge bg-warning text-dark px-3 py-2 fw-bold" style="font-size: 0.75rem;">
+                                    {{ order.get_status_display }}
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 2. RIGHT - SUMMARY BREAKDOWN -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm p-4 h-100" style="border-radius: var(--radius-lg);">
+                <h2 class="h5 fw-bold mb-4 border-bottom pb-2">Items Ordered</h2>
+                
+                <div class="mb-4" style="max-height: 250px; overflow-y: auto;">
+                    {% for item in items %}
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <div class="d-flex align-items-center gap-3">
+                                {% if item.product.main_image %}
+                                    <img src="{{ item.product.main_image.url }}" alt="{{ item.product.name }}" class="border rounded" style="width: 50px; height: 50px; object-fit: cover;">
+                                {% else %}
+                                    <img src="https://images.unsplash.com/photo-1595855759920-86582396756a?q=80&w=150&auto=format&fit=crop" alt="Placeholder" class="border rounded" style="width: 50px; height: 50px; object-fit: cover;">
+                                {% endif %}
+                                <div>
+                                    <h4 class="h6 fw-bold mb-0 text-truncate" style="max-width: 180px;">{{ item.product.name }}</h4>
+                                    <span class="text-muted small">Qty: {{ item.quantity }} / from {{ item.farmer.farm_name }}</span>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="fw-semibold text-dark">GHS {{ item.subtotal|floatformat:2 }}</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="d-flex justify-content-between mb-2 text-muted small">
+                    <span>Subtotal</span>
+                    <span class="fw-semibold text-dark">GHS {{ order.subtotal|floatformat:2 }}</span>
+                </div>
+                
+                <div class="d-flex justify-content-between mb-2 text-muted small">
+                    <span>Delivery Fee</span>
+                    <span class="fw-semibold text-dark">GHS {{ order.delivery_fee|floatformat:2 }}</span>
+                </div>
+                
+                <hr style="border-color: var(--border-color);">
+                
+                <div class="d-flex justify-content-between mb-0">
+                    <span class="fw-bold">Total Paid</span>
+                    <strong class="fs-5 text-success">GHS {{ order.total|floatformat:2 }}</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action buttons footer -->
+    <div class="text-center mt-5 d-flex justify-content-center gap-3">
+        <a href="{% url 'product_list' %}" class="btn btn-primary-green px-5 py-3">Continue Shopping</a>
+        <a href="{% url 'buyer_download_invoice' order.order_number %}" class="btn btn-outline-green px-5 py-3">
+            <i class="fas fa-file-invoice me-2"></i> Download Invoice
+        </a>
+    </div>
+</div>
+
+<style>
+@keyframes pop {
+    0% { transform: scale(0); opacity: 0; }
+    80% { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+}
+@media print {
+    /* Simple print stylings */
+    nav, footer, .btn, .toast-container { display: none !important; }
+    body { background-color: #FFFFFF !important; }
+    .card { border: 1px solid #CCCCCC !important; box-shadow: none !important; }
+}
+</style>
+{% endblock %}

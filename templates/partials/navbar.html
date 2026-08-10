@@ -1,0 +1,163 @@
+{% load static %}
+<nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+    <div class="container">
+        <!-- Logo -->
+        <a class="navbar-brand" href="{% url 'home' %}">
+            <i class="fas fa-leaf text-success"></i>
+            <span>Agro<span style="color: var(--text-dark);">Connect</span></span>
+        </a>
+        
+        <!-- Toggle Button for Mobile -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <!-- Navbar Links & Icons -->
+        <div class="collapse navbar-collapse" id="navbarContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
+                <li class="nav-item">
+                    <a class="nav-link nav-link-custom {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'home' %}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link nav-link-custom {% if request.resolver_match.url_name == 'product_list' or request.resolver_match.url_name == 'product_detail' %}active{% endif %}" href="{% url 'product_list' %}">Products</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link nav-link-custom {% if request.resolver_match.url_name == 'farmer_list' or request.resolver_match.url_name == 'farmer_detail' %}active{% endif %}" href="{% url 'farmer_list' %}">Farmers</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link nav-link-custom {% if request.resolver_match.url_name == 'category_list' %}active{% endif %}" href="{% url 'category_list' %}">Categories</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link nav-link-custom {% if request.resolver_match.url_name == 'how_it_works' %}active{% endif %}" href="{% url 'how_it_works' %}">How It Works</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link nav-link-custom {% if request.resolver_match.url_name == 'about' %}active{% endif %}" href="{% url 'about' %}">About Us</a>
+                </li>
+            </ul>
+            
+            <!-- Right Utilities: Search, Cart, Account -->
+            <div class="d-flex align-items-center gap-3">
+                <!-- Search Box -->
+                <form class="d-none d-lg-flex position-relative align-items-center" action="{% url 'search' %}" method="GET">
+                    <input class="form-control rounded-pill pe-5" type="search" placeholder="Search..." aria-label="Search" name="q" value="{{ request.GET.q }}" style="font-size: 0.9rem; padding: 6px 16px;">
+                    <button class="btn p-0 position-absolute end-0 me-3 text-muted" type="submit" style="background: none; border: none;">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+                
+                <!-- Mobile Search Icon Link -->
+                <a href="#" class="d-lg-none text-dark" data-bs-toggle="collapse" data-bs-target="#mobileSearchForm">
+                    <i class="fas fa-search fs-5"></i>
+                </a>
+                
+                <!-- Cart Icon -->
+                <a href="{% url 'cart' %}" class="cart-icon-wrapper">
+                    <i class="fas fa-shopping-basket"></i>
+                    <span class="cart-badge" id="cart-badge" style="{% if cart_count == 0 %}display: none;{% endif %}">{{ cart_count }}</span>
+                </a>
+                
+                <!-- Auth Buttons / Dropdown -->
+                {% if request.user.is_authenticated %}
+                    <div class="dropdown">
+                        <button class="btn btn-primary-green dropdown-toggle d-flex align-items-center gap-2 py-2 border-0" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false" style="border-radius: var(--radius-sm);">
+                            <i class="fas fa-user-circle fs-5"></i>
+                            <span>{{ request.user.first_name|default:request.user.username }}</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2 mt-2 rounded-3" aria-labelledby="userMenu" style="min-width: 220px; font-size: 0.9rem;">
+                            <li>
+                                <span class="dropdown-item-text text-muted small d-flex align-items-center justify-content-between">
+                                    <span>Account:</span>
+                                    <span class="badge bg-success-light text-success fw-bold px-2 py-1 rounded-pill" style="font-size: 0.75rem;">
+                                        {% if request.user.is_superuser %}Administrator{% else %}{{ request.user.get_account_type_display }}{% endif %}
+                                    </span>
+                                </span>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            
+                            {% if request.user.is_superuser %}
+                                <li>
+                                    <a class="dropdown-item rounded-2 py-2 text-dark" href="/admin/">
+                                        <i class="fas fa-user-shield me-2 text-success"></i> Admin Panel
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item rounded-2 py-2 text-dark" href="{% url 'dashboard' %}">
+                                        <i class="fas fa-tachometer-alt me-2 text-success"></i> System Overview
+                                    </a>
+                                </li>
+                            {% elif request.user.account_type == 'FARMER' %}
+                                <li>
+                                    <a class="dropdown-item rounded-2 py-2 text-dark" href="{% url 'dashboard' %}">
+                                        <i class="fas fa-tachometer-alt me-2 text-success"></i> Dashboard
+                                    </a>
+                                </li>
+                                {% if request.user.farmer_profile %}
+                                    <li>
+                                        <a class="dropdown-item rounded-2 py-2 text-dark" href="{% url 'farmer_detail' request.user.farmer_profile.id %}">
+                                            <i class="fas fa-store me-2 text-success"></i> My Shop Page
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                <li>
+                                    <a class="dropdown-item rounded-2 py-2 text-dark" href="{% url 'dashboard' %}" onclick="showAgroToast('Redirecting to crop manager... 🌱')">
+                                        <i class="fas fa-plus-circle me-2 text-success"></i> Add Crop Listing
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item rounded-2 py-2 text-dark" href="{% url 'dashboard' %}" onclick="showAgroToast('Opening sales statistics... 📊')">
+                                        <i class="fas fa-chart-line me-2 text-success"></i> Sales Analytics
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item rounded-2 py-2 text-dark" href="{% url 'dashboard' %}" onclick="showAgroToast('Opening farm configuration... ⚙️')">
+                                        <i class="fas fa-user-cog me-2 text-success"></i> Farm Settings
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li>
+                                    <a class="dropdown-item rounded-2 py-2 text-dark" href="{% url 'buyer_dashboard' %}">
+                                        <i class="fas fa-tachometer-alt me-2 text-success"></i> Dashboard
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item rounded-2 py-2 text-dark" href="{% url 'buyer_orders' %}">
+                                        <i class="fas fa-shopping-bag me-2 text-success"></i> My Orders
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item rounded-2 py-2 text-dark" href="{% url 'buyer_wishlist' %}">
+                                        <i class="fas fa-heart me-2 text-success"></i> My Wishlist
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item rounded-2 py-2 text-dark" href="{% url 'buyer_profile' %}">
+                                        <i class="fas fa-user-cog me-2 text-success"></i> Profile Settings
+                                    </a>
+                                </li>
+                            {% endif %}
+                            
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item rounded-2 py-2 text-danger fw-semibold d-flex align-items-center gap-2" href="{% url 'logout' %}">
+                                    <i class="fas fa-sign-out-alt"></i> Logout
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn-primary-green d-flex align-items-center justify-content-center py-2" style="font-size: 0.95rem;">Login / Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Expandable Mobile Search Form -->
+<div class="collapse d-lg-none bg-white p-3 border-bottom" id="mobileSearchForm">
+    <form action="{% url 'search' %}" method="GET">
+        <div class="input-group">
+            <input type="search" class="form-control" placeholder="Search products, farmers..." name="q" value="{{ request.GET.q }}">
+            <button class="btn btn-primary-green" type="submit"><i class="fas fa-search"></i></button>
+        </div>
+    </form>
+</div>

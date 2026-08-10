@@ -1,0 +1,75 @@
+{% extends "buyer/base_buyer.html" %}
+{% load static %}
+
+{% block title %}Notifications | AgroConnect{% endblock %}
+
+{% block page_title %}Notifications{% endblock %}
+
+{% block buyer_content %}
+<div class="card border-0 shadow-sm p-4" style="border-radius: var(--agro-radius); min-height: 480px;">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <h5 class="fw-bold text-dark mb-0">System Alerts & Updates</h5>
+            <span class="text-muted small">Stay informed about your orders and message activity.</span>
+        </div>
+        
+        {% if notifications %}
+            <form action="{% url 'buyer_notifications' %}" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="mark_all_read">
+                <button type="submit" class="btn btn-outline-success btn-sm rounded-pill px-3">Mark All as Read</button>
+            </form>
+        {% endif %}
+    </div>
+
+    <!-- Notifications List -->
+    <div class="d-flex flex-column gap-3">
+        {% for notif in notifications %}
+            <div class="notification-row border rounded-3 p-3 d-flex align-items-start justify-content-between gap-3 {% if not notif.is_read %}unread-highlight{% endif %}" data-notif-id="{{ notif.id }}">
+                <div class="d-flex gap-3">
+                    <!-- Icon based on notification type -->
+                    <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background-color: var(--agro-background);">
+                        {% if notif.notification_type == 'ORDER_UPDATE' %}
+                            <i class="fas fa-box text-success font-sm"></i>
+                        {% elif notif.notification_type == 'MESSAGE' %}
+                            <i class="fas fa-comment-alt text-primary font-sm"></i>
+                        {% else %}
+                            <i class="fas fa-bell text-warning font-sm"></i>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <h6 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2">
+                            {{ notif.title }}
+                            {% if not notif.is_read %}
+                                <span class="badge bg-success rounded-circle" style="width: 8px; height: 8px; padding: 0;">&nbsp;</span>
+                            {% endif %}
+                        </h6>
+                        <p class="text-muted font-sm mb-1" style="line-height: 1.5;">{{ notif.message }}</p>
+                        <span class="text-muted font-xs d-block">{{ notif.created_at|date:"M d, Y \a\t H:i" }}</span>
+                    </div>
+                </div>
+
+                <!-- Mark as read form -->
+                {% if not notif.is_read %}
+                    <form action="{% url 'buyer_notifications' %}" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="mark_read">
+                        <input type="hidden" name="notification_id" value="{{ notif.id }}">
+                        <button type="submit" class="btn btn-link text-success font-xs text-decoration-none">Mark Read</button>
+                    </form>
+                {% endif %}
+            </div>
+        {% empty %}
+            <!-- Empty Notifications State -->
+            <div class="text-center py-5">
+                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 80px; height: 80px;">
+                    <i class="fas fa-bell-slash text-success fs-3"></i>
+                </div>
+                <h5 class="fw-bold text-dark">You're all caught up!</h5>
+                <p class="text-muted font-sm px-4">There are no new notifications or alerts right now.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

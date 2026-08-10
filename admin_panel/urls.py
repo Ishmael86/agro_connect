@@ -1,0 +1,31 @@
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.admin_dashboard, name='admin_dashboard'),
+    path('users/', views.admin_users, name='admin_users'),
+    path('users/<int:id>/', views.admin_user_detail, name='admin_user_detail'),
+    path('farmers/', views.admin_farmers, name='admin_farmers'),
+    path('farmers/<int:id>/', views.admin_farmer_detail, name='admin_farmer_detail'),
+    path('buyers/', views.admin_buyers, name='admin_buyers'),
+    path('buyers/<int:id>/', views.admin_buyer_detail, name='admin_buyer_detail'),
+    path('products/', views.admin_products, name='admin_products'),
+    path('products/<int:id>/', views.admin_product_detail, name='admin_product_detail'),
+    path('categories/', views.admin_categories, name='admin_categories'),
+    path('orders/', views.admin_orders, name='admin_orders'),
+    path('orders/<str:order_number>/', views.admin_order_detail, name='admin_order_detail'),
+    path('earnings/', views.admin_earnings, name='admin_earnings'),
+    path('payouts/', views.admin_payouts, name='admin_payouts'),
+    path('reviews/', views.admin_reviews, name='admin_reviews'),
+    path('messages/', views.admin_messages, name='admin_messages'),
+    path('reports/', views.admin_reports, name='admin_reports'),
+    path('analytics/', views.admin_analytics, name='admin_analytics'),
+    path('promotions/', views.admin_promotions, name='admin_promotions'),
+    path('pages/', views.admin_pages, name='admin_pages'),
+    path('settings/', views.admin_settings, name='admin_settings'),
+    path('notifications/', views.admin_notifications, name='admin_notifications'),
+    path('activity-logs/', views.admin_logs, name='admin_logs'),
+    path('support/', views.admin_support, name='admin_support'),
+    path('support/<int:id>/', views.admin_ticket_detail, name='admin_ticket_detail'),
+    path('profile/', views.admin_profile, name='admin_profile'),
+]

@@ -1,0 +1,95 @@
+{% load static %}
+<header class="dashboard-header d-flex align-items-center justify-content-between px-4 py-3 bg-white border-bottom">
+    <!-- Left: Hamburger & Greeting -->
+    <div class="d-flex align-items-center gap-3">
+        <!-- Mobile Sidebar Toggle -->
+        <button class="btn btn-outline-secondary border-0 d-lg-none" id="hamburgerMenuBtn" aria-label="Toggle Sidebar">
+            <i class="fas fa-bars fs-5 text-dark"></i>
+        </button>
+        
+        <div class="d-none d-sm-block">
+            <h5 class="fw-bold mb-0 text-dark">
+                {% block page_title %}Dashboard{% endblock %}
+            </h5>
+            {% if request.resolver_match.url_name == 'buyer_dashboard' %}
+                <span class="text-muted small">Here's what's happening with your orders and favorites today.</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Center/Right: Search Bar & Notifications -->
+    <div class="d-flex align-items-center gap-3 gap-md-4">
+        <!-- Global Search Bar -->
+        <form action="{% url 'search' %}" method="GET" class="search-form d-none d-md-flex align-items-center position-relative" style="width: 280px;">
+            <input type="text" name="q" class="form-control rounded-pill bg-light border-0 ps-4 pe-5" placeholder="Search products, farmers..." style="font-size: 0.85rem; height: 42px;">
+            <button type="submit" class="btn position-absolute end-0 top-50 translate-middle-y border-0 bg-transparent pe-3 text-muted">
+                <i class="fas fa-search"></i>
+            </button>
+        </form>
+
+        <!-- Notification Dropdown -->
+        <div class="dropdown">
+            <a href="{% url 'buyer_notifications' %}" class="position-relative text-dark d-flex align-items-center justify-content-center bg-light rounded-circle" style="width: 42px; height: 42px;">
+                <i class="fas fa-bell text-muted"></i>
+                {% if unread_notifications > 0 %}
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem; padding: 0.25em 0.5em;">
+                        {{ unread_notifications }}
+                    </span>
+                {% endif %}
+            </a>
+        </div>
+
+        <!-- Cart Quick Access -->
+        <a href="{% url 'buyer_cart' %}" class="position-relative text-dark d-flex align-items-center justify-content-center bg-light rounded-circle" style="width: 42px; height: 42px;">
+            <i class="fas fa-shopping-basket text-muted"></i>
+            {% if cart_count > 0 %}
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success" style="font-size: 0.6rem; padding: 0.25em 0.5em;">
+                    {{ cart_count }}
+                </span>
+            {% endif %}
+        </a>
+
+        <!-- Divider -->
+        <div class="vr bg-light d-none d-sm-block" style="height: 30px;"></div>
+
+        <!-- User Dropdown Menu -->
+        <div class="dropdown">
+            <button class="btn btn-primary-green dropdown-toggle d-flex align-items-center gap-2 px-3 py-2 border-0" type="button" id="headerUserMenu" data-bs-toggle="dropdown" aria-expanded="false" style="border-radius: var(--agro-radius);">
+                {% if buyer_profile.profile_image %}
+                    <img src="{{ buyer_profile.profile_image.url }}" alt="Avatar" class="rounded-circle" style="width: 25px; height: 25px; object-fit: cover;">
+                {% else %}
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="Fallback" class="rounded-circle" style="width: 25px; height: 25px; object-fit: cover;">
+                {% endif %}
+                <span class="fw-semibold font-sm text-white" style="font-size: 0.85rem;">{{ request.user.first_name|default:request.user.username }}</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2 mt-2" aria-labelledby="headerUserMenu" style="border-radius: var(--agro-radius); min-width: 200px; font-size: 0.9rem;">
+                <li>
+                    <a class="dropdown-item rounded-2 py-2 text-dark" href="{% url 'buyer_profile' %}">
+                        <i class="fas fa-user-circle me-2 text-success"></i> My Profile
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item rounded-2 py-2 text-dark" href="{% url 'buyer_orders' %}">
+                        <i class="fas fa-box me-2 text-success"></i> My Orders
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item rounded-2 py-2 text-dark" href="{% url 'buyer_wishlist' %}">
+                        <i class="fas fa-heart me-2 text-success"></i> Wishlist
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item rounded-2 py-2 text-dark" href="{% url 'buyer_settings' %}">
+                        <i class="fas fa-cog me-2 text-success"></i> Settings
+                    </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <a class="dropdown-item rounded-2 py-2 text-danger fw-semibold" href="{% url 'logout' %}">
+                        <i class="fas fa-sign-out-alt me-2"></i> Logout
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</header>

@@ -1,0 +1,81 @@
+{% extends "farmer/base_farmer.html" %}
+{% load static %}
+
+{% block buyer_content %}
+<div class="mb-4">
+    <h4 class="fw-bold text-dark mb-1">Customers</h4>
+    <span class="text-muted font-xs">View buyers who have placed orders for crops from your farm.</span>
+</div>
+
+<div class="agro-card">
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Customer Name</th>
+                    <th>Orders Placed</th>
+                    <th>Total Spent with You</th>
+                    <th>Last Order Date</th>
+                    <th class="text-end">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cust in page_obj %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center text-success fw-bold shadow-sm" style="width: 40px; height: 40px; border: 1px solid var(--agro-border);">
+                                    {{ cust.order__user__username|slice:":1"|upper }}
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold text-dark mb-0 font-sm">
+                                        {% if cust.order__user__first_name %}
+                                            {{ cust.order__user__first_name }} {{ cust.order__user__last_name }}
+                                        {% else %}
+                                            {{ cust.order__user__username }}
+                                        {% endif %}
+                                    </h6>
+                                    <span class="text-muted font-xs">Buyer ID: #{{ cust.order__user_id }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ cust.orders_count }} order(s)</td>
+                        <td><span class="text-success fw-bold">GHS {{ cust.total_spent|floatformat:2 }}</span></td>
+                        <td>{{ cust.last_order_date|date:"M d, Y" }}</td>
+                        <td class="text-end">
+                            <a href="{% url 'farmer_customer_detail' cust.order__user_id %}" class="btn btn-sm btn-light border rounded-pill px-3">View History</a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 70px; height: 70px;">
+                                <i class="fas fa-users text-success fs-4"></i>
+                            </div>
+                            <h6 class="fw-bold text-dark mb-1">No customers yet.</h6>
+                            <p class="text-muted font-sm px-4">When buyers order your products, they will appear in this list.</p>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Pagination component -->
+{% if page_obj.has_other_pages %}
+    <nav class="d-flex justify-content-center mt-5">
+        <ul class="pagination pagination-sm">
+            {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+                <li class="page-item {% if page_obj.number == num %}active{% endif %}"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+            {% endfor %}
+            {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endif %}
+{% endblock %}

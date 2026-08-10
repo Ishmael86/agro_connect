@@ -1,0 +1,103 @@
+{% extends "buyer/base_buyer.html" %}
+{% load static %}
+
+{% block title %}Help & Support | AgroConnect{% endblock %}
+
+{% block page_title %}Help & Support{% endblock %}
+
+{% block buyer_content %}
+<div class="row g-4 justify-content-center">
+    <div class="col-lg-8">
+        <!-- Header -->
+        <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: var(--agro-radius);">
+            <div class="d-flex align-items-center gap-3">
+                <div class="rounded-circle bg-success-light p-3 text-success"><i class="fas fa-question-circle fs-3"></i></div>
+                <div>
+                    <h5 class="fw-bold text-dark mb-1">Frequently Asked Questions</h5>
+                    <p class="text-muted font-sm mb-0">Browse common inquiries below or start a live request to our support desk.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQs Accordion -->
+        <div class="accordion border-0 mb-4" id="faqAccordion" style="border-radius: var(--agro-radius); overflow: hidden;">
+            <!-- FAQ 1 -->
+            <div class="accordion-item border-0 mb-2 shadow-sm" style="border-radius: var(--agro-radius) !important; overflow: hidden;">
+                <h2 class="accordion-header">
+                    <button class="accordion-button fw-bold text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                        How do I place an order?
+                    </button>
+                </h2>
+                <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body font-sm text-muted" style="line-height: 1.6;">
+                        Browse the products in our marketplace. Click "Add to Cart" on any crop listing. Once you have selected all desired items, click the shopping bag cart icon at the top right, verify the subtotals, and proceed to the Checkout page to enter your delivery address and choose a payment method.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 2 -->
+            <div class="accordion-item border-0 mb-2 shadow-sm" style="border-radius: var(--agro-radius) !important; overflow: hidden;">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed fw-bold text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                        How do I track my order?
+                    </button>
+                </h2>
+                <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body font-sm text-muted" style="line-height: 1.6;">
+                        Navigate to "My Orders" in the sidebar. Locate your order card and click "View Details". You will see a real-time visual progress timeline displaying stages: Order Placed, Processing, Shipped, and Delivered.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 3 -->
+            <div class="accordion-item border-0 mb-2 shadow-sm" style="border-radius: var(--agro-radius) !important; overflow: hidden;">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed fw-bold text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                        How do I contact a farmer?
+                    </button>
+                </h2>
+                <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body font-sm text-muted" style="line-height: 1.6;">
+                        You can send inquiries directly from a farmer's public profile page. Type your inquiry into the contact card sidebar and click Send. This starts a direct message thread accessible via the "Messages" tab in your buyer dashboard.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 4 -->
+            <div class="accordion-item border-0 mb-2 shadow-sm" style="border-radius: var(--agro-radius) !important; overflow: hidden;">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed fw-bold text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                        How does delivery work?
+                    </button>
+                </h2>
+                <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body font-sm text-muted" style="line-height: 1.6;">
+                        AgroConnect matches you with local delivery drivers or farmers who coordinate drop-offs directly to your shipping address. We offer a flat shipping rate of GHS 10.00, which is completely waived (FREE) for order subtotals over GHS 300.00.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 5 -->
+            <div class="accordion-item border-0 mb-2 shadow-sm" style="border-radius: var(--agro-radius) !important; overflow: hidden;">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed fw-bold text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
+                        What payment methods are supported?
+                    </button>
+                </h2>
+                <div id="collapseFive" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body font-sm text-muted" style="line-height: 1.6;">
+                        We support major Ghanaian mobile money services (MTN Mobile Money, Telecel Cash, AT Money), credit/debit card entries (Visa, Mastercard), and secure Cash on Delivery parameters.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact support button -->
+        <div class="card border-0 shadow-sm p-4 text-center" style="border-radius: var(--agro-radius);">
+            <h6 class="fw-bold text-dark mb-2">Still need help?</h6>
+            <p class="text-muted font-sm mb-3">Our customer care representatives are available 24/7 to resolve issues.</p>
+            <button class="btn btn-success rounded-pill px-4" onclick="showAgroToast('Connecting to support desk... 📞')">Contact Support</button>
+        </div>
+    </div>
+</div>
+{% endblock %}

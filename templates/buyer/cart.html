@@ -1,0 +1,145 @@
+{% extends "buyer/base_buyer.html" %}
+{% load static %}
+
+{% block title %}My Cart | AgroConnect{% endblock %}
+
+{% block page_title %}My Cart{% endblock %}
+
+{% block buyer_content %}
+<div class="row g-4">
+    <!-- Cart Items List (Left Column) -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm p-4" style="border-radius: var(--agro-radius); min-height: 400px;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="fw-bold text-dark mb-0">Shopping Basket</h5>
+                <span class="text-muted small">{{ items.count }} unique items</span>
+            </div>
+
+            <!-- Cart Items -->
+            <div class="d-flex flex-column gap-3">
+                {% for item in items %}
+                    <div class="cart-item-row p-3 border rounded-3 d-flex align-items-center justify-content-between flex-wrap gap-3" data-item-id="{{ item.id }}">
+                        <!-- Image & Title -->
+                        <div class="d-flex align-items-center gap-3" style="min-width: 250px;">
+                            <div style="width: 70px; height: 70px; flex-shrink: 0;">
+                                {% if item.product.main_image %}
+                                    <img src="{{ item.product.main_image.url }}" alt="{{ item.product.name }}" class="w-100 h-100 object-fit-cover rounded-3 border">
+                                {% else %}
+                                    <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=150&q=80" alt="Fallback" class="w-100 h-100 object-fit-cover rounded-3 border">
+                                {% endif %}
+                            </div>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1">{{ item.product.name }}</h6>
+                                <span class="text-muted font-sm d-block mb-1">By {{ item.product.farmer.farm_name }}</span>
+                                <span class="text-success small fw-semibold">GHS {{ item.product.final_price }} / {{ item.product.unit }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Quantity Selector Controls -->
+                        <div class="d-flex align-items-center gap-2">
+                            <form action="{% url 'buyer_cart' %}" method="POST" class="d-flex align-items-center gap-1 bg-light rounded-pill px-2 py-1">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="update_quantity">
+                                <input type="hidden" name="item_id" value="{{ item.id }}">
+                                
+                                <button type="submit" name="direction" value="down" class="btn btn-sm rounded-circle border-0 text-muted d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; background-color: transparent;">
+                                    <i class="fas fa-minus font-xs"></i>
+                                </button>
+                                <span class="fw-bold text-dark px-2 font-sm">{{ item.quantity }}</span>
+                                <button type="submit" name="direction" value="up" class="btn btn-sm rounded-circle border-0 text-muted d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; background-color: transparent;">
+                                    <i class="fas fa-plus font-xs"></i>
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Price Summary & Delete -->
+                        <div class="d-flex align-items-center gap-4 text-md-end">
+                            <div>
+                                <span class="text-muted font-xs d-block">Subtotal</span>
+                                <strong class="text-dark font-sm">GHS {{ item.subtotal|floatformat:2 }}</strong>
+                            </div>
+                            
+                            <form action="{% url 'buyer_cart' %}" method="POST" onsubmit="return confirm('Remove this item from your cart?');">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="remove_item">
+                                <input type="hidden" name="item_id" value="{{ item.id }}">
+                                <button type="submit" class="btn btn-outline-danger border-0 rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px; padding: 0;">
+                                    <i class="far fa-trash-alt font-sm"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                {% empty %}
+                    <!-- Empty State -->
+                    <div class="text-center py-5">
+                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 80px; height: 80px;">
+                            <i class="fas fa-shopping-cart text-success fs-3"></i>
+                        </div>
+                        <h5 class="fw-bold text-dark">Your cart is feeling a little empty.</h5>
+                        <p class="text-muted font-sm px-4">Browse our premium farm catalog and support local Ghanaian growers today.</p>
+                        <a href="{% url 'product_list' %}" class="btn btn-success px-4 py-2 mt-2 rounded-pill">Start Shopping</a>
+                    </div>
+                {% endfor %}
+            </div>
+
+            {% if items %}
+                <div class="mt-4 pt-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <a href="{% url 'product_list' %}" class="btn btn-outline-secondary rounded-pill px-4 py-2 font-sm">Continue Shopping</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Summary (Right Column) -->
+    <div class="col-lg-4">
+        {% if items %}
+            <!-- Cost summary -->
+            <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: var(--agro-radius);">
+                <h5 class="fw-bold text-dark mb-4">Cart Summary</h5>
+
+                <!-- Free Delivery Progress Bar -->
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span class="text-muted">Free Delivery Progress</span>
+                        {% if away_from_free > 0 %}
+                            <strong class="text-success">GHS {{ away_from_free|floatformat:2 }} away</strong>
+                        {% else %}
+                            <strong class="text-success">UNLOCKED! 🎉</strong>
+                        {% endif %}
+                    </div>
+                    <div class="progress" style="height: 8px; border-radius: 4px; background-color: var(--agro-background);">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ progress_pct }}%;" aria-valuenow="{{ progress_pct }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <span class="text-muted font-xs d-block mt-2">Spend GHS 300.00 or more to get free delivery on your basket!</span>
+                </div>
+
+                <ul class="list-unstyled mb-0 font-sm d-flex flex-column gap-2 border-top border-bottom py-3">
+                    <li class="d-flex justify-content-between text-muted">
+                        <span>Cart Subtotal</span>
+                        <span>GHS {{ subtotal|floatformat:2 }}</span>
+                    </li>
+                    <li class="d-flex justify-content-between text-muted">
+                        <span>Delivery Fee</span>
+                        {% if delivery_fee > 0 %}
+                            <span>GHS {{ delivery_fee|floatformat:2 }}</span>
+                        {% else %}
+                            <span class="text-success fw-bold">FREE</span>
+                        {% endif %}
+                    </li>
+                    <li class="d-flex justify-content-between text-muted">
+                        <span>Discount</span>
+                        <span>GHS 0.00</span>
+                    </li>
+                </ul>
+
+                <div class="d-flex justify-content-between align-items-center pt-3 mb-4">
+                    <span class="fw-bold text-dark">Estimated Total</span>
+                    <strong class="text-success fs-4">GHS {{ total|floatformat:2 }}</strong>
+                </div>
+
+                <a href="{% url 'buyer_checkout' %}" class="btn btn-success w-100 rounded-pill py-2.5 fw-semibold shadow-sm">Proceed to Checkout</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,236 @@
+{% extends "buyer/base_buyer.html" %}
+{% load static %}
+
+{% block title %}Checkout | AgroConnect{% endblock %}
+
+{% block page_title %}Checkout{% endblock %}
+
+{% block buyer_content %}
+<div class="row g-4">
+    <!-- Form Columns (Left) -->
+    <div class="col-lg-8">
+        <form action="{% url 'buyer_checkout' %}" method="POST" id="checkoutForm">
+            {% csrf_token %}
+
+            <!-- Step 1: Delivery Information -->
+            <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: var(--agro-radius);">
+                <div class="d-flex align-items-center gap-2 mb-4">
+                    <span class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center fw-bold" style="width: 28px; height: 28px; font-size: 0.85rem;">1</span>
+                    <h5 class="fw-bold text-dark mb-0">Delivery Information</h5>
+                </div>
+
+                <!-- Saved Address Selection -->
+                {% if addresses %}
+                    <div class="mb-4">
+                        <label class="form-label text-muted small uppercase fw-semibold mb-2">Choose a Saved Address</label>
+                        <div class="row g-3">
+                            {% for addr in addresses %}
+                                <div class="col-md-6">
+                                    <div class="border rounded-3 p-3 address-select-card position-relative {% if addr.is_default %}selected{% endif %}" onclick="selectCheckoutAddress(this, '{{ addr.id }}')">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <strong class="text-dark">{{ addr.label }}</strong>
+                                            {% if addr.is_default %}
+                                                <span class="badge bg-success-light text-success rounded-pill font-xs">Default</span>
+                                            {% endif %}
+                                        </div>
+                                        <p class="font-sm text-muted mb-1">{{ addr.full_name }} • {{ addr.phone }}</p>
+                                        <p class="font-sm text-muted mb-0 text-truncate" title="{{ addr.address }}">{{ addr.address }}, {{ addr.city }}</p>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" name="selected_address" id="selectedAddressInput" value="{% for addr in addresses %}{% if addr.is_default %}{{ addr.id }}{% endif %}{% endfor %}">
+                    </div>
+
+                    <!-- Toggle to enter new address -->
+                    <div class="mb-3">
+                        <button type="button" class="btn btn-outline-success btn-sm rounded-pill px-3" onclick="toggleNewAddressForm()">
+                            <i class="fas fa-plus me-1"></i> Use a different address
+                        </button>
+                    </div>
+                {% endif %}
+
+                <!-- New Address Form (Hidden if addresses exist) -->
+                <div id="newAddressFormBlock" style="{% if addresses %}display: none;{% endif %}">
+                    <h6 class="fw-bold text-dark mb-3">Add New Address Details</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label font-sm">Full Name</label>
+                            {{ form.full_name }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label font-sm">Phone Number</label>
+                            {{ form.phone }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label font-sm">Region</label>
+                            {{ form.region }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label font-sm">City / District</label>
+                            {{ form.city }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label font-sm">Street Address / Landmark Details</label>
+                            {{ form.address }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label font-sm">Additional Delivery Instructions (Optional)</label>
+                            {{ form.additional_information }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Payment Method -->
+            <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: var(--agro-radius);">
+                <div class="d-flex align-items-center gap-2 mb-4">
+                    <span class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center fw-bold" style="width: 28px; height: 28px; font-size: 0.85rem;">2</span>
+                    <h5 class="fw-bold text-dark mb-0">Payment Method</h5>
+                </div>
+
+                <!-- Saved Payments -->
+                {% if payment_methods %}
+                    <div class="mb-4">
+                        <label class="form-label text-muted small uppercase fw-semibold mb-2">Choose a Saved Payment Option</label>
+                        <div class="row g-3">
+                            {% for pm in payment_methods %}
+                                <div class="col-md-6">
+                                    <div class="border rounded-3 p-3 payment-select-card {% if pm.is_default %}selected{% endif %}" onclick="selectCheckoutPayment(this, '{{ pm.id }}')">
+                                        <div class="d-flex align-items-center justify-content-between mb-2">
+                                            <strong class="text-dark">{{ pm.provider }}</strong>
+                                            <span class="badge bg-success-light text-success font-xs">{{ pm.get_payment_type_display }}</span>
+                                        </div>
+                                        <p class="font-sm text-muted mb-0">{{ pm.masked_reference }}</p>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" name="selected_payment" id="selectedPaymentInput" value="{% for pm in payment_methods %}{% if pm.is_default %}{{ pm.id }}{% endif %}{% endfor %}">
+                    </div>
+                {% endif %}
+
+                <!-- Selection for Raw Payment Methods -->
+                <div>
+                    <label class="form-label text-muted small uppercase fw-semibold mb-2">Payment Channels</label>
+                    <div class="d-flex flex-column gap-3">
+                        <!-- MoMo -->
+                        <div class="form-check p-3 border rounded-3 d-flex align-items-center justify-content-between">
+                            <div>
+                                <input class="form-check-input ms-0 me-3" type="radio" name="payment_method_raw" id="payRawMomo" value="MOBILE_MONEY" checked>
+                                <label class="form-check-label fw-semibold text-dark" for="payRawMomo">
+                                    Mobile Money (MTN MoMo, Telecel Cash, AT Money)
+                                </label>
+                            </div>
+                            <div class="d-none d-sm-flex align-items-center gap-2">
+                                <i class="fas fa-wallet text-success fs-5"></i>
+                            </div>
+                        </div>
+
+                        <!-- Card -->
+                        <div class="form-check p-3 border rounded-3 d-flex align-items-center justify-content-between">
+                            <div>
+                                <input class="form-check-input ms-0 me-3" type="radio" name="payment_method_raw" id="payRawCard" value="CARD_PAYMENT">
+                                <label class="form-check-label fw-semibold text-dark" for="payRawCard">
+                                    Debit / Credit Card (Visa, Mastercard)
+                                </label>
+                            </div>
+                            <div class="d-none d-sm-flex align-items-center gap-2">
+                                <i class="fab fa-cc-visa text-primary fs-4"></i>
+                                <i class="fab fa-cc-mastercard text-danger fs-4"></i>
+                            </div>
+                        </div>
+
+                        <!-- Cash on Delivery -->
+                        <div class="form-check p-3 border rounded-3 d-flex align-items-center justify-content-between">
+                            <div>
+                                <input class="form-check-input ms-0 me-3" type="radio" name="payment_method_raw" id="payRawCod" value="CASH_ON_DELIVERY">
+                                <label class="form-check-label fw-semibold text-dark" for="payRawCod">
+                                    Cash on Delivery
+                                </label>
+                            </div>
+                            <div class="d-none d-sm-flex align-items-center gap-2">
+                                <i class="fas fa-hand-holding-usd text-success fs-4"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit trigger -->
+            <button type="submit" class="btn btn-success w-100 rounded-pill py-3 fw-bold shadow-sm mb-5">Place Order & Pay</button>
+        </form>
+    </div>
+
+    <!-- Summary Breakdowns (Right Column) -->
+    <div class="col-lg-4">
+        <!-- Order Summary Basket -->
+        <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: var(--agro-radius);">
+            <h5 class="fw-bold text-dark mb-4">Order Summary</h5>
+            
+            <div class="d-flex flex-column gap-3 mb-4 max-height-300" style="overflow-y: auto;">
+                {% for item in items %}
+                    <div class="d-flex align-items-center justify-content-between font-sm">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="text-dark fw-bold">{{ item.quantity }}x</span>
+                            <span class="text-muted text-truncate" style="max-width: 150px;">{{ item.product.name }}</span>
+                        </div>
+                        <strong class="text-dark">GHS {{ item.subtotal }}</strong>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <ul class="list-unstyled mb-0 font-sm d-flex flex-column gap-2 border-top border-bottom py-3">
+                <li class="d-flex justify-content-between text-muted">
+                    <span>Subtotal</span>
+                    <span>GHS {{ subtotal|floatformat:2 }}</span>
+                </li>
+                <li class="d-flex justify-content-between text-muted">
+                    <span>Delivery Fee</span>
+                    {% if delivery_fee > 0 %}
+                        <span>GHS {{ delivery_fee|floatformat:2 }}</span>
+                    {% else %}
+                        <span class="text-success fw-bold">FREE</span>
+                    {% endif %}
+                </li>
+                <li class="d-flex justify-content-between text-muted">
+                    <span>Discount</span>
+                    <span>GHS 0.00</span>
+                </li>
+            </ul>
+
+            <div class="d-flex justify-content-between align-items-center pt-3">
+                <span class="fw-bold text-dark">Order Total</span>
+                <strong class="text-success fs-4">GHS {{ total|floatformat:2 }}</strong>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function selectCheckoutAddress(card, addressId) {
+        document.querySelectorAll('.address-select-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        document.getElementById('selectedAddressInput').value = addressId;
+        
+        // Hide/Show custom form block
+        document.getElementById('newAddressFormBlock').style.display = 'none';
+    }
+
+    function selectCheckoutPayment(card, paymentId) {
+        document.querySelectorAll('.payment-select-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        document.getElementById('selectedPaymentInput').value = paymentId;
+    }
+
+    function toggleNewAddressForm() {
+        document.querySelectorAll('.address-select-card').forEach(c => c.classList.remove('selected'));
+        document.getElementById('selectedAddressInput').value = '';
+        
+        const formBlock = document.getElementById('newAddressFormBlock');
+        formBlock.style.display = formBlock.style.display === 'none' ? 'block' : 'none';
+    }
+</script>
+{% endblock %}

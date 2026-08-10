@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if active_category %}{{ active_category.name }} | Products{% else %}All Products{% endif %} | AgroConnect
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumbs -->
+    {% include 'partials/breadcrumb.html' with breadcrumbs=breadcrumbs %}
+
+    <div class="row g-4">
+        <!-- PRODUCTS GRID (FULL WIDTH) -->
+        <div class="col-12">
+            <!-- Header bar: Search, Sort and Title -->
+            <div class="card border-0 shadow-sm p-3 mb-4" style="border-radius: var(--radius-md);">
+                <div class="row align-items-center g-3">
+                    <div class="col-md-4">
+                        <h1 class="h4 fw-bold mb-0">
+                            {% if active_category %}{{ active_category.name }}{% else %}All Products{% endif %}
+                        </h1>
+                    </div>
+                    
+                    <div class="col-md-8">
+                        <form action="{% url 'product_list' %}" method="GET" class="row g-2 align-items-center justify-content-md-end">
+                            <!-- Preserve active filters -->
+                            {% if selected_category %}
+                                <input type="hidden" name="category" value="{{ selected_category }}">
+                            {% endif %}
+                            {% if min_price %}
+                                <input type="hidden" name="min_price" value="{{ min_price }}">
+                            {% endif %}
+                            {% if max_price %}
+                                <input type="hidden" name="max_price" value="{{ max_price }}">
+                            {% endif %}
+                            {% if selected_region %}
+                                <input type="hidden" name="region" value="{{ selected_region }}">
+                            {% endif %}
+                            {% if selected_rating %}
+                                <input type="hidden" name="rating" value="{{ selected_rating }}">
+                            {% endif %}
+                            {% if selected_availability %}
+                                <input type="hidden" name="availability" value="{{ selected_availability }}">
+                            {% endif %}
+
+                            <!-- Search bar in grid -->
+                            <div class="col-sm-7">
+                                <div class="input-group input-group-sm">
+                                    <input type="text" class="form-control" name="search" placeholder="Search products, farms..." value="{{ search_query }}">
+                                    <button class="btn btn-primary-green" type="submit"><i class="fas fa-search"></i></button>
+                                </div>
+                            </div>
+                            
+                            <!-- Sort options -->
+                            <div class="col-sm-5">
+                                <select class="form-select form-select-sm" name="sort" onchange="this.form.submit()">
+                                    <option value="newest" {% if selected_sort == 'newest' %}selected{% endif %}>Sort by: Newest</option>
+                                    <option value="price_low" {% if selected_sort == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                                    <option value="price_high" {% if selected_sort == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                                    <option value="rating" {% if selected_sort == 'rating' %}selected{% endif %}>Highest Rated</option>
+                                    <option value="popular" {% if selected_sort == 'popular' %}selected{% endif %}>Popularity</option>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active search status -->
+            {% if search_query %}
+                <div class="mb-4">
+                    <span class="text-muted">Search results for "<strong>{{ search_query }}</strong>"</span>
+                </div>
+            {% endif %}
+
+            <!-- Products Grid -->
+            <div class="row g-4">
+                {% for product in page_obj %}
+                    <div class="col-lg-3 col-md-4 col-sm-6">
+                        {% include 'partials/product_card.html' with product=product %}
+                    </div>
+                {% empty %}
+                    <div class="col-12 text-center py-5">
+                        <i class="fas fa-shopping-basket fa-3x text-muted mb-3" style="color: var(--primary-green-light) !important;"></i>
+                        <h3>No products found! 🌱</h3>
+                        <p class="text-muted">Try adjusting your search queries or filters to find what you need.</p>
+                        <a href="{% url 'product_list' %}" class="btn btn-primary-green mt-3">Reset Catalog</a>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% include 'partials/pagination.html' with page_obj=page_obj %}
+        </div>
+    </div>
+</div>
+{% endblock %}

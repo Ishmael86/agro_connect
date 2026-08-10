@@ -1,0 +1,274 @@
+{% extends "farmer/base_farmer.html" %}
+{% load static %}
+
+{% block buyer_content %}
+<!-- Stats Cards Row (5 Cards) -->
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 g-3 mb-4">
+    <!-- Stat 1: Total Sales -->
+    <div class="col">
+        <a href="{% url 'farmer_earnings' %}" class="text-decoration-none d-block h-100">
+            <div class="stats-card card-sales">
+                <div class="stats-icon-box bg-sales-light me-3">
+                    <i class="fas fa-coins"></i>
+                </div>
+                <div>
+                    <span class="stats-card-title">Total Sales</span>
+                    <h3 class="stats-card-number">GHS {{ total_sales|floatformat:2 }}</h3>
+                    <span class="text-success font-xs fw-semibold">{{ sales_growth }}</span>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- Stat 2: Total Orders -->
+    <div class="col">
+        <a href="{% url 'farmer_orders' %}" class="text-decoration-none d-block h-100">
+            <div class="stats-card card-orders">
+                <div class="stats-icon-box bg-orders-light me-3">
+                    <i class="fas fa-box-open"></i>
+                </div>
+                <div>
+                    <span class="stats-card-title">Total Orders</span>
+                    <h3 class="stats-card-number">{{ total_orders }}</h3>
+                    <span class="text-success font-xs fw-semibold">{{ orders_growth }}</span>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- Stat 3: Active Products -->
+    <div class="col">
+        <a href="{% url 'farmer_products' %}" class="text-decoration-none d-block h-100">
+            <div class="stats-card card-completed">
+                <div class="stats-icon-box bg-completed-light me-3">
+                    <i class="fas fa-leaf"></i>
+                </div>
+                <div>
+                    <span class="stats-card-title">Active Products</span>
+                    <h3 class="stats-card-number">{{ active_products }}</h3>
+                    <span class="text-muted font-xs">Live listings</span>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- Stat 4: Customers -->
+    <div class="col">
+        <a href="{% url 'farmer_customers' %}" class="text-decoration-none d-block h-100">
+            <div class="stats-card card-rewards">
+                <div class="stats-icon-box bg-rewards-light me-3">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div>
+                    <span class="stats-card-title">Customers</span>
+                    <h3 class="stats-card-number">{{ total_customers }}</h3>
+                    <span class="text-muted font-xs">Ordered buyers</span>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- Stat 5: Pending Orders -->
+    <div class="col">
+        <a href="{% url 'farmer_orders' %}?status=pending" class="text-decoration-none d-block h-100">
+            <div class="stats-card card-pending">
+                <div class="stats-icon-box bg-pending-light me-3">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div>
+                    <span class="stats-card-title">Pending Orders</span>
+                    <h3 class="stats-card-number">{{ pending_orders }}</h3>
+                    <span class="text-danger font-xs fw-semibold">Action needed</span>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Chart: Sales Overview (Left) -->
+    <div class="col-lg-8">
+        <div class="agro-card h-100">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h5 class="fw-bold text-dark mb-1">Sales Overview</h5>
+                    <span class="text-muted font-xs">Daily performance records (GHS)</span>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-light border dropdown-toggle rounded-pill px-3" type="button" data-bs-toggle="dropdown">
+                        This Week
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-menu-item dropdown-item" href="#">Today</a></li>
+                        <li><a class="dropdown-menu-item dropdown-item" href="#">This Week</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div style="height: 300px;">
+                <canvas id="salesOverviewChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Selling and Promo Card (Right) -->
+    <div class="col-lg-4">
+        <!-- Grow farm promo card -->
+        <div class="card border-0 text-white rounded-3 overflow-hidden shadow-sm h-100" style="background: linear-gradient(rgba(14, 90, 52, 0.8), rgba(10, 68, 39, 0.95)), url('https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?auto=format&fit=crop&w=400&q=80'); background-size: cover; background-position: center; border-radius: var(--agro-radius-lg) !important;">
+            <div class="card-body p-4 d-flex flex-column justify-content-between">
+                <div>
+                    <span class="badge bg-success bg-opacity-50 text-white rounded-pill px-3 py-1 uppercase tracking-wider font-xs mb-3">Promotional</span>
+                    <h4 class="fw-bold mb-2">Grow Your Farm Business</h4>
+                    <p class="small text-white text-opacity-80">Reach more buyers in Accra, Kumasi, and Tamale. Maximize profit margins by selling fresh produce directly on AgroConnect.</p>
+                </div>
+                <div class="mt-4">
+                    <a href="{% url 'farmer_support' %}" class="btn btn-light text-success fw-bold rounded-pill px-4 py-2 font-sm shadow">View Tips</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Recent Orders (Left) -->
+    <div class="col-lg-7">
+        <div class="agro-card h-100">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="fw-bold text-dark mb-0">Recent Orders</h5>
+                <a href="{% url 'farmer_orders' %}" class="btn btn-sm btn-outline-success rounded-pill px-3">View All Orders</a>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ord in recent_orders %}
+                            <tr>
+                                <td><span class="fw-bold text-dark">{{ ord.order_number }}</span></td>
+                                <td>{{ ord.full_name }}</td>
+                                <td>{{ ord.created_at|date:"M d, Y" }}</td>
+                                <td><span class="fw-semibold text-success">GHS {{ ord.amount|floatformat:2 }}</span></td>
+                                <td>
+                                    {% if ord.status == 'PENDING' %}
+                                        <span class="badge-status badge-pending">Pending</span>
+                                    {% elif ord.status == 'PROCESSING' %}
+                                        <span class="badge-status badge-processing">Processing</span>
+                                    {% elif ord.status == 'SHIPPED' %}
+                                        <span class="badge-status badge-shipped">Shipped</span>
+                                    {% elif ord.status == 'DELIVERED' %}
+                                        <span class="badge-status badge-delivered">Delivered</span>
+                                    {% else %}
+                                        <span class="badge-status badge-cancelled">Cancelled</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <a href="{% url 'farmer_order_detail' ord.order_number %}" class="btn btn-sm btn-light border rounded-pill px-3">View</a>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">
+                                    <i class="fas fa-box-open fa-2x mb-2 text-success opacity-50"></i>
+                                    <p class="mb-0 font-sm">No orders received yet.</p>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Selling list (Right) -->
+    <div class="col-lg-5">
+        <div class="agro-card h-100">
+            <h5 class="fw-bold text-dark mb-4">Top Selling Products</h5>
+            <div class="d-flex flex-column gap-3">
+                {% for prod in top_selling %}
+                    <div class="d-flex align-items-center justify-content-between p-2 rounded-3 border">
+                        <div class="d-flex align-items-center gap-3">
+                            <div style="width: 50px; height: 50px; flex-shrink: 0;">
+                                {% if prod.product__main_image %}
+                                    <img src="/media/{{ prod.product__main_image }}" alt="Crop" class="w-100 h-100 object-fit-cover rounded-3 border">
+                                {% else %}
+                                    <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=100&q=80" alt="Fallback" class="w-100 h-100 object-fit-cover rounded-3 border">
+                                {% endif %}
+                            </div>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1 font-sm">{{ prod.product__name }}</h6>
+                                <span class="text-muted font-xs">{{ prod.qty_sold }} {{ prod.product__unit }} sold</span>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <span class="text-success fw-bold font-sm d-block">GHS {{ prod.revenue|floatformat:2 }}</span>
+                            <span class="small text-warning" style="font-size: 0.75rem;"><i class="fas fa-star me-1"></i>{{ prod.product__rating|default:"4.5" }}</span>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="text-center py-5 text-muted">
+                        <i class="fas fa-seedling fa-2x mb-2 text-success opacity-50"></i>
+                        <p class="mb-0 font-sm">No sales recorded yet.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block farmer_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('salesOverviewChart').getContext('2d');
+        const labels = {{ chart_labels|safe }};
+        const dataValues = {{ chart_values|safe }};
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Sales Revenue (GHS)',
+                    data: dataValues,
+                    borderColor: '#0E5A34',
+                    backgroundColor: 'rgba(14, 90, 52, 0.05)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.3,
+                    pointBackgroundColor: '#0E5A34',
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            callback: function(value) { return 'GHS ' + value; }
+                        }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

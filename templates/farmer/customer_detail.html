@@ -1,0 +1,91 @@
+{% extends "farmer/base_farmer.html" %}
+{% load static %}
+
+{% block buyer_content %}
+<div class="mb-4">
+    <a href="{% url 'farmer_customers' %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3 mb-3"><i class="fas fa-arrow-left me-1"></i>Back to Customers</a>
+    <h4 class="fw-bold text-dark mb-1">Customer Profile: {{ buyer.get_full_name|default:buyer.username }}</h4>
+    <span class="text-muted font-xs">Detailed records of orders placed by this customer.</span>
+</div>
+
+<div class="row g-4">
+    <!-- Customer Details Card (Left) -->
+    <div class="col-lg-4">
+        <div class="agro-card mb-4 text-center">
+            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center text-success fw-bold mx-auto mb-3 shadow-sm" style="width: 70px; height: 70px; border: 2px solid var(--agro-green); font-size: 1.5rem;">
+                {{ buyer.username|slice:":1"|upper }}
+            </div>
+            
+            <h5 class="fw-bold text-dark mb-1">{{ buyer.get_full_name|default:buyer.username }}</h5>
+            <span class="text-muted small">Registered Customer</span>
+            
+            <div class="border-top pt-3 mt-4 text-start d-flex flex-column gap-3">
+                <div>
+                    <span class="text-muted font-xs d-block">Phone Number</span>
+                    <span class="fw-bold text-dark font-sm">{{ buyer.phone|default:"Not Provided" }}</span>
+                </div>
+                <div>
+                    <span class="text-muted font-xs d-block">Email Address</span>
+                    <span class="fw-bold text-dark font-sm">{{ buyer.email|default:"Not Provided" }}</span>
+                </div>
+                <div>
+                    <span class="text-muted font-xs d-block">Joined AgroConnect</span>
+                    <span class="fw-bold text-dark font-sm">{{ buyer.date_joined|date:"M d, Y" }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Summary Stats Card -->
+        <div class="agro-card">
+            <h6 class="fw-bold text-dark mb-3">Order Summary</h6>
+            <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted small">Orders Count:</span>
+                <span class="fw-bold text-dark">{{ orders_count }}</span>
+            </div>
+            <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
+                <span class="text-muted small">Last Order Date:</span>
+                <span class="fw-semibold text-dark">{{ last_order.created_at|date:"M d, Y" }}</span>
+            </div>
+            <div class="d-flex justify-content-between">
+                <span class="fw-bold text-dark">Total Spent:</span>
+                <span class="fw-bold text-success">GHS {{ total_spent|floatformat:2 }}</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Order History List (Right) -->
+    <div class="col-lg-8">
+        <div class="agro-card">
+            <h5 class="fw-bold text-dark mb-4">Crop Purchase History</h5>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Crop / Item</th>
+                            <th>Qty / Price</th>
+                            <th>Purchase Date</th>
+                            <th class="text-end">Item Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'farmer_order_detail' item.order.order_number %}" class="fw-bold text-success text-decoration-none">
+                                        {{ item.order.order_number }}
+                                    </a>
+                                </td>
+                                <td>{{ item.product.name }}</td>
+                                <td>{{ item.quantity }} x GHS {{ item.unit_price }}</td>
+                                <td>{{ item.order.created_at|date:"M d, Y" }}</td>
+                                <td class="text-end fw-bold text-success">GHS {{ item.subtotal|floatformat:2 }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

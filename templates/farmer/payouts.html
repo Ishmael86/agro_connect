@@ -1,0 +1,151 @@
+{% extends "farmer/base_farmer.html" %}
+{% load static %}
+
+{% block buyer_content %}
+<div class="mb-4">
+    <h4 class="fw-bold text-dark mb-1">Payouts & Wallet</h4>
+    <span class="text-muted font-xs">Request withdrawals of your available earnings to Mobile Money or bank accounts.</span>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Balance & Form Column -->
+    <div class="col-lg-5">
+        <!-- Balance Card -->
+        <div class="card border-0 text-white rounded-3 shadow-sm p-4 mb-4" style="background: linear-gradient(135deg, #0E5A34 0%, #1c7c4c 100%); border-radius: var(--agro-radius-lg) !important;">
+            <span class="stats-card-title text-white text-opacity-70 mb-2">Available Balance</span>
+            <h2 class="fw-extrabold text-white mb-3">GHS {{ available_balance|floatformat:2 }}</h2>
+            <span class="small text-white text-opacity-80"><i class="fas fa-info-circle me-1"></i>Funds become withdrawal-ready once orders are marked as DELIVERED by buyers.</span>
+        </div>
+        
+        <!-- Payout Request Form -->
+        <div class="agro-card">
+            <h5 class="fw-bold text-dark mb-4">Request Payout</h5>
+            <form method="POST" action="">
+                {% csrf_token %}
+                
+                <div class="d-flex flex-column gap-3">
+                    <div>
+                        <label class="form-label fw-bold text-dark small">Payout Amount (GHS) *</label>
+                        {{ form.amount }}
+                        {% if form.amount.errors %}
+                            <div class="text-danger small mt-1">{{ form.amount.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="form-label fw-bold text-dark small">Payout Method *</label>
+                        {{ form.payment_method }}
+                        {% if form.payment_method.errors %}
+                            <div class="text-danger small mt-1">{{ form.payment_method.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="form-label fw-bold text-dark small">Account / MoMo Number *</label>
+                        {{ form.account_number }}
+                        {% if form.account_number.errors %}
+                            <div class="text-danger small mt-1">{{ form.account_number.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="form-label fw-bold text-dark small">Account Name *</label>
+                        {{ form.account_name }}
+                        {% if form.account_name.errors %}
+                            <div class="text-danger small mt-1">{{ form.account_name.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div id="bankNameField" style="display: none;">
+                        <label class="form-label fw-bold text-dark small">Bank Name *</label>
+                        {{ form.bank_name }}
+                        {% if form.bank_name.errors %}
+                            <div class="text-danger small mt-1">{{ form.bank_name.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success w-100 rounded-pill py-2 font-sm shadow-sm mt-2"><i class="fas fa-paper-plane me-2"></i>Submit Payout Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Payouts History Column -->
+    <div class="col-lg-7">
+        <div class="agro-card h-100">
+            <h5 class="fw-bold text-dark mb-4">Payouts History</h5>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Requested Date</th>
+                            <th>Amount</th>
+                            <th>Method</th>
+                            <th>Reference</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pay in payouts_history %}
+                            <tr>
+                                <td>{{ pay.requested_at|date:"M d, Y" }}</td>
+                                <td><span class="fw-bold text-dark">GHS {{ pay.amount|floatformat:2 }}</span></td>
+                                <td>{{ pay.get_payment_method_display }}</td>
+                                <td><span class="text-muted small">{{ pay.reference|default:"--" }}</span></td>
+                                <td>
+                                    {% if pay.status == 'PENDING' %}
+                                        <span class="badge-status badge-pending">Pending</span>
+                                    {% elif pay.status == 'PROCESSING' %}
+                                        <span class="badge-status badge-processing">Processing</span>
+                                    {% elif pay.status == 'COMPLETED' %}
+                                        <span class="badge-status badge-delivered">Completed</span>
+                                    {% else %}
+                                        <span class="badge-status badge-cancelled">Failed</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted">
+                                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 70px; height: 70px;">
+                                        <i class="fas fa-credit-card text-success fs-4"></i>
+                                    </div>
+                                    <h6 class="fw-bold text-dark mb-1">No payout history.</h6>
+                                    <p class="text-muted font-sm px-4">Your payout requests will be listed here.</p>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block farmer_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const methodSelect = document.getElementById('id_payment_method');
+        const bankField = document.getElementById('bankNameField');
+        
+        function toggleBankField() {
+            if (methodSelect && bankField) {
+                if (methodSelect.value === 'BANK_TRANSFER') {
+                    bankField.style.display = 'block';
+                    document.getElementById('id_bank_name').setAttribute('required', 'required');
+                } else {
+                    bankField.style.display = 'none';
+                    document.getElementById('id_bank_name').removeAttribute('required');
+                }
+            }
+        }
+        
+        if (methodSelect) {
+            methodSelect.addEventListener('change', toggleBankField);
+            // Run on load to handle initial values
+            toggleBankField();
+        }
+    });
+</script>
+{% endblock %}

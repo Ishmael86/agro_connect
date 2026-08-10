@@ -1,0 +1,152 @@
+{% extends "farmer/base_farmer.html" %}
+{% load static %}
+
+{% block buyer_content %}
+<div class="mb-4">
+    <h4 class="fw-bold text-dark mb-1">Settings</h4>
+    <span class="text-muted font-xs">Configure alerts notification triggers, change password credentials, or delete farm business.</span>
+</div>
+
+<!-- Tab Navigation Header -->
+<div class="row g-4">
+    <!-- Left columns navigations -->
+    <div class="col-md-3">
+        <div class="nav flex-column nav-pills gap-2 p-2 bg-white rounded-3 border shadow-sm" id="settingsTab" role="tablist">
+            <button class="nav-link text-start active font-sm" id="notif-tab" data-bs-toggle="pill" data-bs-target="#notif" type="button" role="tab">
+                <i class="far fa-bell me-2"></i>Notifications
+            </button>
+            <button class="nav-link text-start font-sm" id="password-tab" data-bs-toggle="pill" data-bs-target="#password" type="button" role="tab">
+                <i class="fas fa-key me-2"></i>Change Password
+            </button>
+            <button class="nav-link text-start font-sm text-danger" id="danger-tab" data-bs-toggle="pill" data-bs-target="#danger" type="button" role="tab">
+                <i class="fas fa-shield-alt me-2"></i>Account Security
+            </button>
+        </div>
+    </div>
+    
+    <!-- Right columns tabs panel content -->
+    <div class="col-md-9">
+        <div class="tab-content" id="settingsTabContent">
+            
+            <!-- Panel 1: Notification settings -->
+            <div class="tab-pane fade show active" id="notif" role="tabpanel">
+                <div class="agro-card">
+                    <h5 class="fw-bold text-dark mb-4">Notification Preferences</h5>
+                    <p class="small text-muted mb-4">Specify which activity occurrences triggers email and real-time dashboard notification alerts.</p>
+                    
+                    <form method="POST" action="">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="notifications">
+                        
+                        <div class="d-flex flex-column gap-3 mb-4">
+                            <div class="form-check form-switch d-flex justify-content-between align-items-center p-0">
+                                <div>
+                                    <label class="form-check-label text-dark fw-bold small">New Crop Orders</label>
+                                    <span class="text-muted font-xs d-block">Get notified immediately when buyers place orders.</span>
+                                </div>
+                                <div style="margin-left: 20px;">
+                                    {{ form_notif.new_order }}
+                                </div>
+                            </div>
+                            
+                            <div class="form-check form-switch d-flex justify-content-between align-items-center p-0 border-top pt-3">
+                                <div>
+                                    <label class="form-check-label text-dark fw-bold small">Order Status Updates</label>
+                                    <span class="text-muted font-xs d-block">Get alerted when shipping status changes.</span>
+                                </div>
+                                <div style="margin-left: 20px;">
+                                    {{ form_notif.order_status }}
+                                </div>
+                            </div>
+                            
+                            <div class="form-check form-switch d-flex justify-content-between align-items-center p-0 border-top pt-3">
+                                <div>
+                                    <label class="form-check-label text-dark fw-bold small">Inbox Messages</label>
+                                    <span class="text-muted font-xs d-block">Receive alert indicators when buyers message you.</span>
+                                </div>
+                                <div style="margin-left: 20px;">
+                                    {{ form_notif.new_message }}
+                                </div>
+                            </div>
+                            
+                            <div class="form-check form-switch d-flex justify-content-between align-items-center p-0 border-top pt-3">
+                                <div>
+                                    <label class="form-check-label text-dark fw-bold small">New Reviews & Comments</label>
+                                    <span class="text-muted font-xs d-block">Get notified when buyers rate your crops.</span>
+                                </div>
+                                <div style="margin-left: 20px;">
+                                    {{ form_notif.new_review }}
+                                </div>
+                            </div>
+                            
+                            <div class="form-check form-switch d-flex justify-content-between align-items-center p-0 border-top pt-3">
+                                <div>
+                                    <label class="form-check-label text-dark fw-bold small">Payout Processing Notifications</label>
+                                    <span class="text-muted font-xs d-block">Receive alerts when payouts are processed or completed.</span>
+                                </div>
+                                <div style="margin-left: 20px;">
+                                    {{ form_notif.payout }}
+                                </div>
+                            </div>
+                            
+                            <div class="form-check form-switch d-flex justify-content-between align-items-center p-0 border-top pt-3">
+                                <div>
+                                    <label class="form-check-label text-dark fw-bold small">Market Tips & Promotions</label>
+                                    <span class="text-muted font-xs d-block">Receive seasonal tips and grow promotion tips.</span>
+                                </div>
+                                <div style="margin-left: 20px;">
+                                    {{ form_notif.promotions }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-success rounded-pill px-4 py-2 font-sm shadow-sm">Save Preferences</button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Panel 2: Password change -->
+            <div class="tab-pane fade" id="password" role="tabpanel">
+                <div class="agro-card">
+                    <h5 class="fw-bold text-dark mb-4">Change Password</h5>
+                    <p class="small text-muted mb-4">Update password credentials to secure your farm business account.</p>
+                    
+                    <form method="POST" action="">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="change_password">
+                        
+                        <div class="d-flex flex-column gap-3 mb-4">
+                            {% for field in form_pwd %}
+                                <div>
+                                    <label class="form-label fw-bold text-dark small">{{ field.label }} *</label>
+                                    <input type="{{ field.field.widget.input_type }}" name="{{ field.name }}" class="form-control rounded-pill px-3 font-sm" placeholder="Enter {{ field.label|lower }}">
+                                    {% if field.errors %}
+                                        <div class="text-danger small mt-1">{{ field.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <button type="submit" class="btn btn-success rounded-pill px-4 py-2 font-sm shadow-sm">Update Password</button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Panel 3: Danger Zone Account Security -->
+            <div class="tab-pane fade" id="danger" role="tabpanel">
+                <div class="agro-card border-danger bg-light">
+                    <h5 class="fw-bold text-danger mb-3"><i class="fas fa-exclamation-triangle me-2"></i>Danger Zone</h5>
+                    <p class="small text-muted mb-4">Deleting your account is permanent. This action will erase your farm profile, remove all crop listings, delete transaction and payout history, and cannot be undone.</p>
+                    
+                    <form method="POST" action="" class="form-delete-confirm">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="delete_account">
+                        <button type="submit" class="btn btn-danger rounded-pill px-4 py-2 font-sm shadow"><i class="far fa-trash-alt me-2"></i>Delete Farm Account</button>
+                    </form>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}

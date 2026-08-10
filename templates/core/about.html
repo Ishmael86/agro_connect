@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}About Us | AgroConnect{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumbs -->
+    {% include 'partials/breadcrumb.html' with breadcrumbs=breadcrumbs %}
+
+    <!-- Main Header -->
+    <div class="row align-items-center g-5 py-4">
+        <div class="col-lg-6">
+            <h1 class="display-4 fw-bold mb-4">Growing Agriculture<br><span class="text-success">Through Connection</span></h1>
+            <p class="lead text-muted">
+                AgroConnect is a technology-driven agricultural marketplace built to eliminate inefficiencies in the agricultural supply chain in Ghana.
+            </p>
+            <p class="text-muted">
+                Our platform enables farmers to list their fresh produce directly, negotiation-free, ensuring they receive fair, transparent prices for their hard work. At the same time, retail buyers, restaurant owners, and households can purchase high-quality produce with delivery assurance, supporting local growers directly.
+            </p>
+        </div>
+        <div class="col-lg-6">
+            <img src="https://images.unsplash.com/photo-1599599810769-bcde5a160d32?q=80&w=600&auto=format&fit=crop" alt="Lush Ghanaian agricultural fields and harvests" class="img-fluid rounded-4 shadow-lg">
+        </div>
+    </div>
+
+    <!-- Our Values / Story Grid -->
+    <div class="row g-4 mt-5">
+        <!-- Our Story -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm p-4 h-100" style="border-radius: var(--radius-lg);">
+                <div class="text-success fs-3 mb-3"><i class="fas fa-history"></i></div>
+                <h3 class="h5 fw-bold mb-3">Our Story</h3>
+                <p class="text-muted small mb-0">
+                    Founded in 2026, AgroConnect began as a university project addressing the severe post-harvest losses and pricing manipulation suffered by vegetable farmers in rural Ghana. We set out to build a platform that gives farmers direct market access, transforming farming into a reliable business.
+                </p>
+            </div>
+        </div>
+
+        <!-- Our Mission -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm p-4 h-100" style="border-radius: var(--radius-lg);">
+                <div class="text-success fs-3 mb-3"><i class="fas fa-bullseye"></i></div>
+                <h3 class="h5 fw-bold mb-3">Our Mission</h3>
+                <p class="text-muted small mb-0">
+                    To empower local Ghanaian farmers by connecting them directly with buyers, securing fair pricing, reducing post-harvest waste, and promoting sustainable, community-backed agriculture.
+                </p>
+            </div>
+        </div>
+
+        <!-- Our Vision -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm p-4 h-100" style="border-radius: var(--radius-lg);">
+                <div class="text-success fs-3 mb-3"><i class="fas fa-eye"></i></div>
+                <h3 class="h5 fw-bold mb-3">Our Vision</h3>
+                <p class="text-muted small mb-0">
+                    To become the leading agricultural commerce platform in West Africa, driving financial inclusion for smallholder farmers and building reliable food supply chains.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core Values -->
+    <div class="py-5 mt-5">
+        <h2 class="text-center mb-5 fw-bold">Our Core Values</h2>
+        <div class="row g-4">
+            <!-- Value 1 -->
+            <div class="col-md-4 text-center">
+                <div class="benefit-icon mx-auto mb-3"><i class="fas fa-shield-alt"></i></div>
+                <h4 class="fw-bold h5">Trust & Transparency</h4>
+                <p class="text-muted small">We establish trust through verified farmer profiles, clear product grading, and transparent pricing without hidden markups.</p>
+            </div>
+            <!-- Value 2 -->
+            <div class="col-md-4 text-center">
+                <div class="benefit-icon mx-auto mb-3"><i class="fas fa-leaf"></i></div>
+                <h4 class="fw-bold h5">Freshness & Quality</h4>
+                <p class="text-muted small">We verify that all produce cataloged is harvested fresh and shipped under conditions that maintain peak quality.</p>
+            </div>
+            <!-- Value 3 -->
+            <div class="col-md-4 text-center">
+                <div class="benefit-icon mx-auto mb-3"><i class="fas fa-users-cog"></i></div>
+                <h4 class="fw-bold h5">Community Impact</h4>
+                <p class="text-muted small">Every purchase supports local Ghanaian farming families, promoting community resilience and youth engagement in agriculture.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

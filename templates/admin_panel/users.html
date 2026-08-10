@@ -1,0 +1,128 @@
+{% extends "admin_panel/base_admin.html" %}
+
+{% block title %}Users Management - AgroConnect Admin{% endblock %}
+
+{% block admin_content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-1">Users Management</h4>
+        <p class="text-muted small mb-0">Manage all users on the AgroConnect platform.</p>
+    </div>
+</div>
+
+<!-- Search and Filters bar -->
+<div class="card border-0 shadow-sm p-3 mb-4" style="border-radius: var(--agro-radius); background-color: var(--agro-white);">
+    <form method="GET" class="row g-3 align-items-center">
+        <!-- Search bar -->
+        <div class="col-lg-4 col-md-6">
+            <div class="input-group rounded-pill overflow-hidden border">
+                <span class="input-group-text bg-white border-0"><i class="fas fa-search text-muted"></i></span>
+                <input type="text" name="search" class="form-control border-0 px-2" placeholder="Search by name, email, phone..." value="{{ search_query }}">
+            </div>
+        </div>
+        <!-- Role filter dropdown -->
+        <div class="col-lg-3 col-md-6">
+            <select name="role" class="form-select rounded-pill px-3 border" onchange="this.form.submit()">
+                <option value="">All Roles</option>
+                <option value="FARMER" {% if selected_role == 'FARMER' %}selected{% endif %}>Farmers</option>
+                <option value="BUYER" {% if selected_role == 'BUYER' %}selected{% endif %}>Buyers</option>
+            </select>
+        </div>
+        <!-- Status filter dropdown -->
+        <div class="col-lg-3 col-md-6">
+            <select name="status" class="form-select rounded-pill px-3 border" onchange="this.form.submit()">
+                <option value="">All Status</option>
+                <option value="active" {% if selected_status == 'active' %}selected{% endif %}>Active</option>
+                <option value="inactive" {% if selected_status == 'inactive' %}selected{% endif %}>Inactive</option>
+            </select>
+        </div>
+        <!-- Actions buttons -->
+        <div class="col-lg-2 col-md-6 d-grid">
+            <button type="submit" class="btn btn-success rounded-pill px-4">Apply Filters</button>
+        </div>
+    </form>
+</div>
+
+<!-- Users Table Card -->
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="table admin-table mb-0">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Role</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Status</th>
+                    <th>Joined</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in page_obj %}
+                <tr>
+                    <td>
+                        <div class="user-avatar-cell">
+                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="Avatar" class="user-avatar-img">
+                            <div>
+                                <div class="fw-bold text-dark">{{ item.get_full_name|default:item.username }}</div>
+                                <div style="font-size: 0.75rem;" class="text-muted">@{{ item.username }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        {% if item.account_type == 'FARMER' %}
+                            <span class="badge bg-success-light text-success fw-semibold font-xs px-2 py-1"><i class="fas fa-tractor me-1"></i> Farmer</span>
+                        {% elif item.account_type == 'BUYER' %}
+                            <span class="badge bg-info-light text-info fw-semibold font-xs px-2 py-1"><i class="fas fa-shopping-bag me-1"></i> Buyer</span>
+                        {% else %}
+                            <span class="badge bg-secondary-light text-secondary fw-semibold font-xs px-2 py-1"><i class="fas fa-user me-1"></i> Staff</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ item.email }}</td>
+                    <td>{{ item.phone|default:"N/A" }}</td>
+                    <td>
+                        <span class="badge-status badge-status-{% if item.is_active %}active{% else %}suspended{% endif %}">
+                            {% if item.is_active %}Active{% else %}Suspended{% endif %}
+                        </span>
+                    </td>
+                    <td>{{ item.date_joined|date:"M d, Y" }}</td>
+                    <td>
+                        <a href="{% url 'admin_user_detail' item.id %}" class="btn btn-light btn-sm rounded-pill border"><i class="fas fa-user-edit text-muted me-1"></i> Manage</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        <i class="fas fa-user-slash fs-2 mb-3 d-block text-secondary"></i>
+                        No users found matching query criteria.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paging controls -->
+    {% if page_obj.has_other_pages %}
+    <div class="admin-pagination border-top">
+        <span class="text-muted font-sm">Showing page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        <nav>
+            <ul class="pagination pagination-sm mb-0">
+                {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link rounded-start-pill px-3 border text-success" href="?page=1&search={{ search_query }}&role={{ selected_role }}&status={{ selected_status }}">First</a></li>
+                    <li class="page-item"><a class="page-link px-3 border text-success" href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&role={{ selected_role }}&status={{ selected_status }}">Prev</a></li>
+                {% endif %}
+                
+                <li class="page-item active"><span class="page-link bg-success border-success text-white px-3">{{ page_obj.number }}</span></li>
+                
+                {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link px-3 border text-success" href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&role={{ selected_role }}&status={{ selected_status }}">Next</a></li>
+                    <li class="page-item"><a class="page-link rounded-end-pill px-3 border text-success" href="?page={{ page_obj.paginator.num_pages }}&search={{ search_query }}&role={{ selected_role }}&status={{ selected_status }}">Last</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

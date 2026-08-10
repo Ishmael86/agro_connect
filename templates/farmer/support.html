@@ -1,0 +1,134 @@
+{% extends "farmer/base_farmer.html" %}
+{% load static %}
+
+{% block buyer_content %}
+<div class="mb-4">
+    <h4 class="fw-bold text-dark mb-1">Support & FAQs</h4>
+    <span class="text-muted font-xs">Find answers to common questions or submit support inquiry requests.</span>
+</div>
+
+<div class="row g-4">
+    <!-- FAQs Accordion (Left) -->
+    <div class="col-lg-7">
+        <div class="agro-card h-100">
+            <h5 class="fw-bold text-dark mb-4">Frequently Asked Questions</h5>
+            
+            <div class="accordion border-0" id="faqsAccordion">
+                
+                <!-- FAQ 1 -->
+                <div class="accordion-item border-0 border-bottom mb-2">
+                    <h2 class="accordion-header" id="faqOne">
+                        <button class="accordion-button collapsed fw-bold text-dark font-sm bg-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                            How do I request payouts for my crop sales?
+                        </button>
+                    </h2>
+                    <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#faqsAccordion">
+                        <div class="accordion-body small text-muted pt-0" style="line-height: 1.6;">
+                            Available funds can be requested directly from the <strong>Payouts</strong> page. We support withdrawals to MTN Mobile Money, Telecel Cash, AirtelTigo Money, or bank accounts. Requests are verified and processed within 24-48 business hours.
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- FAQ 2 -->
+                <div class="accordion-item border-0 border-bottom mb-2">
+                    <h2 class="accordion-header" id="faqTwo">
+                        <button class="accordion-button collapsed fw-bold text-dark font-sm bg-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                            When do sales earnings show in my wallet balance?
+                        </button>
+                    </h2>
+                    <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#faqsAccordion">
+                        <div class="accordion-body small text-muted pt-0" style="line-height: 1.6;">
+                            To ensure buyer security, sales revenue is held in escrow until the order status is marked as <strong>DELIVERED</strong>. Once confirmed, the items subtotal is immediately transferred to your available balance.
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- FAQ 3 -->
+                <div class="accordion-item border-0 border-bottom mb-2">
+                    <h2 class="accordion-header" id="faqThree">
+                        <button class="accordion-button collapsed fw-bold text-dark font-sm bg-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
+                            How do I update the shipping status of an order?
+                        </button>
+                    </h2>
+                    <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#faqsAccordion">
+                        <div class="accordion-body small text-muted pt-0" style="line-height: 1.6;">
+                            Go to <strong>Orders</strong>, select the specific order, and click the status action buttons at the bottom. You can advance orders from Accepted to Processing, Shipped, and finally confirm Delivery.
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- FAQ 4 -->
+                <div class="accordion-item border-0 border-bottom mb-2">
+                    <h2 class="accordion-header" id="faqFour">
+                        <button class="accordion-button collapsed fw-bold text-dark font-sm bg-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour">
+                            What happens if I run out of stock for a crop?
+                        </button>
+                    </h2>
+                    <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#faqsAccordion">
+                        <div class="accordion-body small text-muted pt-0" style="line-height: 1.6;">
+                            You should edit the crop product listing in <strong>My Products</strong> and reduce the stock count to 0 or uncheck the availability toggle. Out of stock products display warning badges and block buyers from adding them to carts.
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+    
+    <!-- Contact Support Form (Right) -->
+    <div class="col-lg-5">
+        <div class="agro-card h-100">
+            <h5 class="fw-bold text-dark mb-3">Submit Inquiry</h5>
+            <p class="small text-muted mb-4">Can't find what you need? Send a message to our administrator team.</p>
+            
+            <form method="POST" action="">
+                {% csrf_token %}
+                
+                <div class="d-flex flex-column gap-3">
+                    <div>
+                        <label class="form-label fw-bold text-dark small">Full Name *</label>
+                        {{ form.full_name }}
+                        {% if form.full_name.errors %}
+                            <div class="text-danger small mt-1">{{ form.full_name.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="form-label fw-bold text-dark small">Email Address *</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="form-label fw-bold text-dark small">Phone Number</label>
+                        {{ form.phone }}
+                        {% if form.phone.errors %}
+                            <div class="text-danger small mt-1">{{ form.phone.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="form-label fw-bold text-dark small">Subject *</label>
+                        {{ form.subject }}
+                        {% if form.subject.errors %}
+                            <div class="text-danger small mt-1">{{ form.subject.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="form-label fw-bold text-dark small">Message / Description *</label>
+                        {{ form.message }}
+                        {% if form.message.errors %}
+                            <div class="text-danger small mt-1">{{ form.message.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success rounded-pill py-2 font-sm shadow mt-2"><i class="fas fa-paper-plane me-2"></i>Send Support Inquiry</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

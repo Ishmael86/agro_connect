@@ -1,0 +1,53 @@
+{% load static %}
+<div class="col-lg-3 col-md-6 col-sm-6 mb-4">
+    <div class="product-card text-center p-3 d-flex flex-column align-items-center">
+        <div class="my-3">
+            {% if farmer.profile_image %}
+                <img src="{{ farmer.profile_image.url }}" alt="{{ farmer.farm_name }}" class="farmer-avatar" style="width: 100px; height: 100px; object-fit: cover; border-radius: 50%;">
+            {% else %}
+                {% if farmer.user.username == 'ama' %}
+                    <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=150&auto=format&fit=crop" alt="{{ farmer.farm_name }}" class="farmer-avatar" style="width: 100px; height: 100px; object-fit: cover; border-radius: 50%;">
+                {% elif farmer.user.username == 'salomey' %}
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=150&auto=format&fit=crop" alt="{{ farmer.farm_name }}" class="farmer-avatar" style="width: 100px; height: 100px; object-fit: cover; border-radius: 50%;">
+                {% elif farmer.user.username == 'abena' %}
+                    <img src="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f9b?q=80&w=150&auto=format&fit=crop" alt="{{ farmer.farm_name }}" class="farmer-avatar" style="width: 100px; height: 100px; object-fit: cover; border-radius: 50%;">
+                {% elif farmer.user.username == 'kwame' %}
+                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=150&auto=format&fit=crop" alt="{{ farmer.farm_name }}" class="farmer-avatar" style="width: 100px; height: 100px; object-fit: cover; border-radius: 50%;">
+                {% elif farmer.user.username == 'kofi' %}
+                    <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=150&auto=format&fit=crop" alt="{{ farmer.farm_name }}" class="farmer-avatar" style="width: 100px; height: 100px; object-fit: cover; border-radius: 50%;">
+                {% else %}
+                    <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=150&auto=format&fit=crop" alt="{{ farmer.farm_name }}" class="farmer-avatar" style="width: 100px; height: 100px; object-fit: cover; border-radius: 50%;">
+                {% endif %}
+            {% endif %}
+        </div>
+        
+        <h4 class="product-title mt-2 mb-1">
+            <a href="{% url 'farmer_detail' farmer.id %}">{{ farmer.farm_name }}</a>
+        </h4>
+        
+        <span class="text-muted small mb-2">
+            by {{ farmer.user.get_full_name|default:farmer.user.username }}
+            {% if farmer.verified %}
+                <span class="badge-verified"><i class="fas fa-check-circle"></i> Verified</span>
+            {% endif %}
+        </span>
+        
+        <div class="mb-2">
+            {% include 'partials/rating.html' with rating=farmer.rating %}
+        </div>
+        
+        <div class="product-location mb-3 text-center">
+            <i class="fas fa-map-marker-alt text-success"></i>
+            <span>{{ farmer.location }}, {{ farmer.region }}</span>
+        </div>
+        
+        <div class="text-muted small mb-3">
+            <i class="fas fa-store me-1"></i> {{ farmer.products.count }} Products Listed
+        </div>
+        
+        <div class="mt-auto w-100 d-flex flex-column gap-2">
+            <a href="{% url 'farmer_detail' farmer.id %}" class="btn btn-primary-green btn-sm w-100">View Farm</a>
+            <button class="btn btn-outline-green btn-sm w-100" onclick="showAgroToast('Farmer contact requested! Phone: {{ farmer.phone }}')">Contact Farmer</button>
+        </div>
+    </div>
+</div>

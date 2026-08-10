@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout | AgroConnect{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumbs -->
+    <nav aria-label="breadcrumb" class="py-2">
+        <ol class="breadcrumb mb-4 align-items-center" style="font-size: 0.9rem;">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-success"><i class="fas fa-home me-1"></i> Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'cart' %}" class="text-success">Your Cart</a></li>
+            <li class="breadcrumb-item active text-muted" aria-current="page">Checkout</li>
+        </ol>
+    </nav>
+
+    <h1 class="h3 fw-bold mb-4">Checkout</h1>
+
+    <form action="{% url 'checkout' %}" method="POST" class="needs-validation" novalidate>
+        {% csrf_token %}
+        
+        <div class="row g-4">
+            <!-- 1. LEFT - DELIVERY INFO & PAYMENT -->
+            <div class="col-lg-8">
+                <!-- Delivery Information Card -->
+                <div class="card border-0 shadow-sm p-4 p-md-5 mb-4" style="border-radius: var(--radius-lg);">
+                    <h2 class="h5 fw-bold mb-4"><i class="fas fa-truck text-success me-2"></i> Delivery Information</h2>
+                    
+                    <div class="row g-3">
+                        <!-- Full Name -->
+                        <div class="col-md-6">
+                            <label for="id_full_name" class="form-label fw-semibold small text-muted">Full Name</label>
+                            {{ form.full_name }}
+                            {% if form.full_name.errors %}
+                                <div class="invalid-feedback d-block">{{ form.full_name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Phone Number -->
+                        <div class="col-md-6">
+                            <label for="id_phone" class="form-label fw-semibold small text-muted">Phone Number</label>
+                            {{ form.phone }}
+                            {% if form.phone.errors %}
+                                <div class="invalid-feedback d-block">{{ form.phone.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Delivery Address -->
+                        <div class="col-md-12">
+                            <label for="id_delivery_address" class="form-label fw-semibold small text-muted">Delivery Address</label>
+                            {{ form.delivery_address }}
+                            {% if form.delivery_address.errors %}
+                                <div class="invalid-feedback d-block">{{ form.delivery_address.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Region selection -->
+                        <div class="col-md-6">
+                            <label for="id_region" class="form-label fw-semibold small text-muted">Region</label>
+                            {{ form.region }}
+                            {% if form.region.errors %}
+                                <div class="invalid-feedback d-block">{{ form.region.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- City -->
+                        <div class="col-md-6">
+                            <label for="id_city" class="form-label fw-semibold small text-muted">City / Town</label>
+                            {{ form.city }}
+                            {% if form.city.errors %}
+                                <div class="invalid-feedback d-block">{{ form.city.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Method Card -->
+                <div class="card border-0 shadow-sm p-4 p-md-5" style="border-radius: var(--radius-lg);">
+                    <h2 class="h5 fw-bold mb-4"><i class="fas fa-wallet text-success me-2"></i> Payment Method</h2>
+                    
+                    <div class="row g-3">
+                        <!-- Mobile Money Choice -->
+                        <div class="col-md-4">
+                            <div class="payment-method-card border p-3 rounded text-center cursor-pointer h-100 position-relative {% if not form.payment_method.value or form.payment_method.value == 'MOBILE_MONEY' %}border-success bg-light{% endif %}" onclick="selectPaymentMethod('MOBILE_MONEY')">
+                                <i class="fas fa-mobile-screen-button text-success mb-2 fs-3"></i>
+                                <h3 class="h6 fw-bold mb-1">Mobile Money</h3>
+                                <span class="text-muted small" style="font-size: 0.75rem;">MTN MoMo, Telecel, AT</span>
+                                <input type="radio" name="payment_method" value="MOBILE_MONEY" class="position-absolute opacity-0" {% if not form.payment_method.value or form.payment_method.value == 'MOBILE_MONEY' %}checked{% endif %}>
+                            </div>
+                        </div>
+
+                        <!-- Card Payment Choice -->
+                        <div class="col-md-4">
+                            <div class="payment-method-card border p-3 rounded text-center cursor-pointer h-100 position-relative {% if form.payment_method.value == 'CARD_PAYMENT' %}border-success bg-light{% endif %}" onclick="selectPaymentMethod('CARD_PAYMENT')">
+                                <i class="fas fa-credit-card text-success mb-2 fs-3"></i>
+                                <h3 class="h6 fw-bold mb-1">Card Payment</h3>
+                                <span class="text-muted small" style="font-size: 0.75rem;">Visa, Mastercard, Gh-Link</span>
+                                <input type="radio" name="payment_method" value="CARD_PAYMENT" class="position-absolute opacity-0" {% if form.payment_method.value == 'CARD_PAYMENT' %}checked{% endif %}>
+                            </div>
+                        </div>
+
+                        <!-- Cash on Delivery Choice -->
+                        <div class="col-md-4">
+                            <div class="payment-method-card border p-3 rounded text-center cursor-pointer h-100 position-relative {% if form.payment_method.value == 'CASH_ON_DELIVERY' %}border-success bg-light{% endif %}" onclick="selectPaymentMethod('CASH_ON_DELIVERY')">
+                                <i class="fas fa-hand-holding-dollar text-success mb-2 fs-3"></i>
+                                <h3 class="h6 fw-bold mb-1">Cash on Delivery</h3>
+                                <span class="text-muted small" style="font-size: 0.75rem;">Pay when you receive</span>
+                                <input type="radio" name="payment_method" value="CASH_ON_DELIVERY" class="position-absolute opacity-0" {% if form.payment_method.value == 'CASH_ON_DELIVERY' %}checked{% endif %}>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. RIGHT - ORDER SUMMARY & PLACE ORDER -->
+            <div class="col-lg-4">
+                <div class="summary-box shadow-sm">
+                    <h3 class="h5 fw-bold mb-4 border-bottom pb-2">Order Summary</h3>
+                    
+                    <!-- Items list scrollable -->
+                    <div class="mb-4" style="max-height: 280px; overflow-y: auto;">
+                        {% for item in items %}
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                {% if item.product.main_image %}
+                                    <img src="{{ item.product.main_image.url }}" alt="{{ item.product.name }}" class="border rounded" style="width: 50px; height: 50px; object-fit: cover;">
+                                {% else %}
+                                    <img src="https://images.unsplash.com/photo-1595855759920-86582396756a?q=80&w=150&auto=format&fit=crop" alt="Placeholder" class="border rounded" style="width: 50px; height: 50px; object-fit: cover;">
+                                {% endif %}
+                                <div class="flex-grow-1">
+                                    <h4 class="h6 fw-bold mb-0 text-truncate" style="max-width: 150px;">{{ item.product.name }}</h4>
+                                    <span class="text-muted small">{{ item.quantity }} x GHS {{ item.product.final_price|floatformat:2 }}</span>
+                                </div>
+                                <div>
+                                    <span class="fw-semibold text-dark">GHS {{ item.subtotal|floatformat:2 }}</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Calculation Breakdowns -->
+                    <div class="d-flex justify-content-between mb-3 text-muted small">
+                        <span>Subtotal</span>
+                        <span class="fw-semibold text-dark">GHS {{ subtotal|floatformat:2 }}</span>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mb-3 text-muted small">
+                        <span>Delivery Fee</span>
+                        <span class="fw-semibold text-dark">GHS {{ delivery_fee|floatformat:2 }}</span>
+                    </div>
+                    
+                    <hr style="border-color: var(--border-color);">
+                    
+                    <div class="d-flex justify-content-between mb-4">
+                        <span class="fw-bold">Total</span>
+                        <strong class="fs-5 text-success">GHS {{ total|floatformat:2 }}</strong>
+                    </div>
+                    
+                    <!-- Secure transaction badge -->
+                    <div class="d-flex align-items-center justify-content-center gap-2 mb-4 p-2 bg-light rounded text-success small fw-semibold">
+                        <i class="fas fa-lock"></i>
+                        <span>Your transaction is secure</span>
+                    </div>
+                    
+                    <!-- Place Order Button -->
+                    <button type="submit" class="btn btn-primary-green w-100 py-3 text-center">Place Order</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Style toggle helper for payment selector tabs
+    function selectPaymentMethod(method) {
+        document.querySelectorAll('.payment-method-card').forEach(card => {
+            card.classList.remove('border-success', 'bg-light');
+            const radio = card.querySelector('input[type="radio"]');
+            if (radio.value === method) {
+                card.classList.add('border-success', 'bg-light');
+                radio.checked = true;
+            }
+        });
+    }
+</script>
+{% endblock %}

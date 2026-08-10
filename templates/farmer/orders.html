@@ -1,0 +1,116 @@
+{% extends "farmer/base_farmer.html" %}
+{% load static %}
+
+{% block buyer_content %}
+<div class="mb-4">
+    <h4 class="fw-bold text-dark mb-1">Orders</h4>
+    <span class="text-muted font-xs">Track customer crop purchases, manage deliveries, and update statuses.</span>
+</div>
+
+<!-- Order Status Filter Navigation Tabs -->
+<ul class="nav nav-pills gap-2 mb-4 p-2 bg-white rounded-pill border shadow-sm flex-wrap justify-content-start" style="border-radius: 50px !important;">
+    <li class="nav-item">
+        <a class="nav-link rounded-pill font-sm px-3 {% if selected_status == 'all' or selected_status == 'ALL' %}active bg-success{% else %}text-muted{% endif %}" href="{% url 'farmer_orders' %}?status=all">
+            All Orders
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link rounded-pill font-sm px-3 {% if selected_status == 'PENDING' %}active bg-success{% else %}text-muted{% endif %}" href="{% url 'farmer_orders' %}?status=pending">
+            Pending
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link rounded-pill font-sm px-3 {% if selected_status == 'PROCESSING' %}active bg-success{% else %}text-muted{% endif %}" href="{% url 'farmer_orders' %}?status=processing">
+            Processing
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link rounded-pill font-sm px-3 {% if selected_status == 'SHIPPED' %}active bg-success{% else %}text-muted{% endif %}" href="{% url 'farmer_orders' %}?status=shipped">
+            Shipped
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link rounded-pill font-sm px-3 {% if selected_status == 'DELIVERED' %}active bg-success{% else %}text-muted{% endif %}" href="{% url 'farmer_orders' %}?status=delivered">
+            Delivered
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link rounded-pill font-sm px-3 {% if selected_status == 'CANCELLED' %}active bg-success{% else %}text-muted{% endif %}" href="{% url 'farmer_orders' %}?status=cancelled">
+            Cancelled
+        </a>
+    </li>
+</ul>
+
+<!-- Orders Table -->
+<div class="agro-card">
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Customer Name</th>
+                    <th>Items Purchased</th>
+                    <th>Your Share Revenue</th>
+                    <th>Order Date</th>
+                    <th>Status</th>
+                    <th class="text-end">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in page_obj %}
+                    <tr>
+                        <td><span class="fw-bold text-dark">{{ item.order.order_number }}</span></td>
+                        <td>{{ item.full_name }}</td>
+                        <td>{{ item.items_count }} item(s)</td>
+                        <td><span class="text-success fw-bold">GHS {{ item.total_amount|floatformat:2 }}</span></td>
+                        <td>{{ item.created_at|date:"M d, Y" }}</td>
+                        <td>
+                            {% if item.status == 'PENDING' %}
+                                <span class="badge-status badge-pending">Pending</span>
+                            {% elif item.status == 'PROCESSING' %}
+                                <span class="badge-status badge-processing">Processing</span>
+                            {% elif item.status == 'SHIPPED' %}
+                                <span class="badge-status badge-shipped">Shipped</span>
+                            {% elif item.status == 'DELIVERED' %}
+                                <span class="badge-status badge-delivered">Delivered</span>
+                            {% else %}
+                                <span class="badge-status badge-cancelled">Cancelled</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <a href="{% url 'farmer_order_detail' item.order.order_number %}" class="btn btn-sm btn-light border rounded-pill px-3">Manage</a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 70px; height: 70px;">
+                                <i class="fas fa-box-open text-success fs-4"></i>
+                            </div>
+                            <h6 class="fw-bold text-dark mb-1">No orders found.</h6>
+                            <p class="text-muted font-sm px-4">There are no order records matching this status filter.</p>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Pagination component -->
+{% if page_obj.has_other_pages %}
+    <nav class="d-flex justify-content-center mt-5">
+        <ul class="pagination pagination-sm">
+            {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if selected_status %}&status={{ selected_status }}{% endif %}">Previous</a></li>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+                <li class="page-item {% if page_obj.number == num %}active{% endif %}"><a class="page-link" href="?page={{ num }}{% if selected_status %}&status={{ selected_status }}{% endif %}">{{ num }}</a></li>
+            {% endfor %}
+            {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if selected_status %}&status={{ selected_status }}{% endif %}">Next</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endif %}
+{% endblock %}

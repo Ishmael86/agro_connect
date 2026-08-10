@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ product.name }} | AgroConnect{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumbs -->
+    <nav aria-label="breadcrumb" class="py-2">
+        <ol class="breadcrumb mb-4 align-items-center" style="font-size: 0.9rem;">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-success"><i class="fas fa-home me-1"></i> Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'product_list' %}" class="text-success">Products</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'product_list' %}?category={{ product.category.slug }}" class="text-success">{{ product.category.name }}</a></li>
+            <li class="breadcrumb-item active text-muted" aria-current="page">{{ product.name }}</li>
+        </ol>
+    </nav>
+
+    <!-- Main Product Block -->
+    <div class="row g-5">
+        <!-- 1. LEFT SIDE - IMAGE GALLERY -->
+        <div class="col-lg-6">
+            <div class="product-detail-image-gallery">
+                <!-- Gallery Thumbnails -->
+                <div class="gallery-thumbnails">
+                    {% if product.main_image %}
+                        <img src="{{ product.main_image.url }}" alt="{{ product.name }} Thumbnail 1" class="active">
+                    {% else %}
+                        {% if product.category.slug == 'fruits' %}
+                            <img src="https://images.unsplash.com/photo-1550258987-190a2d41a8ba?q=80&w=400&auto=format&fit=crop" alt="Fruits Placeholder" class="active">
+                        {% elif product.category.slug == 'vegetables' %}
+                            <img src="https://images.unsplash.com/photo-1592924357228-91a4daadcfea?q=80&w=400&auto=format&fit=crop" alt="Vegetables Placeholder" class="active">
+                        {% elif product.category.slug == 'grains-cereals' %}
+                            <img src="https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?q=80&w=400&auto=format&fit=crop" alt="Grains Placeholder" class="active">
+                        {% elif product.category.slug == 'tubers' %}
+                            <img src="https://images.unsplash.com/photo-1590779037664-647895318ab4?q=80&w=400&auto=format&fit=crop" alt="Tubers Placeholder" class="active">
+                        {% elif product.category.slug == 'legumes' %}
+                            <img src="https://images.unsplash.com/photo-1546964124-0cce460f38ef?q=80&w=400&auto=format&fit=crop" alt="Legumes Placeholder" class="active">
+                        {% elif product.category.slug == 'herbs-spices' %}
+                            <img src="https://images.unsplash.com/photo-1596797038530-2c107229654b?q=80&w=400&auto=format&fit=crop" alt="Spices Placeholder" class="active">
+                        {% elif product.category.slug == 'dairy-eggs' %}
+                            <img src="https://images.unsplash.com/photo-1516448424440-9dbca97779c1?q=80&w=400&auto=format&fit=crop" alt="Eggs Placeholder" class="active">
+                        {% elif product.category.slug == 'meat-poultry' %}
+                            <img src="https://images.unsplash.com/photo-1604503468506-a8da13d82791?q=80&w=400&auto=format&fit=crop" alt="Meat Placeholder" class="active">
+                        {% elif product.category.slug == 'seeds-inputs' %}
+                            <img src="https://images.unsplash.com/photo-1530595467537-0b5996c41f2d?q=80&w=400&auto=format&fit=crop" alt="Seeds Placeholder" class="active">
+                        {% else %}
+                            <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=400&auto=format&fit=crop" alt="Product Placeholder" class="active">
+                        {% endif %}
+                    {% endif %}
+                    <img src="https://images.unsplash.com/photo-1592924357228-91a4daadcfea?q=80&w=150&auto=format&fit=crop" alt="Crops Close up Thumbnail 2">
+                    <img src="https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?q=80&w=150&auto=format&fit=crop" alt="Farm Soil Thumbnail 3">
+                </div>
+                
+                <!-- Main Image Box -->
+                <div class="main-image-box">
+                    {% if product.main_image %}
+                        <img id="main-product-image" src="{{ product.main_image.url }}" alt="{{ product.name }}">
+                    {% else %}
+                        {% if product.category.slug == 'fruits' %}
+                            <img id="main-product-image" src="https://images.unsplash.com/photo-1550258987-190a2d41a8ba?q=80&w=600&auto=format&fit=crop" alt="{{ product.name }} Placeholder">
+                        {% elif product.category.slug == 'vegetables' %}
+                            <img id="main-product-image" src="https://images.unsplash.com/photo-1592924357228-91a4daadcfea?q=80&w=600&auto=format&fit=crop" alt="{{ product.name }} Placeholder">
+                        {% elif product.category.slug == 'grains-cereals' %}
+                            <img id="main-product-image" src="https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?q=80&w=600&auto=format&fit=crop" alt="{{ product.name }} Placeholder">
+                        {% elif product.category.slug == 'tubers' %}
+                            <img id="main-product-image" src="https://images.unsplash.com/photo-1590779037664-647895318ab4?q=80&w=600&auto=format&fit=crop" alt="{{ product.name }} Placeholder">
+                        {% elif product.category.slug == 'legumes' %}
+                            <img id="main-product-image" src="https://images.unsplash.com/photo-1546964124-0cce460f38ef?q=80&w=600&auto=format&fit=crop" alt="{{ product.name }} Placeholder">
+                        {% elif product.category.slug == 'herbs-spices' %}
+                            <img id="main-product-image" src="https://images.unsplash.com/photo-1596797038530-2c107229654b?q=80&w=600&auto=format&fit=crop" alt="{{ product.name }} Placeholder">
+                        {% elif product.category.slug == 'dairy-eggs' %}
+                            <img id="main-product-image" src="https://images.unsplash.com/photo-1516448424440-9dbca97779c1?q=80&w=600&auto=format&fit=crop" alt="{{ product.name }} Placeholder">
+                        {% elif product.category.slug == 'meat-poultry' %}
+                            <img id="main-product-image" src="https://images.unsplash.com/photo-1604503468506-a8da13d82791?q=80&w=600&auto=format&fit=crop" alt="{{ product.name }} Placeholder">
+                        {% elif product.category.slug == 'seeds-inputs' %}
+                            <img id="main-product-image" src="https://images.unsplash.com/photo-1530595467537-0b5996c41f2d?q=80&w=600&auto=format&fit=crop" alt="{{ product.name }} Placeholder">
+                        {% else %}
+                            <img id="main-product-image" src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=600&auto=format&fit=crop" alt="{{ product.name }} Placeholder">
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. RIGHT SIDE - PRODUCT INFORMATION -->
+        <div class="col-lg-6">
+            <div class="product-detail-info">
+                <h1 class="display-6 fw-bold mb-2">{{ product.name }}</h1>
+                
+                <!-- Farmer Link & Verification -->
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <a href="{% url 'farmer_detail' product.farmer.id %}" class="h6 fw-semibold text-success mb-0">
+                        by {{ product.farmer.farm_name }}
+                    </a>
+                    {% if product.farmer.verified %}
+                        <span class="badge-verified"><i class="fas fa-check-circle"></i> Verified Farmer</span>
+                    {% endif %}
+                </div>
+
+                <!-- Rating -->
+                <div class="d-flex align-items-center gap-2 mb-4">
+                    {% include 'partials/rating.html' with rating=product.rating %}
+                    <span class="text-muted small">({{ product.review_count }} Reviews)</span>
+                </div>
+
+                <!-- Price and Unit -->
+                <div class="mb-4">
+                    <div class="product-price fs-2">
+                        GHS {{ product.final_price|floatformat:2 }}
+                        <span class="fs-6 text-muted">/ {{ product.unit }}</span>
+                    </div>
+                    {% if product.discount_price %}
+                        <div class="text-muted text-decoration-line-through small">
+                            GHS {{ product.price|floatformat:2 }} / {{ product.unit }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Description -->
+                <p class="text-muted mb-4">{{ product.description }}</p>
+
+                <!-- Trust Badges -->
+                <div class="meta-trust-badges">
+                    <div class="trust-badge-item"><i class="fas fa-leaf"></i> 100% Fresh</div>
+                    <div class="trust-badge-item"><i class="fas fa-shield-halved"></i> Pesticide Free</div>
+                    <div class="trust-badge-item"><i class="fas fa-tractor"></i> Farm Fresh</div>
+                </div>
+
+                <!-- Quantity Control & Purchase Buttons -->
+                {% if product.stock_quantity > 0 %}
+                    <div class="d-flex flex-wrap align-items-center gap-4 py-3 border-top border-bottom mb-4">
+                        <!-- Qty -->
+                        <div class="detail-qty-wrapper">
+                            <span class="small fw-semibold text-muted d-block me-3">Quantity</span>
+                            <div class="qty-control-wrapper">
+                                <button class="qty-btn qty-minus" type="button">-</button>
+                                <input type="text" class="qty-input" value="1" data-max-stock="{{ product.stock_quantity }}" readonly>
+                                <button class="qty-btn qty-plus" type="button">+</button>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex gap-3 flex-grow-1">
+                            <button class="btn btn-primary-green flex-grow-1 ajax-add-to-cart" data-product-id="{{ product.id }}">
+                                <i class="fas fa-shopping-basket me-2"></i> Add to Cart
+                            </button>
+                            <a href="{% url 'cart' %}" class="btn btn-outline-green ajax-add-to-cart flex-grow-1 text-center" data-product-id="{{ product.id }}">
+                                Buy Now
+                            </a>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="alert alert-danger py-3 mb-4">
+                        <i class="fas fa-exclamation-triangle me-2"></i> This product is currently out of stock.
+                    </div>
+                {% endif %}
+
+                <!-- Meta Details Table -->
+                <div class="row g-3" style="font-size: 0.9rem;">
+                    <div class="col-6">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fas fa-tags text-success w-20"></i>
+                            <span class="text-muted">Category:</span>
+                            <strong class="text-dark">{{ product.category.name|default:"General" }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fas fa-map-marker-alt text-success w-20"></i>
+                            <span class="text-muted">Location:</span>
+                            <strong class="text-dark">{{ product.farmer.location }}, {{ product.farmer.region }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fas fa-layer-group text-success w-20"></i>
+                            <span class="text-muted">Available:</span>
+                            <strong class="text-dark">{{ product.stock_quantity }} {{ product.unit }}s</strong>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fas fa-truck text-success w-20"></i>
+                            <span class="text-muted">Delivery:</span>
+                            <strong class="text-dark">2 - 3 Days</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Farmer Profile Summary Card -->
+            <div class="detail-farmer-card shadow-sm">
+                <div class="farmer-header">
+                    {% if product.farmer.profile_image %}
+                        <img src="{{ product.farmer.profile_image.url }}" alt="{{ product.farmer.farm_name }}" class="farmer-avatar">
+                    {% else %}
+                        <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=150&auto=format&fit=crop" alt="{{ product.farmer.farm_name }}" class="farmer-avatar">
+                    {% endif %}
+                    <div>
+                        <h3 class="h5 fw-bold mb-0">
+                            {{ product.farmer.farm_name }}
+                            {% if product.farmer.verified %}
+                                <span class="badge-verified ms-1" style="font-size: 0.65rem;"><i class="fas fa-check-circle"></i> Verified</span>
+                            {% endif %}
+                        </h3>
+                        <span class="text-muted small">by {{ product.farmer.user.get_full_name|default:product.farmer.user.username }}</span>
+                        <div class="mt-1">
+                            {% include 'partials/rating.html' with rating=product.farmer.rating %}
+                        </div>
+                    </div>
+                </div>
+                
+                <p class="text-muted small mb-3">
+                    {{ product.farmer.description|default:"No description provided by the farmer. We verify that all farming activities follow strict environmental rules to produce healthy crops." }}
+                </p>
+                
+                <div class="row g-2">
+                    <div class="col-6">
+                        <a href="{% url 'farmer_detail' product.farmer.id %}" class="btn btn-outline-green btn-sm w-100 py-2">View Shop</a>
+                    </div>
+                    <div class="col-6">
+                        <button class="btn btn-outline-green btn-sm w-100 py-2" onclick="showAgroToast('Farmer Phone: {{ product.farmer.phone }}')">Contact Farmer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Products -->
+    {% if related_products %}
+        <div class="mt-5 pt-5 border-top">
+            <h3 class="fw-bold mb-4">Related Products</h3>
+            <div class="row g-4">
+                {% for prod in related_products %}
+                    <div class="col-lg-3 col-md-6 col-sm-6">
+                        {% include 'partials/product_card.html' with product=prod %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

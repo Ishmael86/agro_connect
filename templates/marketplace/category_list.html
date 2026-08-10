@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}All Categories | AgroConnect{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumbs -->
+    {% include 'partials/breadcrumb.html' with breadcrumbs=breadcrumbs %}
+
+    <div class="text-center max-width-600 mx-auto mb-5 py-2">
+        <h1 class="display-5 fw-bold mb-3">Shop by Categories</h1>
+        <p class="lead text-muted">Explore our wide selection of fresh Ghanaian agricultural produce categorized for easy shopping.</p>
+    </div>
+
+    <!-- Category Grid -->
+    <div class="row g-4">
+        {% for category in categories %}
+            <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                <a href="{% url 'product_list' %}?category={{ category.slug }}" class="category-card shadow-sm h-100 d-flex flex-column align-items-center justify-content-between p-4">
+                    <div class="text-center">
+                        {% if category.image %}
+                            <img src="{{ category.image.url }}" alt="{{ category.name }}" class="category-img shadow-sm mb-3">
+                        {% else %}
+                            <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=150&auto=format&fit=crop" alt="{{ category.name }}" class="category-img shadow-sm mb-3">
+                        {% endif %}
+                        <h3 class="h5 category-name fw-bold mb-2">{{ category.name }}</h3>
+                        <p class="text-muted small mb-3" style="line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                            {{ category.description|default:"High quality fresh produce directly from farm to table." }}
+                        </p>
+                    </div>
+                    <div class="w-100">
+                        <span class="category-count d-block mb-3 fw-semibold text-success">{{ category.product_count|default:0 }} Products Available</span>
+                        <span class="btn btn-outline-green btn-sm w-100">Browse {{ category.name }}</span>
+                    </div>
+                </a>
+            </div>
+        {% empty %}
+            <div class="col-12 text-center py-5">
+                <i class="fas fa-seedling fa-3x text-muted mb-3" style="color: var(--primary-green-light) !important;"></i>
+                <h3>No categories available!</h3>
+                <p class="text-muted">Please seed database to view categories.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

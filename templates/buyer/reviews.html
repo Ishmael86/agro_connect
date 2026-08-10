@@ -1,0 +1,168 @@
+{% extends "buyer/base_buyer.html" %}
+{% load static %}
+
+{% block title %}My Reviews | AgroConnect{% endblock %}
+
+{% block page_title %}My Reviews{% endblock %}
+
+{% block buyer_content %}
+<div class="row g-4">
+    <!-- Unreviewed Purchases (Left Column) -->
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm p-4 h-100" style="border-radius: var(--agro-radius);">
+            <h5 class="fw-bold text-dark mb-3">Pending Product Reviews</h5>
+            <p class="text-muted font-sm mb-4">Share your feedback on these products you purchased to help other buyers choose fresh crops.</p>
+
+            <div class="d-flex flex-column gap-3">
+                {% for prod in unreviewed_products %}
+                    <div class="p-3 border rounded-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div class="d-flex align-items-center gap-3">
+                            <div style="width: 50px; height: 50px; flex-shrink: 0;">
+                                {% if prod.main_image %}
+                                    <img src="{{ prod.main_image.url }}" alt="{{ prod.name }}" class="w-100 h-100 object-fit-cover rounded-3 border">
+                                {% else %}
+                                    <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=100&q=80" alt="Fallback" class="w-100 h-100 object-fit-cover rounded-3 border">
+                                {% endif %}
+                            </div>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-0">{{ prod.name }}</h6>
+                                <span class="text-muted font-xs">From {{ prod.farmer.farm_name }}</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-success btn-sm rounded-pill px-3" onclick="openReviewModal('{{ prod.id }}', '{{ prod.name }}')">
+                            Rate Crop
+                        </button>
+                    </div>
+                {% empty %}
+                    <div class="text-center py-5 text-muted">
+                        <i class="fas fa-check-circle fa-2x text-success mb-3 opacity-75"></i>
+                        <p class="mb-0 font-sm">All purchased items have been reviewed!</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- My Reviews List (Right Column) -->
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm p-4 h-100" style="border-radius: var(--agro-radius);">
+            <h5 class="fw-bold text-dark mb-4">Review History</h5>
+
+            <div class="d-flex flex-column gap-3">
+                {% for rev in my_reviews %}
+                    <div class="border rounded-3 p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <strong class="text-dark">{{ rev.product.name }}</strong>
+                                <span class="text-muted font-xs">by {{ rev.product.farmer.farm_name }}</span>
+                            </div>
+                            <span class="text-muted font-xs">{{ rev.created_at|date:"M d, Y" }}</span>
+                        </div>
+                        
+                        <!-- Star rating display -->
+                        <div class="text-warning mb-2 font-xs">
+                            <i class="{% if rev.rating >= 1 %}fas{% else %}far{% endif %} fa-star"></i>
+                            <i class="{% if rev.rating >= 2 %}fas{% else %}far{% endif %} fa-star"></i>
+                            <i class="{% if rev.rating >= 3 %}fas{% else %}far{% endif %} fa-star"></i>
+                            <i class="{% if rev.rating >= 4 %}fas{% else %}far{% endif %} fa-star"></i>
+                            <i class="{% if rev.rating >= 5 %}fas{% else %}far{% endif %} fa-star"></i>
+                        </div>
+                        
+                        <p class="font-sm text-dark mb-0 bg-light p-2.5 rounded text-muted" style="line-height: 1.5;">
+                            "{{ rev.comment }}"
+                        </p>
+                    </div>
+                {% empty %}
+                    <p class="text-muted text-center py-5 font-sm mb-0">You have not submitted any reviews yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Write Review Modal -->
+<div class="modal fade" id="writeReviewModal" tabindex="-1" aria-labelledby="writeReviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: var(--agro-radius);">
+            <div class="modal-header border-bottom">
+                <h5 class="modal-title fw-bold text-dark" id="writeReviewModalLabel">Write a Review</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{% url 'buyer_reviews' %}" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="product_id" id="reviewProductId">
+                
+                <div class="modal-body p-4">
+                    <p class="text-muted font-sm mb-4">Please rate <strong class="text-success" id="reviewProductName"></strong> and leave a short comment about your purchase experience.</p>
+                    
+                    <!-- Rating Star Selection UI -->
+                    <div class="mb-4 text-center">
+                        <label class="form-label font-sm text-muted d-block mb-2">Your Rating</label>
+                        <div class="star-rating-select text-warning fs-3 d-flex justify-content-center gap-2 cursor-pointer">
+                            <i class="far fa-star star-select" data-val="1"></i>
+                            <i class="far fa-star star-select" data-val="2"></i>
+                            <i class="far fa-star star-select" data-val="3"></i>
+                            <i class="far fa-star star-select" data-val="4"></i>
+                            <i class="far fa-star star-select" data-val="5"></i>
+                        </div>
+                        {{ form.rating }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label font-sm">Review Comments</label>
+                        {{ form.comment }}
+                    </div>
+                </div>
+
+                <div class="modal-footer border-top">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success rounded-pill px-4">Submit Review</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function openReviewModal(prodId, prodName) {
+        document.getElementById('reviewProductId').value = prodId;
+        document.getElementById('reviewProductName').innerText = prodName;
+        
+        // Reset stars
+        document.querySelectorAll('.star-select').forEach(s => {
+            s.className = 'far fa-star star-select';
+        });
+        document.getElementById('id_rating_value').value = '5';
+        document.querySelectorAll('.star-select').forEach(s => {
+            s.className = 'fas fa-star star-select'; // Default 5 stars
+        });
+
+        const modal = new bootstrap.Modal(document.getElementById('writeReviewModal'));
+        modal.show();
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle star hover/click selections
+        const stars = document.querySelectorAll('.star-select');
+        const ratingInput = document.getElementById('id_rating_value');
+        
+        stars.forEach(star => {
+            star.addEventListener('click', function() {
+                const val = parseInt(this.getAttribute('data-val'));
+                ratingInput.value = val;
+                
+                stars.forEach(s => {
+                    const sVal = parseInt(s.getAttribute('data-val'));
+                    if (sVal <= val) {
+                        s.className = 'fas fa-star star-select';
+                    } else {
+                        s.className = 'far fa-star star-select';
+                    }
+                });
+            });
+        });
+    });
+</script>
+{% endblock %}

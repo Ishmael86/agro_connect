@@ -1,0 +1,74 @@
+<footer class="bg-white border-top pt-5 pb-4 mt-5">
+    <div class="container">
+        <div class="row g-4">
+            <!-- Brand Column -->
+            <div class="col-lg-4 col-md-6">
+                <a class="navbar-brand mb-3" href="{% url 'home' %}" style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-leaf text-success"></i>
+                    <span>Agro<span style="color: var(--text-dark);">Connect</span></span>
+                </a>
+                <p class="text-muted mb-4" style="font-size: 0.9rem; max-width: 320px;">
+                    AgroConnect is a modern agricultural technology marketplace connecting local farmers directly to retail and wholesale buyers in Ghana.
+                </p>
+                <div class="d-flex gap-3">
+                    <a href="#" class="btn btn-primary-green p-0 rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="btn btn-primary-green p-0 rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="btn btn-primary-green p-0 rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="btn btn-primary-green p-0 rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+            
+            <!-- Quick Links -->
+            <div class="col-lg-2 col-md-6">
+                <h5 class="mb-3" style="font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Quick Links</h5>
+                <ul class="list-unstyled d-flex flex-column gap-2" style="font-size: 0.9rem;">
+                    <li><a href="{% url 'product_list' %}" class="text-muted">Shop Products</a></li>
+                    <li><a href="{% url 'farmer_list' %}" class="text-muted">Meet Farmers</a></li>
+                    <li><a href="{% url 'category_list' %}" class="text-muted">Shop Categories</a></li>
+                    <li><a href="{% url 'how_it_works' %}" class="text-muted">How It Works</a></li>
+                </ul>
+            </div>
+            
+            <!-- Company Links -->
+            <div class="col-lg-2 col-md-6">
+                <h5 class="mb-3" style="font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">AgroConnect</h5>
+                <ul class="list-unstyled d-flex flex-column gap-2" style="font-size: 0.9rem;">
+                    <li><a href="{% url 'about' %}" class="text-muted">About Us</a></li>
+                    <li><a href="{% url 'contact' %}" class="text-muted">Contact Us</a></li>
+                    <li><a href="#" class="text-muted">Privacy Policy</a></li>
+                    <li><a href="#" class="text-muted">Terms of Service</a></li>
+                </ul>
+            </div>
+            
+            <!-- Contact Info -->
+            <div class="col-lg-4 col-md-6">
+                <h5 class="mb-3" style="font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Contact Info</h5>
+                <ul class="list-unstyled d-flex flex-column gap-3 text-muted" style="font-size: 0.9rem;">
+                    <li class="d-flex align-items-start gap-2">
+                        <i class="fas fa-map-marker-alt text-success mt-1"></i>
+                        <span>East Legon, Accra, Greater Accra Region, Ghana</span>
+                    </li>
+                    <li class="d-flex align-items-center gap-2">
+                        <i class="fas fa-phone-alt text-success"></i>
+                        <span>+233 (0) 54 123 4567</span>
+                    </li>
+                    <li class="d-flex align-items-center gap-2">
+                        <i class="fas fa-envelope text-success"></i>
+                        <span>support@agroconnect.com.gh</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <hr class="my-4" style="border-color: var(--border-color);">
+        
+        <div class="row align-items-center">
+            <div class="col-md-6 text-center text-md-start">
+                <span class="text-muted" style="font-size: 0.85rem;">&copy; 2026 AgroConnect. Connecting Farmers, Growing Opportunities.</span>
+            </div>
+            <div class="col-md-6 text-center text-md-end mt-2 mt-md-0" style="font-size: 0.85rem;">
+                <span class="text-muted">Designed and developed in Ghana 🇬🇭</span>
+            </div>
+        </div>
+    </div>
+</footer>

@@ -1,0 +1,556 @@
+/* AgroConnect Admin Panel Stylesheet */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+    --agro-primary: #198754;
+    --agro-dark: #0f5132;
+    --agro-light: #eaf7ef;
+    --agro-bg: #f7f9f8;
+    --agro-white: #ffffff;
+    --agro-text: #1f2937;
+    --agro-muted: #6b7280;
+    --agro-border: #e5e7eb;
+    --agro-danger: #dc3545;
+    --agro-warning: #f59e0b;
+    --agro-info: #0d6efd;
+    --agro-radius: 16px;
+    --agro-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+body {
+    background-color: var(--agro-bg);
+    color: var(--agro-text);
+    font-family: var(--font-sans);
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+/* Base Layout */
+.admin-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar Navigation */
+.admin-sidebar {
+    width: 280px;
+    background-color: var(--agro-dark);
+    color: var(--agro-white);
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1040;
+}
+
+.sidebar-header {
+    padding: 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-brand {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--agro-white);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.admin-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--agro-primary);
+    background-color: rgba(25, 135, 84, 0.15);
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-top: 4px;
+    display: inline-block;
+}
+
+.sidebar-profile {
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-profile-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.sidebar-menu {
+    padding: 20px 16px;
+}
+
+.menu-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 12px;
+    margin-top: 16px;
+    padding-left: 8px;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    color: rgba(255, 255, 255, 0.75);
+    text-decoration: none;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 4px;
+    transition: all 0.2s ease;
+}
+
+.menu-item:hover {
+    color: var(--agro-white);
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.menu-item.active {
+    color: var(--agro-white);
+    background-color: var(--agro-primary);
+    box-shadow: 0 4px 12px rgba(25, 135, 84, 0.25);
+}
+
+.menu-item i {
+    width: 20px;
+    font-size: 1.1rem;
+    text-align: center;
+}
+
+/* Header & Content Area */
+.admin-main {
+    flex-grow: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-header {
+    background-color: var(--agro-white);
+    border-bottom: 1px solid var(--agro-border);
+    height: 70px;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.header-search {
+    width: 320px;
+    position: relative;
+}
+
+.header-search input {
+    background-color: #f3f4f6;
+    border: none;
+    border-radius: 30px;
+    padding: 10px 16px 10px 40px;
+    font-size: 0.85rem;
+    width: 100%;
+}
+
+.header-search i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--agro-muted);
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.action-btn {
+    position: relative;
+    border: none;
+    background: none;
+    padding: 8px;
+    color: var(--agro-muted);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.action-btn:hover {
+    background-color: #f3f4f6;
+    color: var(--agro-text);
+}
+
+.badge-dot {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 8px;
+    height: 8px;
+    background-color: var(--agro-danger);
+    border-radius: 50%;
+    border: 2px solid var(--agro-white);
+}
+
+/* Dropdown Menu styling */
+.dropdown-menu {
+    border-radius: 12px !important;
+    border: 1px solid var(--agro-border) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
+    padding: 8px !important;
+}
+
+.dropdown-item {
+    border-radius: 8px !important;
+    padding: 8px 16px !important;
+    font-size: 0.9rem !important;
+}
+
+.dropdown-item:hover {
+    background-color: var(--agro-light) !important;
+    color: var(--agro-dark) !important;
+}
+
+/* Content Area */
+.admin-content {
+    padding: 30px;
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+/* Dashboard Overview Cards */
+.stat-card {
+    background-color: var(--agro-white);
+    border-radius: var(--agro-radius);
+    padding: 24px;
+    border: none;
+    box-shadow: var(--agro-shadow);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background-color: var(--agro-primary);
+    opacity: 0.8;
+}
+
+.stat-card.card-users::before { background-color: var(--agro-info); }
+.stat-card.card-farmers::before { background-color: var(--agro-primary); }
+.stat-card.card-sales::before { background-color: var(--agro-warning); }
+.stat-card.card-orders::before { background-color: var(--agro-danger); }
+
+.stat-icon-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+.card-users .stat-icon-box { background-color: rgba(13, 110, 253, 0.1); color: var(--agro-info); }
+.card-farmers .stat-icon-box { background-color: rgba(25, 135, 84, 0.1); color: var(--agro-primary); }
+.card-sales .stat-icon-box { background-color: rgba(245, 158, 11, 0.1); color: var(--agro-warning); }
+.card-orders .stat-icon-box { background-color: rgba(220, 53, 69, 0.1); color: var(--agro-danger); }
+
+.stat-card-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--agro-muted);
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.stat-card-number {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--agro-text);
+}
+
+.stat-card-trend {
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.trend-up { color: #10b981; }
+.trend-down { color: var(--agro-danger); }
+
+/* Tables Design */
+.table-card {
+    background-color: var(--agro-white);
+    border-radius: var(--agro-radius);
+    box-shadow: var(--agro-shadow);
+    border: none;
+    overflow: hidden;
+    margin-bottom: 30px;
+}
+
+.table-card-header {
+    padding: 24px;
+    border-bottom: 1px solid var(--agro-border);
+    background-color: var(--agro-white);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.table-responsive {
+    margin: 0;
+}
+
+.admin-table {
+    width: 100%;
+    margin-bottom: 0;
+    vertical-align: middle;
+}
+
+.admin-table th {
+    background-color: #f9fafb;
+    border-bottom: 1px solid var(--agro-border);
+    padding: 14px 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--agro-muted);
+    letter-spacing: 0.5px;
+}
+
+.admin-table td {
+    padding: 16px 20px;
+    font-size: 0.9rem;
+    border-bottom: 1px solid #f3f4f6;
+    color: var(--agro-text);
+}
+
+.admin-table tbody tr:hover {
+    background-color: #f9fafb;
+}
+
+/* Badges */
+.badge-status {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.badge-status-active, .badge-status-approved, .badge-status-delivered, .badge-status-completed {
+    background-color: #eaf7ef;
+    color: var(--agro-primary);
+}
+
+.badge-status-pending, .badge-status-processing {
+    background-color: #fffbeb;
+    color: var(--agro-warning);
+}
+
+.badge-status-inactive, .badge-status-suspended, .badge-status-cancelled, .badge-status-failed, .badge-status-closed {
+    background-color: #fde8e8;
+    color: var(--agro-danger);
+}
+
+.badge-status-shipped, .badge-status-in_progress {
+    background-color: #eff6ff;
+    color: var(--agro-info);
+}
+
+/* User Identity Info in Tables */
+.user-avatar-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-avatar-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Drawer overlay for responsive display */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 1030;
+}
+
+/* Support and Messenger Chat Layouts */
+.chat-container {
+    display: flex;
+    height: calc(100vh - 160px);
+    background-color: var(--agro-white);
+    border-radius: var(--agro-radius);
+    box-shadow: var(--agro-shadow);
+    overflow: hidden;
+}
+
+.chat-sidebar {
+    width: 320px;
+    border-right: 1px solid var(--agro-border);
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-search-wrapper {
+    padding: 16px;
+    border-bottom: 1px solid var(--agro-border);
+}
+
+.chat-thread-list {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.chat-thread-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border-bottom: 1px solid #f3f4f6;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    text-decoration: none !important;
+}
+
+.chat-thread-item:hover, .chat-thread-item.active {
+    background-color: var(--agro-light);
+}
+
+.chat-main {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: #f9fafb;
+}
+
+.chat-header {
+    background-color: var(--agro-white);
+    border-bottom: 1px solid var(--agro-border);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.chat-body {
+    flex-grow: 1;
+    padding: 24px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.chat-bubble {
+    max-width: 60%;
+    padding: 12px 16px;
+    border-radius: var(--agro-radius);
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.bubble-received {
+    align-self: flex-start;
+    background-color: var(--agro-white);
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.bubble-sent {
+    align-self: flex-end;
+    background-color: var(--agro-primary);
+    color: var(--agro-white);
+    border-bottom-right-radius: 4px;
+}
+
+.chat-footer {
+    background-color: var(--agro-white);
+    border-top: 1px solid var(--agro-border);
+    padding: 16px 24px;
+}
+
+/* Pagination container */
+.admin-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    border-top: 1px solid var(--agro-border);
+    background-color: var(--agro-white);
+}
+
+/* Responsive queries */
+@media (max-width: 991px) {
+    .admin-sidebar {
+        position: fixed;
+        left: -280px;
+        top: 0;
+        height: 100vh;
+        z-index: 1050;
+    }
+    .admin-sidebar.active {
+        left: 0;
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+    }
+    .sidebar-overlay.active {
+        display: block;
+    }
+}
+
+@media (max-width: 575px) {
+    .admin-content {
+        padding: 15px;
+    }
+    .table-card-header {
+        padding: 16px;
+    }
+    .header-search {
+        display: none;
+    }
+}

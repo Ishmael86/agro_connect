@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard | AgroConnect{% endblock %}
+
+{% block content %}
+<div class="container">
+    {% if request.user.account_type == 'FARMER' %}
+        <!-- ============================================== -->
+        <!-- FARMER DASHBOARD                               -->
+        <!-- ============================================== -->
+        <div class="row g-4 mb-5">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm p-4 text-white" style="border-radius: var(--radius-lg); background: linear-gradient(135deg, var(--primary-green) 0%, #157948 100%);">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between g-3">
+                        <div>
+                            <span class="badge bg-success-light text-success fw-bold px-3 py-1 rounded-pill mb-2" style="font-size: 0.8rem; background-color: rgba(255,255,255,0.15) !important; color: #ffffff !important;">Farmer Portal</span>
+                            <h1 class="display-6 fw-bold mb-1">{{ farmer_profile.farm_name }}</h1>
+                            <p class="mb-0 opacity-75"><i class="fas fa-user-circle me-1"></i> Managed by {{ request.user.get_full_name|default:request.user.username }}</p>
+                        </div>
+                        <div class="d-flex gap-2 mt-3 mt-md-0">
+                            <a href="{% url 'farmer_detail' farmer_profile.id %}" class="btn btn-light text-success fw-semibold px-4"><i class="fas fa-store me-2"></i>View Public Shop</a>
+                            <button class="btn btn-outline-light px-4" onclick="showAgroToast('Opening crop editor... 🌱')"><i class="fas fa-plus-circle me-2"></i>Add Crop Listing</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3 Stats Cards -->
+        <div class="row g-4 mb-5">
+            <!-- Stat 1 -->
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm p-4 text-center" style="border-radius: var(--radius-md); background-color: #FFFFFF;">
+                    <div class="rounded-circle bg-success-light d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 60px; height: 60px;">
+                        <i class="fas fa-boxes text-success fs-4"></i>
+                    </div>
+                    <h3 class="fw-bold mb-1 text-dark">{{ total_listings }}</h3>
+                    <span class="text-muted small uppercase">Active Listings</span>
+                </div>
+            </div>
+            <!-- Stat 2 -->
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm p-4 text-center" style="border-radius: var(--radius-md); background-color: #FFFFFF;">
+                    <div class="rounded-circle bg-success-light d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 60px; height: 60px;">
+                        <i class="fas fa-shopping-bag text-success fs-4"></i>
+                    </div>
+                    <h3 class="fw-bold mb-1 text-dark">{{ total_sales_count }}</h3>
+                    <span class="text-muted small uppercase">Orders Received</span>
+                </div>
+            </div>
+            <!-- Stat 3 -->
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm p-4 text-center" style="border-radius: var(--radius-md); background-color: #FFFFFF;">
+                    <div class="rounded-circle bg-success-light d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 60px; height: 60px;">
+                        <i class="fas fa-wallet text-success fs-4"></i>
+                    </div>
+                    <h3 class="fw-bold mb-1 text-dark">GHS {{ total_revenue|floatformat:2 }}</h3>
+                    <span class="text-muted small uppercase">Total Revenue</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Active Listings (Left) -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: var(--radius-md); background-color: #FFFFFF;">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="h5 fw-bold mb-0 text-dark"><i class="fas fa-seedling text-success me-2"></i>My Crop Listings</h2>
+                        <button class="btn btn-primary-green btn-sm px-3" onclick="showAgroToast('Opening crop editor... 🌱')"><i class="fas fa-plus me-1"></i>Add Crop</button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" style="font-size: 0.9rem;">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Category</th>
+                                    <th>Price</th>
+                                    <th>Stock</th>
+                                    <th>Location</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in products %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <strong class="text-dark">{{ product.name }}</strong>
+                                            </div>
+                                        </td>
+                                        <td>{{ product.category.name }}</td>
+                                        <td>GHS {{ product.price|floatformat:2 }} / {{ product.unit }}</td>
+                                        <td>{{ product.stock_quantity }} {{ product.unit }}s</td>
+                                        <td>{{ product.location }}</td>
+                                        <td>
+                                            {% if product.stock_quantity > 0 %}
+                                                <span class="badge bg-success-light text-success rounded-pill px-2 py-1">In Stock</span>
+                                            {% else %}
+                                                <span class="badge bg-danger-light text-danger rounded-pill px-2 py-1">Out of Stock</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="6" class="text-center py-4 text-muted">No crop listings posted yet.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sales Activity & Farm Details (Right) -->
+            <div class="col-lg-4">
+                <!-- Farm Details Profile -->
+                <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: var(--radius-md); background-color: #FFFFFF;">
+                    <h2 class="h5 fw-bold mb-3 text-dark"><i class="fas fa-info-circle text-success me-2"></i>Farm Details</h2>
+                    <ul class="list-unstyled mb-0" style="font-size: 0.9rem; line-height: 2;">
+                        <li class="d-flex justify-content-between border-bottom pb-2">
+                            <span class="text-muted">Farm Location:</span>
+                            <strong class="text-dark">{{ farmer_profile.location }}</strong>
+                        </li>
+                        <li class="d-flex justify-content-between border-bottom py-2">
+                            <span class="text-muted">Ghana Region:</span>
+                            <strong class="text-dark">{{ farmer_profile.region }}</strong>
+                        </li>
+                        <li class="d-flex justify-content-between border-bottom py-2">
+                            <span class="text-muted">Farmer Phone:</span>
+                            <strong class="text-dark">{{ farmer_profile.phone }}</strong>
+                        </li>
+                        <li class="d-flex justify-content-between pt-2">
+                            <span class="text-muted">Status:</span>
+                            {% if farmer_profile.verified %}
+                                <span class="text-success fw-bold"><i class="fas fa-check-circle me-1"></i>Verified</span>
+                            {% else %}
+                                <span class="text-warning fw-semibold"><i class="fas fa-clock me-1"></i>Pending Verification</span>
+                            {% endif %}
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Recent Sales Orders -->
+                <div class="card border-0 shadow-sm p-4" style="border-radius: var(--radius-md); background-color: #FFFFFF;">
+                    <h2 class="h5 fw-bold mb-3 text-dark"><i class="fas fa-receipt text-success me-2"></i>Recent Sales</h2>
+                    <div style="max-height: 280px; overflow-y: auto;">
+                        {% for item in order_items %}
+                            <div class="border-bottom py-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <strong class="text-dark" style="font-size: 0.85rem;">{{ item.product.name }}</strong>
+                                    <span class="badge bg-success-light text-success" style="font-size: 0.75rem;">+ GHS {{ item.subtotal|floatformat:2 }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between text-muted small">
+                                    <span>Qty: {{ item.quantity }} • Order {{ item.order.order_number|slice:":12" }}...</span>
+                                    <span>{{ item.order.created_at|date:"M d" }}</span>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <p class="text-muted small text-center py-4 mb-0">No sales orders received yet.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% else %}
+        <!-- ============================================== -->
+        <!-- BUYER DASHBOARD                                -->
+        <!-- ============================================== -->
+        <div class="row g-4 mb-5">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm p-4 text-white" style="border-radius: var(--radius-lg); background: linear-gradient(135deg, var(--primary-green) 0%, #157948 100%);">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between g-3">
+                        <div>
+                            <span class="badge bg-success-light text-success fw-bold px-3 py-1 rounded-pill mb-2" style="font-size: 0.8rem; background-color: rgba(255,255,255,0.15) !important; color: #ffffff !important;">Buyer Account</span>
+                            <h1 class="display-6 fw-bold mb-1">Welcome, {{ request.user.first_name|default:request.user.username }}!</h1>
+                            <p class="mb-0 opacity-75"><i class="fas fa-envelope me-1"></i> Account Email: {{ request.user.email }}</p>
+                        </div>
+                        <div class="mt-3 mt-md-0">
+                            <a href="{% url 'product_list' %}" class="btn btn-light text-success fw-semibold px-4"><i class="fas fa-shopping-basket me-2"></i>Go Shopping</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2 Stats Cards -->
+        <div class="row g-4 mb-5">
+            <!-- Stat 1 -->
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm p-4 text-center" style="border-radius: var(--radius-md); background-color: #FFFFFF;">
+                    <div class="rounded-circle bg-success-light d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 60px; height: 60px;">
+                        <i class="fas fa-shopping-bag text-success fs-4"></i>
+                    </div>
+                    <h3 class="fw-bold mb-1 text-dark">{{ total_orders }}</h3>
+                    <span class="text-muted small uppercase">Orders Placed</span>
+                </div>
+            </div>
+            <!-- Stat 2 -->
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm p-4 text-center" style="border-radius: var(--radius-md); background-color: #FFFFFF;">
+                    <div class="rounded-circle bg-success-light d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 60px; height: 60px;">
+                        <i class="fas fa-wallet text-success fs-4"></i>
+                    </div>
+                    <h3 class="fw-bold mb-1 text-dark">GHS {{ total_spent|floatformat:2 }}</h3>
+                    <span class="text-muted small uppercase">Total Amount Spent</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order History (Full Width) -->
+        <div class="row g-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm p-4" style="border-radius: var(--radius-md); background-color: #FFFFFF;">
+                    <h2 class="h5 fw-bold mb-4 text-dark"><i class="fas fa-history text-success me-2"></i>My Order History</h2>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" style="font-size: 0.9rem;">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Order #</th>
+                                    <th>Date</th>
+                                    <th>Items Count</th>
+                                    <th>Payment Status</th>
+                                    <th>Total Amount</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in orders %}
+                                    <tr>
+                                        <td><strong class="text-dark">{{ order.order_number }}</strong></td>
+                                        <td>{{ order.created_at|date:"Y-m-d H:i" }}</td>
+                                        <td>{{ order.items.count }} items</td>
+                                        <td>
+                                            {% if order.payment_status == 'PAID' %}
+                                                <span class="badge bg-success-light text-success rounded-pill px-2 py-1">Paid</span>
+                                            {% elif order.payment_status == 'FAILED' %}
+                                                <span class="badge bg-danger-light text-danger rounded-pill px-2 py-1">Failed</span>
+                                            {% else %}
+                                                <span class="badge bg-warning-light text-warning rounded-pill px-2 py-1">Pending</span>
+                                            {% endif %}
+                                        </td>
+                                        <td><strong>GHS {{ order.total|floatformat:2 }}</strong></td>
+                                        <td>
+                                            <a href="{% url 'order_success' order.order_number %}" class="btn btn-outline-green btn-sm px-3">View Receipt</a>
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="6" class="text-center py-5 text-muted">
+                                            <i class="fas fa-shopping-basket fa-2x mb-3 text-muted" style="color: var(--primary-green-light) !important;"></i>
+                                            <p class="mb-0">You have not placed any orders yet.</p>
+                                            <a href="{% url 'product_list' %}" class="btn btn-primary-green btn-sm mt-3">Browse Products</a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

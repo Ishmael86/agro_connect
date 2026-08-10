@@ -1,0 +1,183 @@
+{% extends "buyer/base_buyer.html" %}
+{% load static %}
+
+{% block title %}Order {{ order.order_number }} | AgroConnect{% endblock %}
+
+{% block page_title %}Order Details{% endblock %}
+
+{% block buyer_content %}
+<div class="row g-4">
+    <!-- Main Order Details (Left Column) -->
+    <div class="col-lg-8">
+        <!-- Card 1: Header / Timeline Info -->
+        <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: var(--agro-radius);">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+                <div>
+                    <span class="text-muted font-sm">Order ID</span>
+                    <h4 class="fw-bold text-dark mb-0">{{ order.order_number }}</h4>
+                    <span class="text-muted small">Placed on {{ order.created_at|date:"F d, Y \a\t H:i A" }}</span>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'buyer_download_invoice' order.order_number %}" class="btn btn-outline-success btn-sm rounded-pill px-3">
+                        <i class="fas fa-file-invoice me-1"></i>Download Invoice
+                    </a>
+                </div>
+            </div>
+
+            <!-- Visual Tracking Timeline -->
+            <div class="tracking-timeline-wrapper my-5">
+                <div class="tracking-line"></div>
+                <div class="d-flex justify-content-between text-center position-relative" style="z-index: 2;">
+                    <!-- Step 1: Order Placed -->
+                    <div class="timeline-step active">
+                        <div class="step-icon bg-success text-white mx-auto rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                            <i class="fas fa-receipt font-sm"></i>
+                        </div>
+                        <span class="d-block small fw-bold text-dark mt-2">Order Placed</span>
+                        <span class="text-muted font-xs">{{ order.created_at|date:"M d" }}</span>
+                    </div>
+
+                    <!-- Step 2: Processing -->
+                    <div class="timeline-step {% if order.status != 'PENDING' %}active{% endif %}">
+                        <div class="step-icon {% if order.status != 'PENDING' %}bg-success text-white{% else %}bg-white border text-muted{% endif %} mx-auto rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                            <i class="fas fa-cog font-sm"></i>
+                        </div>
+                        <span class="d-block small fw-bold mt-2 {% if order.status != 'PENDING' %}text-dark{% else %}text-muted{% endif %}">Processing</span>
+                    </div>
+
+                    <!-- Step 3: Shipped -->
+                    <div class="timeline-step {% if order.status == 'SHIPPED' or order.status == 'DELIVERED' %}active{% endif %}">
+                        <div class="step-icon {% if order.status == 'SHIPPED' or order.status == 'DELIVERED' %}bg-success text-white{% else %}bg-white border text-muted{% endif %} mx-auto rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                            <i class="fas fa-truck font-sm"></i>
+                        </div>
+                        <span class="d-block small fw-bold mt-2 {% if order.status == 'SHIPPED' or order.status == 'DELIVERED' %}text-dark{% else %}text-muted{% endif %}">Shipped</span>
+                    </div>
+
+                    <!-- Step 4: Delivered -->
+                    <div class="timeline-step {% if order.status == 'DELIVERED' %}active{% endif %}">
+                        <div class="step-icon {% if order.status == 'DELIVERED' %}bg-success text-white{% else %}bg-white border text-muted{% endif %} mx-auto rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                            <i class="fas fa-check-circle font-sm"></i>
+                        </div>
+                        <span class="d-block small fw-bold mt-2 {% if order.status == 'DELIVERED' %}text-dark{% else %}text-muted{% endif %}">Delivered</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 2: Items Breakdowns -->
+        <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: var(--agro-radius);">
+            <h5 class="fw-bold text-dark mb-4">Ordered Items</h5>
+            
+            <div class="d-flex flex-column gap-3">
+                {% for item in items %}
+                    <div class="d-flex align-items-center justify-content-between p-3 border rounded-3 flex-wrap g-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div style="width: 60px; height: 60px; flex-shrink: 0;">
+                                {% if item.product.main_image %}
+                                    <img src="{{ item.product.main_image.url }}" alt="{{ item.product.name }}" class="w-100 h-100 object-fit-cover rounded-3 border">
+                                {% else %}
+                                    <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=100&q=80" alt="Fallback" class="w-100 h-100 object-fit-cover rounded-3 border">
+                                {% endif %}
+                            </div>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1">{{ item.product.name }}</h6>
+                                <span class="text-muted font-sm d-block">From {{ item.farmer.farm_name }}</span>
+                                <span class="text-success small fw-semibold">GHS {{ item.unit_price }} / {{ item.product.unit }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="text-md-end mt-2 mt-md-0">
+                            <span class="text-muted small d-block">Qty: {{ item.quantity }}</span>
+                            <strong class="text-dark">GHS {{ item.subtotal }}</strong>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Panels (Right Column) -->
+    <div class="col-lg-4">
+        <!-- Delivery Address Details -->
+        <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: var(--agro-radius);">
+            <h5 class="fw-bold text-dark mb-3"><i class="fas fa-map-marker-alt text-success me-2"></i>Delivery Details</h5>
+            <div class="lh-lg font-sm text-dark">
+                <strong>Recipient Name:</strong> {{ order.full_name }}<br>
+                <strong>Phone Number:</strong> {{ order.phone }}<br>
+                <strong>Address:</strong> {{ order.delivery_address }}<br>
+                <strong>City:</strong> {{ order.city }}<br>
+                <strong>Region:</strong> {{ order.region }}
+            </div>
+        </div>
+
+        <!-- Payment details -->
+        <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: var(--agro-radius);">
+            <h5 class="fw-bold text-dark mb-3"><i class="fas fa-credit-card text-success me-2"></i>Payment Information</h5>
+            <div class="lh-lg font-sm text-dark">
+                <strong>Payment Method:</strong> {{ order.get_payment_method_display }}<br>
+                <strong>Payment Status:</strong> 
+                {% if order.status == 'DELIVERED' %}
+                    <span class="text-success fw-bold">Paid</span>
+                {% else %}
+                    <span class="text-warning fw-semibold">Awaiting Settlement</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Summary list -->
+        <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: var(--agro-radius);">
+            <h5 class="fw-bold text-dark mb-3">Order Cost Summary</h5>
+            
+            <ul class="list-unstyled mb-0 font-sm d-flex flex-column gap-2 border-bottom pb-3">
+                <li class="d-flex justify-content-between text-muted">
+                    <span>Subtotal</span>
+                    <span>GHS {{ order.subtotal|floatformat:2 }}</span>
+                </li>
+                <li class="d-flex justify-content-between text-muted">
+                    <span>Delivery Fee</span>
+                    <span>GHS {{ order.delivery_fee|floatformat:2 }}</span>
+                </li>
+                <li class="d-flex justify-content-between text-muted">
+                    <span>Discount</span>
+                    <span>GHS 0.00</span>
+                </li>
+            </ul>
+
+            <div class="d-flex justify-content-between align-items-center pt-3 mb-4">
+                <span class="fw-bold text-dark">Total</span>
+                <strong class="text-success fs-4">GHS {{ order.total|floatformat:2 }}</strong>
+            </div>
+
+            <!-- Conditional Action Buttons -->
+            <div class="d-flex flex-column gap-2">
+                {% if order.status == 'DELIVERED' %}
+                    <!-- Buy Again (copies order items back to cart) -->
+                    <form action="{% url 'buyer_cart' %}" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="buy_again">
+                        <input type="hidden" name="order_id" value="{{ order.id }}">
+                        <button type="submit" class="btn btn-success w-100 rounded-pill py-2 fw-semibold">Buy Again</button>
+                    </form>
+                    <a href="{% url 'buyer_reviews' %}" class="btn btn-outline-success w-100 rounded-pill py-2 fw-semibold">Leave Product Reviews</a>
+                
+                {% elif order.status == 'PENDING' %}
+                    <!-- Cancel order -->
+                    <form action="{% url 'buyer_orders' %}" method="POST" onsubmit="return confirm('Are you sure you want to cancel this order?');">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="cancel_order">
+                        <input type="hidden" name="order_number" value="{{ order.order_number }}">
+                        <button type="submit" class="btn btn-danger w-100 rounded-pill py-2 fw-semibold">Cancel Order</button>
+                    </form>
+                {% endif %}
+                
+                <!-- Contact Farmers Link -->
+                {% for item in items|slice:":1" %}
+                    <a href="{% url 'buyer_messages' %}" class="btn btn-outline-secondary w-100 rounded-pill py-2 font-sm">
+                        <i class="fas fa-comments me-2"></i>Contact Farm Owner
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

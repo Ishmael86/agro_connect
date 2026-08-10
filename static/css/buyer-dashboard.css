@@ -1,0 +1,377 @@
+/* AgroConnect Buyer Dashboard Styling */
+
+:root {
+    --agro-green: #0E5A34;
+    --agro-dark-green: #083c21;
+    --agro-light-green: #eef9f2;
+    --agro-background: #f4f6f5;
+    --agro-text: #2d3748;
+    --agro-muted: #718096;
+    --agro-border: #e2e8f0;
+    --agro-danger: #dc3545;
+    --agro-warning: #f6ad55;
+    --agro-radius: 14px;
+    --agro-radius-sm: 8px;
+    --agro-radius-lg: 20px;
+    --sidebar-width: 280px;
+}
+
+body {
+    background-color: var(--agro-background);
+    color: var(--agro-text);
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+}
+
+/* Common Text Adjustments */
+.font-sm {
+    font-size: 0.9rem;
+}
+.font-xs {
+    font-size: 0.8rem;
+}
+.uppercase {
+    text-transform: uppercase;
+}
+.tracking-wider {
+    letter-spacing: 0.05em;
+}
+.bg-success-light {
+    background-color: var(--agro-light-green) !important;
+}
+.text-success {
+    color: var(--agro-green) !important;
+}
+.btn-primary-green {
+    background-color: var(--agro-green);
+    color: #fff;
+    font-weight: 600;
+}
+.btn-primary-green:hover {
+    background-color: var(--agro-dark-green);
+    color: #fff;
+}
+.cursor-pointer {
+    cursor: pointer;
+}
+
+/* Dashboard Wrapper Layout */
+.dashboard-wrapper {
+    display: flex;
+    min-height: 100vh;
+    position: relative;
+}
+
+/* Sidebar Styling */
+.sidebar {
+    width: var(--sidebar-width);
+    background-color: #ffffff;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--agro-border);
+    transition: all 0.3s ease;
+}
+
+/* Active State Styles */
+.sidebar .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--agro-text);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+.sidebar .menu-item:hover {
+    background-color: var(--agro-light-green);
+    color: var(--agro-green);
+}
+.sidebar .menu-item.active {
+    background-color: var(--agro-green);
+    color: #ffffff !important;
+}
+.sidebar .menu-item.active .menu-icon {
+    color: #ffffff !important;
+}
+.sidebar .menu-item.active .badge {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    color: #ffffff !important;
+}
+
+/* Topbar Header */
+.main-content {
+    flex-grow: 1;
+    margin-left: var(--sidebar-width);
+    min-height: 100vh;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+.dashboard-header {
+    height: 70px;
+    position: sticky;
+    top: 0;
+    z-index: 900;
+}
+
+/* Timeline Tracking Components */
+.tracking-timeline-wrapper {
+    position: relative;
+}
+.tracking-line {
+    position: absolute;
+    top: 20px;
+    left: 5%;
+    right: 5%;
+    height: 4px;
+    background-color: #cbd5e0;
+    z-index: 1;
+}
+.timeline-step {
+    position: relative;
+    width: 20%;
+}
+.timeline-step.active .step-icon {
+    box-shadow: 0 0 0 4px var(--agro-light-green);
+}
+
+/* Cart & Order Checkout Toggles */
+.address-select-card, .payment-select-card {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.address-select-card:hover, .payment-select-card:hover {
+    border-color: var(--agro-green) !important;
+}
+.address-select-card.selected, .payment-select-card.selected {
+    border-color: var(--agro-green) !important;
+    background-color: var(--agro-light-green) !important;
+}
+
+/* Notification read styles */
+.unread-highlight {
+    background-color: var(--agro-light-green) !important;
+    border-left: 4px solid var(--agro-green) !important;
+}
+
+/* Direct Chat Area Styles */
+.conversation-item {
+    transition: all 0.2s ease;
+}
+.conversation-item:hover, .conversation-item.active {
+    background-color: var(--agro-light-green) !important;
+}
+.max-height-300 {
+    max-height: 300px;
+}
+.font-xs {
+    font-size: 0.8rem;
+}
+
+/* Tab Links in Orders */
+.tab-link {
+    color: var(--agro-muted);
+    font-weight: 600;
+    border-bottom: 2px solid transparent;
+}
+.tab-link:hover, .tab-link.active {
+    color: var(--agro-green) !important;
+    border-bottom-color: var(--agro-green);
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 991px) {
+    .buyer-sidebar-column {
+        position: fixed;
+        top: 0;
+        left: -280px;
+        width: 280px;
+        height: 100vh;
+        z-index: 1050;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: none;
+        padding: 0;
+    }
+    .buyer-sidebar-column.active {
+        left: 0;
+        box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+    }
+    .buyer-sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.4);
+        z-index: 1040;
+    }
+    .buyer-sidebar-overlay.active {
+        display: block;
+    }
+    .buyer-sidebar-sticky {
+        max-height: 100vh !important;
+        height: 100vh;
+        border-radius: 0 !important;
+    }
+    .buyer-sidebar-sticky .card {
+        border-radius: 0 !important;
+        height: 100vh;
+        margin-bottom: 0 !important;
+    }
+}
+
+/* Centered Sidebar Menu Styling */
+.buyer-sidebar-menu .list-group-item {
+    color: var(--agro-text);
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border-color: var(--agro-border) !important;
+}
+.buyer-sidebar-menu .list-group-item:hover {
+    background-color: var(--agro-light-green);
+    color: var(--agro-green);
+}
+.buyer-sidebar-menu .list-group-item.active {
+    background-color: var(--agro-green) !important;
+    color: #ffffff !important;
+    font-weight: 600;
+}
+.buyer-sidebar-menu .list-group-item.active .menu-icon,
+.buyer-sidebar-menu .list-group-item.active .fa-chevron-right {
+    color: #ffffff !important;
+}
+
+@media (min-width: 992px) {
+    /* Allow natural scrolling on main page body */
+    body {
+        height: auto !important;
+        display: block !important;
+        overflow: visible !important;
+    }
+    footer, .footer {
+        display: block !important; /* Restore footer since page scrolls naturally */
+    }
+    main {
+        flex-grow: unset !important;
+        height: auto !important;
+        overflow: visible !important;
+        padding-top: 1.5rem !important;
+        padding-bottom: 3rem !important;
+    }
+    main > .container {
+        height: auto !important;
+        display: block !important;
+    }
+    .buyer-dashboard-container {
+        flex-grow: unset !important;
+        height: auto !important;
+        overflow: visible !important;
+    }
+    
+    /* Lock the sidebar position and make it internally scrollable */
+    .buyer-sidebar-sticky {
+        position: sticky !important;
+        top: 100px !important; /* Float below nav bar */
+        max-height: calc(100vh - 140px) !important; /* Constrain height to viewport */
+        overflow-y: auto !important; /* Enable internal scrolling */
+        padding-right: 5px;
+        scrollbar-width: thin;
+        scrollbar-color: var(--agro-green) transparent;
+    }
+    
+    /* Content column scrolls naturally with page */
+    .buyer-content-scrollable {
+        height: auto !important;
+        overflow-y: visible !important;
+    }
+}
+
+/* Category Border Colors for Product Cards */
+.card-category-fruits { border-top: 3px solid #f59e0b !important; }
+.card-category-vegetables { border-top: 3px solid #10b981 !important; }
+.card-category-grains-cereals { border-top: 3px solid #d97706 !important; }
+.card-category-tubers { border-top: 3px solid #854d0e !important; }
+.card-category-legumes { border-top: 3px solid #65a30d !important; }
+.card-category-herbs-spices { border-top: 3px solid #dc2626 !important; }
+.card-category-dairy-eggs { border-top: 3px solid #facc15 !important; }
+.card-category-meat-poultry { border-top: 3px solid #b91c1c !important; }
+.card-category-seeds-inputs { border-top: 3px solid #06b6d4 !important; }
+.card-category-processed-foods { border-top: 3px solid #8b5cf6 !important; }
+
+/* Match Category Card Green Hover Border Style for Product Cards */
+.product-card {
+    transition: all 0.3s ease !important;
+}
+.product-card:hover {
+    border-color: var(--primary-green-hover, #0E5A34) !important;
+    transform: translateY(-5px) !important;
+    box-shadow: var(--shadow-hover) !important;
+}
+
+/* Professional Stats Card Styles */
+.stats-card {
+    background: #ffffff;
+    border: 1px solid #edf2f7 !important;
+    border-radius: 16px !important;
+    padding: 20px !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02), 0 1px 3px rgba(0, 0, 0, 0.03);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+.stats-card:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.04), 0 4px 6px rgba(0, 0, 0, 0.02) !important;
+}
+
+/* Card Top Highlights */
+.stats-card.card-orders { border-top: 4px solid #3182ce !important; }
+.stats-card.card-pending { border-top: 4px solid #dd6b20 !important; }
+.stats-card.card-spent { border-top: 4px solid #319795 !important; }
+.stats-card.card-completed { border-top: 4px solid #38a169 !important; }
+.stats-card.card-wishlist { border-top: 4px solid #e53e3e !important; }
+.stats-card.card-rewards { border-top: 4px solid #805ad5 !important; }
+
+/* Custom Icon Containers */
+.stats-icon-box {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+.bg-orders-light { background-color: #ebf8ff; color: #2b6cb0; }
+.bg-pending-light { background-color: #fffaf0; color: #dd6b20; }
+.bg-spent-light { background-color: #e6fffa; color: #319795; }
+.bg-completed-light { background-color: #f0fff4; color: #38a169; }
+.bg-wishlist-light { background-color: #fff5f5; color: #c53030; }
+.bg-rewards-light { background-color: #faf5ff; color: #6b46c1; }
+
+.stats-card-title {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--agro-muted);
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 2px;
+}
+.stats-card-number {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--agro-text);
+    margin-bottom: 0;
+    line-height: 1.2;
+}

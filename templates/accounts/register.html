@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Register | AgroConnect{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0 mt-n4 mt-md-n5">
+    <div class="split-screen-container">
+        <!-- 1. LEFT SIDE - GRAPHIC ILLUSTRATION -->
+        <div class="split-bg-side" style="background-image: url('https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=800&auto=format&fit=crop');">
+            <div class="split-bg-content">
+                <!-- Top Brand Logo -->
+                <div>
+                    <a class="navbar-brand text-white fs-3" href="{% url 'home' %}">
+                        <i class="fas fa-leaf text-white me-2"></i>
+                        <span>Agro<span style="color: #FFFFFF; font-weight: 400;">Connect</span></span>
+                    </a>
+                </div>
+
+                <!-- Middle Content -->
+                <div class="my-auto pt-5">
+                    <h2 class="display-5 fw-bold text-white mb-3" style="font-family: var(--font-heading);">Join AgroConnect</h2>
+                    <p class="lead" style="color: rgba(255, 255, 255, 0.9);">Create your account and become part of our growing agricultural community.</p>
+                    
+                    <ul class="list-unstyled d-flex flex-column gap-3 mt-4" style="font-size: 1.05rem;">
+                        <li class="d-flex align-items-center gap-3">
+                            <i class="fas fa-check-circle fs-5"></i>
+                            <span>Sell your farm harvests directly</span>
+                        </li>
+                        <li class="d-flex align-items-center gap-3">
+                            <i class="fas fa-check-circle fs-5"></i>
+                            <span>Reach thousands of retail buyers</span>
+                        </li>
+                        <li class="d-flex align-items-center gap-3">
+                            <i class="fas fa-check-circle fs-5"></i>
+                            <span>Grow your farming business size</span>
+                        </li>
+                        <li class="d-flex align-items-center gap-3">
+                            <i class="fas fa-check-circle fs-5"></i>
+                            <span>Enjoy secure payouts & support</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Footer Tagline -->
+                <div>
+                    <span class="text-white-50 small">&copy; 2026 AgroConnect marketplace system.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. RIGHT SIDE - REGISTRATION FORM -->
+        <div class="split-form-side">
+            <div class="auth-form-card">
+                <div class="mb-4">
+                    <h1 class="h3 fw-bold mb-2">Join AgroConnect</h1>
+                    <p class="text-muted">Create your account and become part of our growing community.</p>
+                </div>
+
+                <!-- Styled Account Type Selector Tabs -->
+                <div class="account-type-tabs">
+                    <div class="account-type-tab" id="tab-buyer">
+                        <i class="fas fa-shopping-basket mb-2 d-block fs-4"></i>
+                        <span>Register as Buyer</span>
+                    </div>
+                    <div class="account-type-tab" id="tab-farmer">
+                        <i class="fas fa-tractor mb-2 d-block fs-4"></i>
+                        <span>Become a Farmer</span>
+                    </div>
+                </div>
+
+                <form action="{% url 'register' %}" method="POST" class="needs-validation" novalidate>
+                    {% csrf_token %}
+
+                    <!-- Hidden Django Radio Widget for account_type, controlled by JS -->
+                    <div class="d-none">
+                        {{ form.account_type }}
+                    </div>
+
+                    <!-- Username -->
+                    <div class="mb-3">
+                        <label for="id_username" class="form-label fw-semibold small text-muted">Username</label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                            <div class="invalid-feedback d-block">{{ form.username.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Full Name -->
+                    <div class="mb-3">
+                        <label for="id_full_name" class="form-label fw-semibold small text-muted">Full Name</label>
+                        {{ form.full_name }}
+                        {% if form.full_name.errors %}
+                            <div class="invalid-feedback d-block">{{ form.full_name.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Email Address -->
+                    <div class="mb-3">
+                        <label for="id_email" class="form-label fw-semibold small text-muted">Email Address</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <div class="invalid-feedback d-block">{{ form.email.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Phone Number -->
+                    <div class="mb-3">
+                        <label for="id_phone" class="form-label fw-semibold small text-muted">Phone Number</label>
+                        {{ form.phone }}
+                        {% if form.phone.errors %}
+                            <div class="invalid-feedback d-block">{{ form.phone.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- FARMER SPECIFIC FIELDS PANEL (Hidden for buyers, shown for farmers by JS) -->
+                    <div id="farmer-specific-fields" style="display: none;" class="p-3 bg-light rounded mb-4 border">
+                        <h3 class="h6 fw-bold mb-3 text-success"><i class="fas fa-tractor me-2"></i> Farm Information</h3>
+                        
+                        <!-- Farm Name -->
+                        <div class="mb-3">
+                            <label for="id_farm_name" class="form-label fw-semibold small text-muted">Farm Name</label>
+                            {{ form.farm_name }}
+                            {% if form.farm_name.errors %}
+                                <div class="invalid-feedback d-block">{{ form.farm_name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Region selection -->
+                        <div class="mb-3">
+                            <label for="id_region" class="form-label fw-semibold small text-muted">Ghanaian Region</label>
+                            {{ form.region }}
+                            {% if form.region.errors %}
+                                <div class="invalid-feedback d-block">{{ form.region.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Location description -->
+                        <div class="mb-2">
+                            <label for="id_location" class="form-label fw-semibold small text-muted">Specific Town / Location</label>
+                            {{ form.location }}
+                            {% if form.location.errors %}
+                                <div class="invalid-feedback d-block">{{ form.location.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="mb-3">
+                        <label for="id_password" class="form-label fw-semibold small text-muted">Password</label>
+                        <div class="input-group">
+                            {{ form.password }}
+                            <button class="btn btn-outline-secondary password-toggle-btn" type="button" style="border-color: var(--border-color); color: var(--text-muted);"><i class="fas fa-eye"></i></button>
+                        </div>
+                        {% if form.password.errors %}
+                            <div class="invalid-feedback d-block">{{ form.password.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div class="mb-4">
+                        <label for="id_confirm_password" class="form-label fw-semibold small text-muted">Confirm Password</label>
+                        <div class="input-group">
+                            {{ form.confirm_password }}
+                            <button class="btn btn-outline-secondary password-toggle-btn" type="button" style="border-color: var(--border-color); color: var(--text-muted);"><i class="fas fa-eye"></i></button>
+                        </div>
+                        {% if form.confirm_password.errors %}
+                            <div class="invalid-feedback d-block">{{ form.confirm_password.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Terms & conditions checkbox -->
+                    <div class="mb-4 form-check">
+                        <input type="checkbox" class="form-check-input" id="agreeTerms" required>
+                        <label class="form-check-label small text-muted" for="agreeTerms">I agree to the <a href="#" class="text-success fw-semibold">Terms & Conditions</a> and <a href="#" class="text-success fw-semibold">Privacy Policy</a>.</label>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-primary-green w-100 py-3 mb-4">Register</button>
+                </form>
+
+                <!-- Navigation link -->
+                <div class="text-center">
+                    <span class="text-muted small">Already have an account? </span>
+                    <a href="{% url 'login' %}" class="small text-success fw-bold">Login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Expand tabs check using query parameter type=farmer -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const accountType = urlParams.get('type');
+        const tabFarmer = document.getElementById('tab-farmer');
+        if (accountType === 'farmer' && tabFarmer) {
+            tabFarmer.click();
+        }
+    });
+</script>
+{% endblock %}
