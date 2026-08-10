@@ -1,0 +1,137 @@
+{% extends "admin_panel/base_admin.html" %}
+
+{% block title %}Products Management - AgroConnect Admin{% endblock %}
+
+{% block admin_content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-1">Products Management</h4>
+        <p class="text-muted small mb-0">Manage all products on the platform.</p>
+    </div>
+</div>
+
+<!-- Search and filters -->
+<div class="card border-0 shadow-sm p-3 mb-4" style="border-radius: var(--agro-radius); background-color: var(--agro-white);">
+    <form method="GET" class="row g-3 align-items-center">
+        <!-- Search bar -->
+        <div class="col-lg-4 col-md-6">
+            <div class="input-group rounded-pill overflow-hidden border">
+                <span class="input-group-text bg-white border-0"><i class="fas fa-search text-muted"></i></span>
+                <input type="text" name="search" class="form-control border-0 px-2" placeholder="Search product, farmer..." value="{{ search_query }}">
+            </div>
+        </div>
+        <!-- Category filter -->
+        <div class="col-lg-3 col-md-6">
+            <select name="category" class="form-select rounded-pill px-3 border" onchange="this.form.submit()">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.slug }}" {% if selected_category == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <!-- Status filter -->
+        <div class="col-lg-3 col-md-6">
+            <select name="status" class="form-select rounded-pill px-3 border" onchange="this.form.submit()">
+                <option value="">All Status</option>
+                <option value="active" {% if selected_status == 'active' %}selected{% endif %}>Active / In Stock</option>
+                <option value="outofstock" {% if selected_status == 'outofstock' %}selected{% endif %}>Out of Stock</option>
+                <option value="inactive" {% if selected_status == 'inactive' %}selected{% endif %}>Inactive</option>
+            </select>
+        </div>
+        <!-- Button -->
+        <div class="col-lg-2 col-md-6 d-grid">
+            <button type="submit" class="btn btn-success rounded-pill px-4">Apply Filters</button>
+        </div>
+    </form>
+</div>
+
+<!-- Products Table Card -->
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="table admin-table mb-0">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Farmer</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in page_obj %}
+                <tr>
+                    <td>
+                        <div class="user-avatar-cell">
+                            {% if item.image %}
+                                <img src="{{ item.image.url }}" alt="Product" class="user-avatar-img rounded-3">
+                            {% else %}
+                                <img src="https://images.unsplash.com/photo-1592417817098-8f3d6eb19675?auto=format&fit=crop&w=100&q=80" alt="Product" class="user-avatar-img rounded-3">
+                            {% endif %}
+                            <div>
+                                <div class="fw-bold text-dark">{{ item.name }}</div>
+                                <div style="font-size: 0.75rem;" class="text-muted">Slug: {{ item.slug }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="fw-semibold">{{ item.farmer.farm_name }}</div>
+                        <div style="font-size: 0.75rem;" class="text-muted">{{ item.farmer.user.get_full_name }}</div>
+                    </td>
+                    <td>
+                        <span class="badge bg-light text-dark font-sm border px-2 py-1">{{ item.category.name }}</span>
+                    </td>
+                    <td class="fw-bold">GHS {{ item.price|floatformat:2 }} / {{ item.unit }}</td>
+                    <td>
+                        <div class="fw-semibold">{{ item.stock_quantity }} {{ item.unit }}s</div>
+                    </td>
+                    <td>
+                        {% if item.is_available and item.stock_quantity > 0 %}
+                            <span class="badge-status badge-status-active"><i class="fas fa-check-circle me-1"></i> Active</span>
+                        {% elif item.stock_quantity == 0 %}
+                            <span class="badge-status badge-status-pending"><i class="fas fa-exclamation-circle me-1"></i> Out of Stock</span>
+                        {% else %}
+                            <span class="badge-status badge-status-inactive"><i class="fas fa-times-circle me-1"></i> Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'admin_product_detail' item.id %}" class="btn btn-light btn-sm rounded-pill border"><i class="fas fa-seedling text-muted me-1"></i> Manage</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        <i class="fas fa-seedling fs-2 mb-3 d-block text-secondary"></i>
+                        No products found matching criteria.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paging controls -->
+    {% if page_obj.has_other_pages %}
+    <div class="admin-pagination border-top">
+        <span class="text-muted font-sm">Showing page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        <nav>
+            <ul class="pagination pagination-sm mb-0">
+                {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link rounded-start-pill px-3 border text-success" href="?page=1&search={{ search_query }}&category={{ selected_category }}&status={{ selected_status }}">First</a></li>
+                    <li class="page-item"><a class="page-link px-3 border text-success" href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&category={{ selected_category }}&status={{ selected_status }}">Prev</a></li>
+                {% endif %}
+                
+                <li class="page-item active"><span class="page-link bg-success border-success text-white px-3">{{ page_obj.number }}</span></li>
+                
+                {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link px-3 border text-success" href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&category={{ selected_category }}&status={{ selected_status }}">Next</a></li>
+                    <li class="page-item"><a class="page-link rounded-end-pill px-3 border text-success" href="?page={{ page_obj.paginator.num_pages }}&search={{ search_query }}&category={{ selected_category }}&status={{ selected_status }}">Last</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

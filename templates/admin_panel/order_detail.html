@@ -1,0 +1,164 @@
+{% extends "admin_panel/base_admin.html" %}
+
+{% block title %}Order Details: #{{ order.order_number }} - AgroConnect Admin{% endblock %}
+
+{% block admin_content %}
+<div class="mb-4">
+    <a href="{% url 'admin_orders' %}" class="btn btn-light rounded-pill border btn-sm mb-3"><i class="fas fa-arrow-left me-1"></i> Back to Orders</a>
+    <h4 class="fw-bold mb-1">Order Details</h4>
+    <p class="text-muted small mb-0">Invoice details and delivery status parameters for order <strong>#{{ order.order_number }}</strong>.</p>
+</div>
+
+<div class="row g-4">
+    <!-- Left Column: Invoice summary details -->
+    <div class="col-lg-8">
+        <!-- Crop Items Card -->
+        <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: var(--agro-radius); background-color: var(--agro-white);">
+            <h5 class="fw-bold text-dark mb-4"><i class="fas fa-shopping-basket text-success me-2"></i> Crop Order Items</h5>
+            
+            <div class="table-responsive">
+                <table class="table admin-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Crop Item</th>
+                            <th>Farmer</th>
+                            <th>Quantity</th>
+                            <th>Unit Price</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        <tr>
+                            <td>
+                                <div class="user-avatar-cell">
+                                    {% if item.product.image %}
+                                        <img src="{{ item.product.image.url }}" alt="Product" class="user-avatar-img rounded-3">
+                                    {% else %}
+                                        <img src="https://images.unsplash.com/photo-1592417817098-8f3d6eb19675?auto=format&fit=crop&w=100&q=80" alt="Product" class="user-avatar-img rounded-3">
+                                    {% endif %}
+                                    <div>
+                                        <div class="fw-bold text-dark">{{ item.product.name }}</div>
+                                        <div style="font-size: 0.75rem;" class="text-muted">Category: {{ item.product.category.name }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="fw-medium text-dark">{{ item.farmer.farm_name }}</div>
+                                <div style="font-size: 0.75rem;" class="text-muted"><i class="fas fa-phone me-1"></i> {{ item.farmer.phone }}</div>
+                            </td>
+                            <td class="fw-semibold">{{ item.quantity }} {{ item.product.unit }}s</td>
+                            <td>GHS {{ item.price|floatformat:2 }}</td>
+                            <td class="fw-bold text-dark">GHS {{ item.subtotal|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Order calculations list -->
+            <div class="border-top pt-3 mt-3 d-flex flex-column align-items-end small">
+                <div class="d-flex justify-content-between mb-2" style="width: 250px;">
+                    <span class="text-muted">Items Subtotal:</span>
+                    <span class="fw-semibold text-dark">GHS {{ order.total|floatformat:2 }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2" style="width: 250px;">
+                    <span class="text-muted">Delivery Shipping Fee:</span>
+                    <span class="fw-semibold text-success">GHS 0.00</span>
+                </div>
+                <hr class="my-2" style="width: 250px;">
+                <div class="d-flex justify-content-between mb-2 fs-6 fw-bold" style="width: 250px;">
+                    <span class="text-dark">Grand Invoice Total:</span>
+                    <span class="text-success">GHS {{ order.total|floatformat:2 }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customer shipping info card -->
+        <div class="card border-0 shadow-sm p-4" style="border-radius: var(--agro-radius); background-color: var(--agro-white);">
+            <h5 class="fw-bold text-dark mb-4"><i class="fas fa-truck text-success me-2"></i> Shipping & Customer details</h5>
+            
+            <div class="row g-3 small">
+                <div class="col-md-6">
+                    <div class="p-3 bg-light rounded-3">
+                        <div class="text-muted mb-1"><i class="fas fa-user me-1"></i> Recipient Name</div>
+                        <div class="fw-bold text-dark">{{ order.full_name }}</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-3 bg-light rounded-3">
+                        <div class="text-muted mb-1"><i class="fas fa-phone me-1"></i> Contact Phone</div>
+                        <div class="fw-bold text-dark">{{ order.phone }}</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-3 bg-light rounded-3">
+                        <div class="text-muted mb-1"><i class="fas fa-envelope me-1"></i> Email Address</div>
+                        <div class="fw-bold text-dark">{{ order.email }}</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-3 bg-light rounded-3">
+                        <div class="text-muted mb-1"><i class="fas fa-map-marked-alt me-1"></i> Ghana Region / District</div>
+                        <div class="fw-bold text-dark">{{ order.region }} / {{ order.district }}</div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="p-3 bg-light rounded-3">
+                        <div class="text-muted mb-1"><i class="fas fa-home me-1"></i> Shipping Address details</div>
+                        <div class="fw-bold text-dark">{{ order.address_line_1 }}{% if order.address_line_2 %}, {{ order.address_line_2 }}{% endif %}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: State update select controllers -->
+    <div class="col-lg-4">
+        <!-- Update order status card -->
+        <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: var(--agro-radius); background-color: var(--agro-white);">
+            <h5 class="fw-bold text-dark mb-4">Manage Order Status</h5>
+            
+            <div class="mb-4">
+                <div class="text-muted small mb-1">Current Status:</div>
+                <span class="badge-status badge-status-{{ order.status|lower }} fs-6">
+                    {{ order.get_status_display }}
+                </span>
+            </div>
+            
+            <form method="POST">
+                {% csrf_csrf_token %}
+                <div class="mb-4">
+                    <label class="form-label font-sm fw-medium text-muted">Update Status State</label>
+                    {{ form.status }}
+                </div>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-success rounded-pill px-4"><i class="fas fa-sync me-1"></i> Update Order Status</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Payment details card -->
+        <div class="card border-0 shadow-sm p-4" style="border-radius: var(--agro-radius); background-color: var(--agro-white);">
+            <h5 class="fw-bold text-dark mb-4">Payment Summary</h5>
+            
+            <div class="border-top pt-3 small text-start">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Payment status:</span>
+                    <span class="fw-bold {% if order.paid %}text-success{% else %}text-danger{% endif %}">
+                        {% if order.paid %}PAID{% else %}UNPAID{% endif %}
+                    </span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Payment Method:</span>
+                    <span class="fw-semibold text-dark">{{ order.payment_method|default:"Mobile Money" }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Transaction Reference:</span>
+                    <span class="fw-semibold text-muted font-xs">REF-{{ order.id }}AGC</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

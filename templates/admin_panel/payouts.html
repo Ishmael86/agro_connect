@@ -1,0 +1,114 @@
+{% extends "admin_panel/base_admin.html" %}
+
+{% block title %}Payout Requests - AgroConnect Admin{% endblock %}
+
+{% block admin_content %}
+<div class="mb-4">
+    <a href="{% url 'admin_earnings' %}" class="btn btn-light rounded-pill border btn-sm mb-3"><i class="fas fa-arrow-left me-1"></i> Back to Earnings</a>
+    <h4 class="fw-bold mb-1">Payout Requests</h4>
+    <p class="text-muted small mb-0">Approve, reject, or mark processing for grower withdrawal requests.</p>
+</div>
+
+<!-- Payouts Table Card -->
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="table admin-table mb-0">
+            <thead>
+                <tr>
+                    <th>Farmer</th>
+                    <th>Requested Amount</th>
+                    <th>Payment Method</th>
+                    <th>Account Reference</th>
+                    <th>Requested Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payout in page_obj %}
+                <tr>
+                    <td>
+                        <div class="fw-bold text-dark">{{ payout.farmer.farm_name }}</div>
+                        <div style="font-size: 0.75rem;" class="text-muted"><i class="fas fa-user me-1"></i> {{ payout.farmer.user.get_full_name }}</div>
+                    </td>
+                    <td class="fw-bold text-success">GHS {{ payout.amount|floatformat:2 }}</td>
+                    <td>
+                        <span class="badge bg-light text-dark border px-2 py-1 font-xs">{{ payout.payment_method|upper }}</span>
+                    </td>
+                    <td>
+                        {% if payout.payment_method == 'momo' %}
+                            <div class="fw-semibold">{{ payout.momo_number }}</div>
+                            <div style="font-size: 0.7rem;" class="text-muted">Carrier: {{ payout.momo_carrier|upper }}</div>
+                        {% else %}
+                            <div class="fw-semibold">{{ payout.bank_account_number }}</div>
+                            <div style="font-size: 0.7rem;" class="text-muted">Bank: {{ payout.bank_name }} ({{ payout.bank_account_name }})</div>
+                        {% endif %}
+                    </td>
+                    <td>{{ payout.requested_at|date:"M d, Y H:i" }}</td>
+                    <td>
+                        <span class="badge-status badge-status-{{ payout.status|lower }}">
+                            {{ payout.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if payout.status == 'PENDING' %}
+                            <div class="d-flex gap-1">
+                                <!-- Approve Form -->
+                                <form method="POST" action="{% url 'admin_payouts' %}">
+                                    {% csrf_csrf_token %}
+                                    <input type="hidden" name="action" value="approve">
+                                    <input type="hidden" name="payout_id" value="{{ payout.id }}">
+                                    <button type="submit" class="btn btn-success btn-sm rounded-pill font-xs px-2" data-confirm="Are you sure you want to approve this payout of GHS {{ payout.amount }}? Verify that you have transferred the funds.">
+                                        <i class="fas fa-check"></i> Approve
+                                    </button>
+                                </form>
+                                <!-- Reject Form -->
+                                <form method="POST" action="{% url 'admin_payouts' %}">
+                                    {% csrf_csrf_token %}
+                                    <input type="hidden" name="action" value="reject">
+                                    <input type="hidden" name="payout_id" value="{{ payout.id }}">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill font-xs px-2" data-confirm="Are you sure you want to reject this payout request?">
+                                        <i class="fas fa-times"></i> Reject
+                                    </button>
+                                </form>
+                            </div>
+                        {% else %}
+                            <span class="text-muted font-xs">Processed: {{ payout.processed_at|date:"M d, Y"|default:"N/A" }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        <i class="fas fa-file-invoice-dollar fs-2 mb-3 d-block text-secondary"></i>
+                        No payout requests found in history.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paging controls -->
+    {% if page_obj.has_other_pages %}
+    <div class="admin-pagination border-top">
+        <span class="text-muted font-sm">Showing page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        <nav>
+            <ul class="pagination pagination-sm mb-0">
+                {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link rounded-start-pill px-3 border text-success" href="?page=1">First</a></li>
+                    <li class="page-item"><a class="page-link px-3 border text-success" href="?page={{ page_obj.previous_page_number }}">Prev</a></li>
+                {% endif %}
+                
+                <li class="page-item active"><span class="page-link bg-success border-success text-white px-3">{{ page_obj.number }}</span></li>
+                
+                {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link px-3 border text-success" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                    <li class="page-item"><a class="page-link rounded-end-pill px-3 border text-success" href="?page={{ page_obj.paginator.num_pages }}">Last</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -62,6 +62,10 @@ def login_view(request):
                             request.session.pop('cart_id', None)
 
                 messages.success(request, f"Welcome back, {user.first_name or user.username}!")
+                
+                # Role-based direct dashboard routing - only Admin goes direct
+                if user.is_superuser or user.is_staff:
+                    return redirect('admin_dashboard')
                 return redirect('home')
             else:
                 messages.error(request, "Invalid username/email or password.")
@@ -142,9 +146,9 @@ def logout_view(request):
 def dashboard_view(request):
     user = request.user
     
-    # 1. Superuser Check: redirect administrator to admin panel
-    if user.is_superuser:
-        return redirect('/admin/')
+    # 1. Staff or Superuser Check: redirect administrator to custom admin panel
+    if user.is_superuser or user.is_staff:
+        return redirect('admin_dashboard')
         
     # 2. Buyer Check: redirect buyer to full-featured buyer dashboard
     if user.account_type == 'BUYER':

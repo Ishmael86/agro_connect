@@ -1,0 +1,87 @@
+{% extends "admin_panel/base_admin.html" %}
+
+{% block title %}Categories Management - AgroConnect Admin{% endblock %}
+
+{% block admin_content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-1">Categories Management</h4>
+        <p class="text-muted small mb-0">Manage and create product categories for the marketplace.</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Left Column: Add Category Form -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm p-4" style="border-radius: var(--agro-radius); background-color: var(--agro-white);">
+            <h5 class="fw-bold text-dark mb-4">Add New Category</h5>
+            
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label font-sm fw-medium text-muted">Category Name</label>
+                    {{ form.name }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label font-sm fw-medium text-muted">Description</label>
+                    {{ form.description }}
+                </div>
+                <div class="mb-4">
+                    <label class="form-label font-sm fw-medium text-muted">Category Image</label>
+                    {{ form.image }}
+                </div>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-success rounded-pill px-4"><i class="fas fa-plus me-1"></i> Create Category</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Right Column: Categories List Table -->
+    <div class="col-lg-8">
+        <div class="table-card">
+            <div class="table-responsive">
+                <table class="table admin-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Slug</th>
+                            <th>Products</th>
+                            <th>Total Sales</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in categories_list %}
+                        <tr>
+                            <td>
+                                <div class="user-avatar-cell">
+                                    {% if item.category.image %}
+                                        <img src="{{ item.category.image.url }}" alt="Category" class="user-avatar-img rounded-3">
+                                    {% else %}
+                                        <img src="https://images.unsplash.com/photo-1592417817098-8f3d6eb19675?auto=format&fit=crop&w=100&q=80" alt="Category" class="user-avatar-img rounded-3">
+                                    {% endif %}
+                                    <div>
+                                        <div class="fw-bold text-dark">{{ item.category.name }}</div>
+                                        <div style="font-size: 0.75rem;" class="text-muted">{{ item.category.description|truncatewords:6 }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-muted font-xs fw-semibold">{{ item.category.slug }}</td>
+                            <td class="fw-semibold">{{ item.prod_count }} products</td>
+                            <td class="fw-bold text-success">GHS {{ item.sales_sum|floatformat:2 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center py-5 text-muted">
+                                <i class="fas fa-tags fs-2 mb-3 d-block text-secondary"></i>
+                                No categories are registered yet.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,97 @@
+{% extends "admin_panel/base_admin.html" %}
+
+{% block title %}Promotions Management - AgroConnect Admin{% endblock %}
+
+{% block admin_content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-1">Promotions Management</h4>
+        <p class="text-muted small mb-0">Create and schedule platform promotional campaigns, discounts, and banner ads.</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Left Column: Add promotion form -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm p-4" style="border-radius: var(--agro-radius); background-color: var(--agro-white);">
+            <h5 class="fw-bold text-dark mb-4">Create Campaign</h5>
+            
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label font-sm fw-medium text-muted">Campaign Title</label>
+                    {{ form.title }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label font-sm fw-medium text-muted">Description</label>
+                    {{ form.description }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label font-sm fw-medium text-muted">Discount Percentage (%)</label>
+                    {{ form.discount_percentage }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label font-sm fw-medium text-muted">Start Date</label>
+                    {{ form.start_date }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label font-sm fw-medium text-muted">End Date</label>
+                    {{ form.end_date }}
+                </div>
+                <div class="mb-4">
+                    <label class="form-label font-sm fw-medium text-muted">Banner Image</label>
+                    {{ form.image }}
+                </div>
+                <div class="form-check mb-4">
+                    {{ form.is_active }}
+                    <label class="form-check-label font-sm text-dark ms-2" for="id_is_active">Mark Campaign Active</label>
+                </div>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-success rounded-pill px-4"><i class="fas fa-plus me-1"></i> Create Campaign</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Right Column: Campaign list cards -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: var(--agro-radius); background-color: var(--agro-white);">
+            <h5 class="fw-bold text-dark mb-4">Active Campaigns</h5>
+            
+            <div class="row g-3">
+                {% for promo in promotions %}
+                <div class="col-md-6">
+                    <div class="card border rounded-3 overflow-hidden h-100">
+                        {% if promo.image %}
+                            <img src="{{ promo.image.url }}" alt="Banner" class="w-100" style="height: 120px; object-fit: cover;">
+                        {% else %}
+                            <div class="w-100 bg-success-light text-success d-flex align-items-center justify-content-center fw-bold fs-4" style="height: 120px;">
+                                GHS {{ promo.discount_percentage|floatformat:0 }}% OFF
+                            </div>
+                        {% endif %}
+                        <div class="p-3">
+                            <div class="d-flex justify-content-between align-items-baseline mb-2">
+                                <h6 class="fw-bold text-dark mb-0 text-truncate" style="max-width: 70%;">{{ promo.title }}</h6>
+                                <span class="badge {% if promo.is_active %}bg-success{% else %}bg-secondary{% endif %} font-xs">
+                                    {% if promo.is_active %}Active{% else %}Inactive{% endif %}
+                                </span>
+                            </div>
+                            <p class="text-muted small mb-3">{{ promo.description|truncatewords:15 }}</p>
+                            <div style="font-size: 0.75rem;" class="text-muted border-top pt-2">
+                                <div><i class="far fa-calendar-alt me-1"></i> From: {{ promo.start_date|date:"M d, Y" }}</div>
+                                <div><i class="far fa-calendar-times me-1"></i> To: {{ promo.end_date|date:"M d, Y" }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center text-muted py-5">
+                    <i class="fas fa-bullhorn fs-2 mb-3 d-block text-secondary"></i>
+                    No campaigns have been configured yet.
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

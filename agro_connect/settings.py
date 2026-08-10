@@ -11,21 +11,36 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
 from pathlib import Path
+from dotenv import load_dotenv
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# env_paths = [
+#     BASE_DIR / '.env',  # /agro_connect/.env
+#     BASE_DIR.parent / '.env',  # /agro_connect/.env (project root)
+# ]
+
+# for env_path in env_paths:
+#     if env_path.exists():
+#         load_dotenv(env_path)
+#         break
+# else:
+#     # If no .env found, still call load_dotenv to check system env vars
+#     load_dotenv()
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-7(d9jf-5mx$pc$&alr^%w8(6*3&6%rhwsvt_#*ite-pakxx4l9"
+SECRET_KEY = "django-insecure-)_wel-xh9en$#*h&p3wa+$6ki+d_02k8vm_f5dnjpg-roy2(+#"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
 ALLOWED_HOSTS = []
+#DEBUG = os.getenv('DEBUG', 'True') == 'True'
+#ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '["*", "127.0.0.1:8000"]').split(',')
 
 
 # Application definition
@@ -56,6 +71,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    #"whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
 ROOT_URLCONF = "agro_connect.urls"
@@ -84,8 +100,8 @@ WSGI_APPLICATION = "agro_connect.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": os.getenv('DB_ENGINE', 'django.db.backends.sqlite3'),
+        "NAME": BASE_DIR / os.getenv('DB_NAME', 'db.sqlite3'),
     }
 }
 
@@ -126,6 +142,7 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"

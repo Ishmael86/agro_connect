@@ -1,0 +1,165 @@
+{% extends "admin_panel/base_admin.html" %}
+
+{% block title %}Reports & Analytics - AgroConnect Admin{% endblock %}
+
+{% block admin_content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-1">Reports & Analytics</h4>
+        <p class="text-muted small mb-0">Review platform metrics, registration records, and financial growth analytics.</p>
+    </div>
+    <div>
+        <select class="form-select rounded-pill shadow-sm" style="width: 200px;">
+            <option>Today</option>
+            <option>Yesterday</option>
+            <option>Last 7 Days</option>
+            <option selected>Last 30 Days</option>
+            <option>This Year</option>
+        </select>
+    </div>
+</div>
+
+<!-- Analytics Cards Row -->
+<div class="row g-4 mb-4">
+    <!-- Net Sales -->
+    <div class="col-xl-3 col-sm-6">
+        <div class="stat-card card-sales">
+            <div>
+                <div class="stat-card-title">Net Sales Volume</div>
+                <div class="stat-card-number">GHS {{ total_sales|floatformat:2 }}</div>
+                <div class="stat-card-trend trend-up">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>+22.8% vs last month</span>
+                </div>
+            </div>
+            <div class="stat-icon-box">
+                <i class="fas fa-coins text-warning"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Total Orders -->
+    <div class="col-xl-3 col-sm-6">
+        <div class="stat-card card-users">
+            <div>
+                <div class="stat-card-title">Total Orders</div>
+                <div class="stat-card-number">{{ total_orders }}</div>
+                <div class="stat-card-trend trend-up">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>+15.3% vs last month</span>
+                </div>
+            </div>
+            <div class="stat-icon-box">
+                <i class="fas fa-shopping-bag text-info"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- New Users -->
+    <div class="col-xl-3 col-sm-6">
+        <div class="stat-card card-farmers">
+            <div>
+                <div class="stat-card-title">New Users (30d)</div>
+                <div class="stat-card-number">{{ new_users }}</div>
+                <div class="stat-card-trend trend-up">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>+18.0% vs last month</span>
+                </div>
+            </div>
+            <div class="stat-icon-box">
+                <i class="fas fa-user-plus text-success"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Conversion Rate -->
+    <div class="col-xl-3 col-sm-6">
+        <div class="stat-card card-orders">
+            <div>
+                <div class="stat-card-title">Conversion Rate</div>
+                <div class="stat-card-number">{{ conversion_rate }}</div>
+                <div class="stat-card-trend trend-up">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>+0.2% vs last month</span>
+                </div>
+            </div>
+            <div class="stat-icon-box">
+                <i class="fas fa-percentage text-danger"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Graph Modules Row -->
+<div class="row g-4 mb-4">
+    <!-- Sales trend chart -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm p-4" style="border-radius: var(--agro-radius); background-color: var(--agro-white);">
+            <h5 class="fw-bold mb-3 text-dark">Sales Analytics</h5>
+            <div style="height: 320px; position: relative;">
+                <canvas id="salesAnalyticsChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category distributions doughnut -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm p-4 h-100" style="border-radius: var(--agro-radius); background-color: var(--agro-white);">
+            <h5 class="fw-bold mb-3 text-dark">Top Categories Share</h5>
+            <div style="height: 220px; position: relative; margin-bottom: 20px;">
+                <canvas id="catAnalyticsChart"></canvas>
+            </div>
+            <div class="d-flex flex-column gap-2 small">
+                {% for cat in top_categories %}
+                <div class="d-flex justify-content-between">
+                    <span class="text-muted"><i class="fas fa-circle me-2 font-xs {% if forloop.counter == 1 %}text-success{% elif forloop.counter == 2 %}text-info{% elif forloop.counter == 3 %}text-warning{% else %}text-secondary{% endif %}"></i> {{ cat.name }}</span>
+                    <span class="fw-bold text-dark">{{ cat.percentage }}%</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Registration breakdowns row -->
+<div class="row g-4">
+    <!-- User Registration Ratio -->
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm p-4" style="border-radius: var(--agro-radius); background-color: var(--agro-white);">
+            <h5 class="fw-bold text-dark mb-3">Registrations Mix</h5>
+            <div class="d-flex justify-content-between p-3 bg-light rounded-3 mb-2 small">
+                <span class="text-muted"><i class="fas fa-tractor text-success me-2"></i> Farmer Growers accounts:</span>
+                <span class="fw-bold text-dark">{{ new_farmers }} new</span>
+            </div>
+            <div class="d-flex justify-content-between p-3 bg-light rounded-3 small">
+                <span class="text-muted"><i class="fas fa-shopping-bag text-info me-2"></i> Buyer accounts:</span>
+                <span class="fw-bold text-dark">{{ new_buyers }} new</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Platform Verification Metrics -->
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm p-4" style="border-radius: var(--agro-radius); background-color: var(--agro-white);">
+            <h5 class="fw-bold text-dark mb-3">Farmer Verifications Mix</h5>
+            <div class="d-flex justify-content-between p-3 bg-light rounded-3 mb-2 small">
+                <span class="text-muted"><i class="fas fa-check-circle text-success me-2"></i> Verified Partner Farmers:</span>
+                <span class="fw-bold text-success">{{ total_farmers }} total</span>
+            </div>
+            <div class="d-flex justify-content-between p-3 bg-light rounded-3 small">
+                <span class="text-muted"><i class="fas fa-clock text-warning me-2"></i> Verification queue size:</span>
+                <span class="fw-bold text-warning">{{ pending_farmers_count }} pending</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    initSalesChart('salesAnalyticsChart', {{ chart_labels|safe }}, {{ chart_values|safe }});
+    initOrdersChart('catAnalyticsChart', [40, 30, 20, 10]); // Mock status/category splits
+});
+</script>
+{% endblock %}

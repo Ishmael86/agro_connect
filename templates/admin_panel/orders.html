@@ -1,0 +1,116 @@
+{% extends "admin_panel/base_admin.html" %}
+
+{% block title %}Orders Management - AgroConnect Admin{% endblock %}
+
+{% block admin_content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-1">Orders Management</h4>
+        <p class="text-muted small mb-0">Track and manage customer crop orders.</p>
+    </div>
+</div>
+
+<!-- Search and filters -->
+<div class="card border-0 shadow-sm p-3 mb-4" style="border-radius: var(--agro-radius); background-color: var(--agro-white);">
+    <form method="GET" class="row g-3 align-items-center">
+        <!-- Search bar -->
+        <div class="col-md-5">
+            <div class="input-group rounded-pill overflow-hidden border">
+                <span class="input-group-text bg-white border-0"><i class="fas fa-search text-muted"></i></span>
+                <input type="text" name="search" class="form-control border-0 px-2" placeholder="Search order ID, buyer..." value="{{ search_query }}">
+            </div>
+        </div>
+        <!-- Status filter dropdown -->
+        <div class="col-md-4">
+            <select name="status" class="form-select rounded-pill px-3 border" onchange="this.form.submit()">
+                <option value="">All Order Status</option>
+                <option value="pending" {% if selected_status == 'pending' %}selected{% endif %}>Pending</option>
+                <option value="processing" {% if selected_status == 'processing' %}selected{% endif %}>Processing</option>
+                <option value="shipped" {% if selected_status == 'shipped' %}selected{% endif %}>Shipped</option>
+                <option value="delivered" {% if selected_status == 'delivered' %}selected{% endif %}>Delivered</option>
+                <option value="cancelled" {% if selected_status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+            </select>
+        </div>
+        <!-- Action button -->
+        <div class="col-md-3 d-grid">
+            <button type="submit" class="btn btn-success rounded-pill px-4">Apply Filters</button>
+        </div>
+    </form>
+</div>
+
+<!-- Orders Table Card -->
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="table admin-table mb-0">
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Customer Name</th>
+                    <th>Date Placed</th>
+                    <th>Billing Total</th>
+                    <th>Status</th>
+                    <th>Payment</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ord in page_obj %}
+                <tr>
+                    <td class="fw-bold text-dark">#{{ ord.order_number }}</td>
+                    <td>
+                        <div class="fw-bold">{{ ord.full_name }}</div>
+                        <div style="font-size: 0.75rem;" class="text-muted"><i class="fas fa-envelope me-1"></i> {{ ord.email }}</div>
+                    </td>
+                    <td>{{ ord.created_at|date:"M d, Y H:i" }}</td>
+                    <td class="fw-bold text-dark">GHS {{ ord.total|floatformat:2 }}</td>
+                    <td>
+                        <span class="badge-status badge-status-{{ ord.status|lower }}">
+                            {{ ord.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if ord.paid %}
+                            <span class="badge bg-success-light text-success fw-semibold font-xs px-2 py-1"><i class="fas fa-check-circle me-1"></i> Paid</span>
+                        {% else %}
+                            <span class="badge bg-warning-light text-warning fw-semibold font-xs px-2 py-1"><i class="fas fa-clock me-1"></i> Unpaid</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'admin_order_detail' ord.order_number %}" class="btn btn-light btn-sm rounded-pill border"><i class="fas fa-eye text-muted me-1"></i> Manage</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        <i class="fas fa-box-open fs-2 mb-3 d-block text-secondary"></i>
+                        No orders found matching criteria.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paging controls -->
+    {% if page_obj.has_other_pages %}
+    <div class="admin-pagination border-top">
+        <span class="text-muted font-sm">Showing page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        <nav>
+            <ul class="pagination pagination-sm mb-0">
+                {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link rounded-start-pill px-3 border text-success" href="?page=1&search={{ search_query }}&status={{ selected_status }}">First</a></li>
+                    <li class="page-item"><a class="page-link px-3 border text-success" href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&status={{ selected_status }}">Prev</a></li>
+                {% endif %}
+                
+                <li class="page-item active"><span class="page-link bg-success border-success text-white px-3">{{ page_obj.number }}</span></li>
+                
+                {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link px-3 border text-success" href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&status={{ selected_status }}">Next</a></li>
+                    <li class="page-item"><a class="page-link rounded-end-pill px-3 border text-success" href="?page={{ page_obj.paginator.num_pages }}&search={{ search_query }}&status={{ selected_status }}">Last</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

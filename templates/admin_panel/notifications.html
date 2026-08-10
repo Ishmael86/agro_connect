@@ -1,0 +1,54 @@
+{% extends "admin_panel/base_admin.html" %}
+
+{% block title %}System Alerts & Notifications - AgroConnect Admin{% endblock %}
+
+{% block admin_content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-1">System Alerts & Notifications</h4>
+        <p class="text-muted small mb-0">Check critical system logs, buyer notifications, and orders milestones.</p>
+    </div>
+    {% if unread_notifications_count > 0 %}
+        <form method="POST">
+            {% csrf_csrf_token %}
+            <input type="hidden" name="action" value="mark_all_read">
+            <button type="submit" class="btn btn-success rounded-pill px-4"><i class="fas fa-check-double me-1"></i> Mark All as Read</button>
+        </form>
+    {% endif %}
+</div>
+
+<!-- Notifications list card -->
+<div class="card border-0 shadow-sm p-4" style="border-radius: var(--agro-radius); background-color: var(--agro-white);">
+    <div class="d-flex flex-column gap-3">
+        {% for alert in notifications %}
+        <div class="p-3 rounded-3 border d-flex justify-content-between align-items-center {% if not alert.is_read %}bg-light border-success-light{% endif %}">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <span class="fs-6 {% if alert.notification_type == 'ORDER_UPDATE' %}text-info{% elif alert.notification_type == 'PROMOTION' %}text-success{% else %}text-warning{% endif %}">
+                        {% if alert.notification_type == 'ORDER_UPDATE' %}
+                            <i class="fas fa-box-open"></i>
+                        {% elif alert.notification_type == 'PROMOTION' %}
+                            <i class="fas fa-check-circle"></i>
+                        {% else %}
+                            <i class="fas fa-exclamation-triangle"></i>
+                        {% endif %}
+                    </span>
+                    <h6 class="fw-bold text-dark mb-0 font-sm">{{ alert.title }}</h6>
+                    {% if not alert.is_read %}
+                        <span class="badge bg-danger rounded-pill font-xs">New</span>
+                    {% endif %}
+                </div>
+                <p class="text-muted small mb-0">{{ alert.message }}</p>
+            </div>
+            
+            <span style="font-size: 0.7rem;" class="text-muted">{{ alert.created_at|date:"M d, H:i" }}</span>
+        </div>
+        {% empty %}
+        <div class="text-center text-muted py-5">
+            <i class="far fa-bell fs-2 mb-3 d-block text-secondary"></i>
+            No system notifications or alerts currently available.
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,174 @@
+{% extends "admin_panel/base_admin.html" %}
+
+{% block title %}System Settings - AgroConnect Admin{% endblock %}
+
+{% block admin_content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-1">System Settings</h4>
+        <p class="text-muted small mb-0">Configure global site settings, commission rates, and notification gateways.</p>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm overflow-hidden" style="border-radius: var(--agro-radius); background-color: var(--agro-white);">
+    <div class="row g-0">
+        <!-- Settings Tabs Navigation (Left) -->
+        <div class="col-md-3 border-end bg-light" style="min-height: 500px;">
+            <div class="nav flex-column nav-pills p-3" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                <button class="nav-link active text-start py-3 rounded-3" id="v-pills-general-tab" data-bs-toggle="pill" data-bs-target="#v-pills-general" type="button" role="tab" aria-controls="v-pills-general" aria-selected="true">
+                    <i class="fas fa-cog me-2"></i> General Settings
+                </button>
+                <button class="nav-link text-start py-3 rounded-3 mt-2" id="v-pills-payment-tab" data-bs-toggle="pill" data-bs-target="#v-pills-payment" type="button" role="tab" aria-controls="v-pills-payment" aria-selected="false">
+                    <i class="fas fa-credit-card me-2"></i> Payment Settings
+                </button>
+                <button class="nav-link text-start py-3 rounded-3 mt-2" id="v-pills-email-tab" data-bs-toggle="pill" data-bs-target="#v-pills-email" type="button" role="tab" aria-controls="v-pills-email" aria-selected="false">
+                    <i class="fas fa-envelope me-2"></i> Email Settings
+                </button>
+                <button class="nav-link text-start py-3 rounded-3 mt-2" id="v-pills-sms-tab" data-bs-toggle="pill" data-bs-target="#v-pills-sms" type="button" role="tab" aria-controls="v-pills-sms" aria-selected="false">
+                    <i class="fas fa-sms me-2"></i> SMS Settings
+                </button>
+                <button class="nav-link text-start py-3 rounded-3 mt-2" id="v-pills-seo-tab" data-bs-toggle="pill" data-bs-target="#v-pills-seo" type="button" role="tab" aria-controls="v-pills-seo" aria-selected="false">
+                    <i class="fas fa-search me-2"></i> SEO Settings
+                </button>
+                <button class="nav-link text-start py-3 rounded-3 mt-2 text-danger" id="v-pills-maintenance-tab" data-bs-toggle="pill" data-bs-target="#v-pills-maintenance" type="button" role="tab" aria-controls="v-pills-maintenance" aria-selected="false">
+                    <i class="fas fa-toolbox me-2"></i> Maintenance Mode
+                </button>
+            </div>
+        </div>
+        
+        <!-- Settings Content Forms (Right) -->
+        <div class="col-md-9 p-4">
+            <form method="POST">
+                {% csrf_csrf_token %}
+                
+                <div class="tab-content" id="v-pills-tabContent">
+                    <!-- Tab 1: General Settings -->
+                    <div class="tab-pane fade show active" id="v-pills-general" role="tabpanel" aria-labelledby="v-pills-general-tab">
+                        <h5 class="fw-bold mb-4 text-dark border-bottom pb-2">General Settings</h5>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label font-sm text-muted">Site Name</label>
+                                {{ form.site_name }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label font-sm text-muted">Site Contact Email</label>
+                                {{ form.site_email }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label font-sm text-muted">Site Contact Phone</label>
+                                {{ form.site_phone }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label font-sm text-muted">Currency (Ghana)</label>
+                                {{ form.currency }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label font-sm text-muted">Local Timezone</label>
+                                {{ form.timezone }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label font-sm text-muted">Commission Rate Fee (%)</label>
+                                {{ form.commission_rate }}
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label font-sm text-muted">Site Description / Tagline</label>
+                                {{ form.site_description }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tab 2: Payment Gateways -->
+                    <div class="tab-pane fade" id="v-pills-payment" role="tabpanel" aria-labelledby="v-pills-payment-tab">
+                        <h5 class="fw-bold mb-4 text-dark border-bottom pb-2">Payment Settings</h5>
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label font-sm text-muted">Ghana Mobile Money API Endpoint URL</label>
+                                {{ form.momo_api_url }}
+                            </div>
+                            <div class="col-12 mt-3">
+                                <div class="form-check">
+                                    {{ form.bank_transfer_enabled }}
+                                    <label class="form-check-label font-sm text-dark ms-2" for="id_bank_transfer_enabled">Enable Direct Bank Transfer Settlement options for farmers</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tab 3: SMTP Emails -->
+                    <div class="tab-pane fade" id="v-pills-email" role="tabpanel" aria-labelledby="v-pills-email-tab">
+                        <h5 class="fw-bold mb-4 text-dark border-bottom pb-2">Email Notifications Gateways</h5>
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label class="form-label font-sm text-muted">SMTP Server Host</label>
+                                {{ form.smtp_host }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label font-sm text-muted">SMTP Port</label>
+                                {{ form.smtp_port }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label font-sm text-muted">SMTP Username</label>
+                                {{ form.smtp_user }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label font-sm text-muted">SMTP Access Password</label>
+                                {{ form.smtp_password }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tab 4: SMS Gateways -->
+                    <div class="tab-pane fade" id="v-pills-sms" role="tabpanel" aria-labelledby="v-pills-sms-tab">
+                        <h5 class="fw-bold mb-4 text-dark border-bottom pb-2">SMS Gateways</h5>
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label font-sm text-muted">SMS Service Provider API Key credentials</label>
+                                {{ form.sms_api_key }}
+                            </div>
+                            <div class="col-md-6 mt-3">
+                                <label class="form-label font-sm text-muted">SMS Sender ID Header</label>
+                                {{ form.sms_sender_id }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tab 5: SEO and search headers -->
+                    <div class="tab-pane fade" id="v-pills-seo" role="tabpanel" aria-labelledby="v-pills-seo-tab">
+                        <h5 class="fw-bold mb-4 text-dark border-bottom pb-2">Search Engine Optimization (SEO)</h5>
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label font-sm text-muted">Default Webpage Title</label>
+                                {{ form.seo_title }}
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label font-sm text-muted">Target Meta Keywords</label>
+                                {{ form.seo_keywords }}
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label font-sm text-muted">Meta description summary</label>
+                                {{ form.seo_description }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tab 6: Maintenance Mode -->
+                    <div class="tab-pane fade" id="v-pills-maintenance" role="tabpanel" aria-labelledby="v-pills-maintenance-tab">
+                        <h5 class="fw-bold mb-4 text-danger border-bottom pb-2"><i class="fas fa-toolbox"></i> Platform Maintenance Mode</h5>
+                        <div class="p-3 bg-danger-light text-danger rounded-3 mb-4 small" style="background-color: rgba(220, 53, 69, 0.05);">
+                            <i class="fas fa-info-circle me-1"></i> Enabling maintenance mode locks public buyer and farmer marketplace pages. Administrators still keep dashboard access options.
+                        </div>
+                        <div class="form-check mt-3">
+                            {{ form.maintenance_mode }}
+                            <label class="form-check-label text-danger fw-bold ms-2" for="id_maintenance_mode">Activate Site Maintenance Mode</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="border-top pt-3 mt-4 text-end">
+                    <button type="submit" class="btn btn-success rounded-pill px-5"><i class="fas fa-save me-1"></i> Save Configuration Settings</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

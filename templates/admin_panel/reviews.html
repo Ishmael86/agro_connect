@@ -1,0 +1,127 @@
+{% extends "admin_panel/base_admin.html" %}
+
+{% block title %}Reviews Moderation - AgroConnect Admin{% endblock %}
+
+{% block admin_content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-1">Reviews Moderation</h4>
+        <p class="text-muted small mb-0">Monitor, read, and delete product reviews submitted by buyers.</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Left Column: Rating breakdown cards -->
+    <div class="col-lg-4">
+        <!-- Average Rating -->
+        <div class="card border-0 shadow-sm p-4 mb-4 text-center" style="border-radius: var(--agro-radius); background-color: var(--agro-white);">
+            <div class="text-muted small mb-2">Average Rating</div>
+            <h1 class="fw-extrabold text-warning mb-1" style="font-size: 3.5rem;">{{ avg_rating }}</h1>
+            <div class="text-warning mb-2">
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star-half-alt"></i>
+            </div>
+            <span class="text-muted font-xs">Based on {{ total_reviews }} ratings</span>
+        </div>
+
+        <!-- Progress bar breakdown list -->
+        <div class="card border-0 shadow-sm p-4" style="border-radius: var(--agro-radius); background-color: var(--agro-white);">
+            <h6 class="fw-bold text-dark mb-3">Rating Distribution</h6>
+            <div class="d-flex flex-column gap-3">
+                {% for score, details in rating_breakdown.items %}
+                <div>
+                    <div class="d-flex justify-content-between font-xs fw-medium mb-1 text-muted">
+                        <span>{{ score }} Star</span>
+                        <span>{{ details.count }} ({{ details.percentage }}%)</span>
+                    </div>
+                    <div class="progress rounded-pill" style="height: 6px;">
+                        <div class="progress-bar bg-warning rounded-pill" role="progressbar" style="width: {{ details.percentage }}%;" aria-valuenow="{{ details.percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Reviews Table list -->
+    <div class="col-lg-8">
+        <div class="table-card">
+            <div class="table-responsive">
+                <table class="table admin-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Reviewer</th>
+                            <th>Product</th>
+                            <th>Rating</th>
+                            <th>Comment</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in page_obj %}
+                        <tr>
+                            <td>
+                                <div class="fw-bold text-dark">{{ item.buyer.get_full_name|default:item.buyer.username }}</div>
+                                <div style="font-size: 0.7rem;" class="text-muted">{{ item.created_at|date:"M d, Y" }}</div>
+                            </td>
+                            <td>
+                                <div class="fw-medium">{{ item.product.name }}</div>
+                                <div style="font-size: 0.75rem;" class="text-muted">Farmer: {{ item.product.farmer.farm_name }}</div>
+                            </td>
+                            <td>
+                                <span class="badge bg-warning-light text-warning fw-semibold font-xs px-2 py-1"><i class="fas fa-star me-1"></i> {{ item.rating }}.0</span>
+                            </td>
+                            <td>
+                                <p class="mb-0 small text-muted text-wrap" style="max-width: 250px;">{{ item.comment }}</p>
+                            </td>
+                            <td>
+                                <form method="POST" action="{% url 'admin_reviews' %}">
+                                    {% csrf_csrf_token %}
+                                    <input type="hidden" name="action" value="delete_review">
+                                    <input type="hidden" name="review_id" value="{{ item.id }}">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm rounded-circle p-2" data-confirm="Are you sure you want to delete this review comment? This operation cannot be undone." style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-trash-alt font-xs"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <i class="fas fa-star-half-alt fs-2 mb-3 d-block text-secondary"></i>
+                                No product reviews found in database.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paging controls -->
+            {% if page_obj.has_other_pages %}
+            <div class="admin-pagination border-top">
+                <span class="text-muted font-sm">Showing page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                <nav>
+                    <ul class="pagination pagination-sm mb-0">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item"><a class="page-link rounded-start-pill px-3 border text-success" href="?page=1">First</a></li>
+                            <li class="page-item"><a class="page-link px-3 border text-success" href="?page={{ page_obj.previous_page_number }}">Prev</a></li>
+                        {% endif %}
+                        
+                        <li class="page-item active"><span class="page-link bg-success border-success text-white px-3">{{ page_obj.number }}</span></li>
+                        
+                        {% if page_obj.has_next %}
+                            <li class="page-item"><a class="page-link px-3 border text-success" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                            <li class="page-item"><a class="page-link rounded-end-pill px-3 border text-success" href="?page={{ page_obj.paginator.num_pages }}">Last</a></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

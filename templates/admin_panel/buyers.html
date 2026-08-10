@@ -1,0 +1,102 @@
+{% extends "admin_panel/base_admin.html" %}
+
+{% block title %}Buyers Management - AgroConnect Admin{% endblock %}
+
+{% block admin_content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-1">Buyers Management</h4>
+        <p class="text-muted small mb-0">Monitor and manage platform buyer accounts.</p>
+    </div>
+</div>
+
+<!-- Search box -->
+<div class="card border-0 shadow-sm p-3 mb-4" style="border-radius: var(--agro-radius); background-color: var(--agro-white);">
+    <form method="GET" class="row g-3 align-items-center">
+        <div class="col-md-9">
+            <div class="input-group rounded-pill overflow-hidden border">
+                <span class="input-group-text bg-white border-0"><i class="fas fa-search text-muted"></i></span>
+                <input type="text" name="search" class="form-control border-0 px-2" placeholder="Search by name, email, username..." value="{{ search_query }}">
+            </div>
+        </div>
+        <div class="col-md-3 d-grid">
+            <button type="submit" class="btn btn-success rounded-pill px-4">Search Buyers</button>
+        </div>
+    </form>
+</div>
+
+<!-- Buyers Table Card -->
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="table admin-table mb-0">
+            <thead>
+                <tr>
+                    <th>Buyer</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Orders</th>
+                    <th>Total Spent</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in buyers_list %}
+                <tr>
+                    <td>
+                        <div class="user-avatar-cell">
+                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="Avatar" class="user-avatar-img">
+                            <div>
+                                <div class="fw-bold text-dark">{{ item.buyer.get_full_name|default:item.buyer.username }}</div>
+                                <div style="font-size: 0.75rem;" class="text-muted">@{{ item.buyer.username }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>{{ item.buyer.email }}</td>
+                    <td>{{ item.buyer.phone|default:"N/A" }}</td>
+                    <td class="fw-semibold text-dark">{{ item.ord_count }} orders</td>
+                    <td class="fw-bold text-success">GHS {{ item.total_spent|floatformat:2 }}</td>
+                    <td>
+                        <span class="badge-status badge-status-{% if item.buyer.is_active %}active{% else %}suspended{% endif %}">
+                            {% if item.buyer.is_active %}Active{% else %}Suspended{% endif %}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{% url 'admin_buyer_detail' item.buyer.id %}" class="btn btn-light btn-sm rounded-pill border"><i class="fas fa-eye text-muted me-1"></i> Manage</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        <i class="fas fa-user-slash fs-2 mb-3 d-block text-secondary"></i>
+                        No buyer accounts found.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paging controls -->
+    {% if page_obj.has_other_pages %}
+    <div class="admin-pagination border-top">
+        <span class="text-muted font-sm">Showing page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        <nav>
+            <ul class="pagination pagination-sm mb-0">
+                {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link rounded-start-pill px-3 border text-success" href="?page=1&search={{ search_query }}">First</a></li>
+                    <li class="page-item"><a class="page-link px-3 border text-success" href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}">Prev</a></li>
+                {% endif %}
+                
+                <li class="page-item active"><span class="page-link bg-success border-success text-white px-3">{{ page_obj.number }}</span></li>
+                
+                {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link px-3 border text-success" href="?page={{ page_obj.next_page_number }}&search={{ search_query }}">Next</a></li>
+                    <li class="page-item"><a class="page-link rounded-end-pill px-3 border text-success" href="?page={{ page_obj.paginator.num_pages }}&search={{ search_query }}">Last</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,116 @@
+{% extends "admin_panel/base_admin.html" %}
+
+{% block title %}Page Management - AgroConnect Admin{% endblock %}
+
+{% block admin_content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-1">Page Management</h4>
+        <p class="text-muted small mb-0">Customize static pages, FAQs, and platform documentation guidelines.</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Card 1: About Us -->
+    <div class="col-lg-4 col-sm-6">
+        <div class="card border-0 shadow-sm p-4 h-100 d-flex flex-column justify-content-between" style="border-radius: var(--agro-radius); background-color: var(--agro-white);">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="fs-4 text-success"><i class="far fa-file-alt"></i></span>
+                    <h6 class="fw-bold text-dark mb-0">About Us</h6>
+                </div>
+                <p class="text-muted small mb-4">Manage the public details, mission info, and team profiles page.</p>
+            </div>
+            <div class="d-flex justify-content-between align-items-center border-top pt-3">
+                <span class="text-muted" style="font-size: 0.75rem;"><i class="fas fa-history me-1"></i> Updated 3d ago</span>
+                <button class="btn btn-light btn-sm rounded-pill px-3 border font-xs text-success fw-semibold" onclick="alert('Opening About Us content editor...')">Edit Page</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 2: Contact Info -->
+    <div class="col-lg-4 col-sm-6">
+        <div class="card border-0 shadow-sm p-4 h-100 d-flex flex-column justify-content-between" style="border-radius: var(--agro-radius); background-color: var(--agro-white);">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="fs-4 text-success"><i class="far fa-file-alt"></i></span>
+                    <h6 class="fw-bold text-dark mb-0">Contact Guidelines</h6>
+                </div>
+                <p class="text-muted small mb-4">Update local customer phone numbers, email routes, and support hours.</p>
+            </div>
+            <div class="d-flex justify-content-between align-items-center border-top pt-3">
+                <span class="text-muted" style="font-size: 0.75rem;"><i class="fas fa-history me-1"></i> Updated 1d ago</span>
+                <button class="btn btn-light btn-sm rounded-pill px-3 border font-xs text-success fw-semibold" onclick="alert('Opening Contact guidelines editor...')">Edit Page</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 3: Terms of Service -->
+    <div class="col-lg-4 col-sm-6">
+        <div class="card border-0 shadow-sm p-4 h-100 d-flex flex-column justify-content-between" style="border-radius: var(--agro-radius); background-color: var(--agro-white);">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="fs-4 text-success"><i class="far fa-file-alt"></i></span>
+                    <h6 class="fw-bold text-dark mb-0">Terms of Service</h6>
+                </div>
+                <p class="text-muted small mb-4">Modify platform terms, buyer/grower commission agreements, and rules.</p>
+            </div>
+            <div class="d-flex justify-content-between align-items-center border-top pt-3">
+                <span class="text-muted" style="font-size: 0.75rem;"><i class="fas fa-history me-1"></i> Updated 5d ago</span>
+                <button class="btn btn-light btn-sm rounded-pill px-3 border font-xs text-success fw-semibold" onclick="alert('Opening Terms of Service editor...')">Edit Page</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 4: Privacy Policy -->
+    <div class="col-lg-4 col-sm-6">
+        <div class="card border-0 shadow-sm p-4 h-100 d-flex flex-column justify-content-between" style="border-radius: var(--agro-radius); background-color: var(--agro-white);">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="fs-4 text-success"><i class="far fa-file-alt"></i></span>
+                    <h6 class="fw-bold text-dark mb-0">Privacy Policy</h6>
+                </div>
+                <p class="text-muted small mb-4">Edit data protection guidelines, cookies usage, and encryption protocols.</p>
+            </div>
+            <div class="d-flex justify-content-between align-items-center border-top pt-3">
+                <span class="text-muted" style="font-size: 0.75rem;"><i class="fas fa-history me-1"></i> Updated 6d ago</span>
+                <button class="btn btn-light btn-sm rounded-pill px-3 border font-xs text-success fw-semibold" onclick="alert('Opening Privacy Policy editor...')">Edit Page</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 5: FAQs -->
+    <div class="col-lg-4 col-sm-6">
+        <div class="card border-0 shadow-sm p-4 h-100 d-flex flex-column justify-content-between" style="border-radius: var(--agro-radius); background-color: var(--agro-white);">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="fs-4 text-success"><i class="far fa-file-alt"></i></span>
+                    <h6 class="fw-bold text-dark mb-0">Frequently Asked Questions (FAQs)</h6>
+                </div>
+                <p class="text-muted small mb-4">Configure common answers regarding orders, returns, and payout systems.</p>
+            </div>
+            <div class="d-flex justify-content-between align-items-center border-top pt-3">
+                <span class="text-muted" style="font-size: 0.75rem;"><i class="fas fa-history me-1"></i> Updated 1w ago</span>
+                <button class="btn btn-light btn-sm rounded-pill px-3 border font-xs text-success fw-semibold" onclick="alert('Opening FAQs editor...')">Edit Page</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 6: How it Works -->
+    <div class="col-lg-4 col-sm-6">
+        <div class="card border-0 shadow-sm p-4 h-100 d-flex flex-column justify-content-between" style="border-radius: var(--agro-radius); background-color: var(--agro-white);">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="fs-4 text-success"><i class="far fa-file-alt"></i></span>
+                    <h6 class="fw-bold text-dark mb-0">How AgroConnect Works</h6>
+                </div>
+                <p class="text-muted small mb-4">Edit tutorial descriptions, farm video guides, and signup walk-through steps.</p>
+            </div>
+            <div class="d-flex justify-content-between align-items-center border-top pt-3">
+                <span class="text-muted" style="font-size: 0.75rem;"><i class="fas fa-history me-1"></i> Updated 2d ago</span>
+                <button class="btn btn-light btn-sm rounded-pill px-3 border font-xs text-success fw-semibold" onclick="alert('Opening Tutorial guide editor...')">Edit Page</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

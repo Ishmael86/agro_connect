@@ -1,0 +1,94 @@
+{% extends "admin_panel/base_admin.html" %}
+
+{% block title %}Messaging Center - AgroConnect Admin{% endblock %}
+
+{% block admin_content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-1">Messaging Center</h4>
+        <p class="text-muted small mb-0">Audit and inspect communication threads between buyers and farmers.</p>
+    </div>
+</div>
+
+<div class="chat-container">
+    <!-- Chat Threads Sidebar -->
+    <div class="chat-sidebar">
+        <div class="chat-search-wrapper">
+            <div class="input-group rounded-pill overflow-hidden border">
+                <span class="input-group-text bg-white border-0"><i class="fas fa-search text-muted font-xs"></i></span>
+                <input type="text" class="form-control border-0 font-sm py-1" placeholder="Search chats...">
+            </div>
+        </div>
+        <div class="chat-thread-list">
+            {% for conv in conversations %}
+            <a href="?conv={{ conv.id }}" class="chat-thread-item {% if active_conversation.id == conv.id %}active{% endif %}">
+                <div class="position-relative" style="width: 42px; height: 42px; flex-shrink: 0;">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="Avatar" class="w-100 h-100 object-fit-cover rounded-circle border">
+                    <span class="position-absolute bottom-0 end-0 rounded-circle border border-2 border-white bg-success" style="width: 11px; height: 11px; right: 1px; bottom: 1px;"></span>
+                </div>
+                <div class="overflow-hidden w-100">
+                    <div class="d-flex justify-content-between align-items-baseline mb-1">
+                        <h6 class="fw-bold text-dark mb-0 text-truncate font-sm">{{ conv.buyer.get_full_name }}</h6>
+                        <span style="font-size: 0.65rem;" class="text-muted font-xs">{{ conv.updated_at|date:"H:i" }}</span>
+                    </div>
+                    <div style="font-size: 0.75rem;" class="text-success text-truncate mb-1"><i class="fas fa-tractor me-1 text-muted"></i> {{ conv.farmer.farm_name }}</div>
+                </div>
+            </a>
+            {% empty %}
+            <div class="text-center text-muted py-5 small">No chats available.</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Active Conversation window -->
+    <div class="chat-main">
+        {% if active_conversation %}
+        <!-- Active Chat Header -->
+        <div class="chat-header">
+            <div>
+                <h6 class="fw-bold text-dark mb-1">{{ active_conversation.buyer.get_full_name }}</h6>
+                <div class="text-success small font-xs"><i class="fas fa-tractor me-1 text-muted"></i> Chatting with <strong>{{ active_conversation.farmer.farm_name }}</strong></div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-light text-dark border font-xs">Chat ID: #{{ active_conversation.id }}</span>
+            </div>
+        </div>
+
+        <!-- Chat messages transcripts list -->
+        <div class="chat-body">
+            {% for msg in messages_list %}
+                {% if msg.sender == active_conversation.buyer %}
+                <!-- Message from Buyer (Left aligned) -->
+                <div class="chat-bubble bubble-received shadow-sm">
+                    <div class="fw-bold font-xs mb-1 text-primary">{{ msg.sender.get_full_name }} (Buyer)</div>
+                    <div>{{ msg.message }}</div>
+                    <div class="text-end mt-1" style="font-size: 0.65rem; color: #9ca3af;">{{ msg.created_at|date:"H:i" }}</div>
+                </div>
+                {% else %}
+                <!-- Message from Farmer (Right aligned) -->
+                <div class="chat-bubble bubble-sent">
+                    <div class="fw-bold font-xs mb-1 text-white-50">{{ msg.sender.get_full_name }} (Farmer)</div>
+                    <div>{{ msg.message }}</div>
+                    <div class="text-end mt-1" style="font-size: 0.65rem; color: rgba(255,255,255,0.7);">{{ msg.created_at|date:"H:i" }}</div>
+                </div>
+                {% endif %}
+            {% empty %}
+            <div class="text-center text-muted py-5">This conversation is empty.</div>
+            {% endfor %}
+        </div>
+
+        <!-- System warning audit info footer -->
+        <div class="chat-footer text-center bg-light border-top py-2">
+            <span style="font-size: 0.75rem;" class="text-muted"><i class="fas fa-shield-alt me-1"></i> Administratively Auditing: Exchanging details matches system privacy protocols.</span>
+        </div>
+        {% else %}
+        <!-- Chat Placeholder empty state -->
+        <div class="d-flex flex-column align-items-center justify-content-center h-100 text-muted">
+            <i class="far fa-comments fs-1 mb-3 text-secondary"></i>
+            <h5>No Active Conversation</h5>
+            <p class="small text-muted mb-0">Select a conversation thread from the sidebar list to inspect chat transcripts logs.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

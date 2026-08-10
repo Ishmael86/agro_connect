@@ -1,0 +1,71 @@
+{% extends "admin_panel/base_admin.html" %}
+
+{% block title %}Activity Logs Audit Trail - AgroConnect Admin{% endblock %}
+
+{% block admin_content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-1">Activity Logs Audit Trail</h4>
+        <p class="text-muted small mb-0">Security audit history tracking administrative operations and updates.</p>
+    </div>
+</div>
+
+<!-- Logs Table Card -->
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="table admin-table mb-0">
+            <thead>
+                <tr>
+                    <th>Administrator</th>
+                    <th>Action</th>
+                    <th>IP Address</th>
+                    <th>Date / Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in page_obj %}
+                <tr>
+                    <td class="fw-bold text-dark">
+                        <i class="fas fa-user-shield text-success me-1"></i> {{ log.admin.username }}
+                    </td>
+                    <td>
+                        <span class="fw-medium text-dark">{{ log.action }}</span>
+                    </td>
+                    <td class="font-xs fw-semibold text-muted">{{ log.ip_address|default:"127.0.0.1" }}</td>
+                    <td>{{ log.created_at|date:"M d, Y H:i:s" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center py-5 text-muted">
+                        <i class="fas fa-history fs-2 mb-3 d-block text-secondary"></i>
+                        No administrative operations have been logged.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paging controls -->
+    {% if page_obj.has_other_pages %}
+    <div class="admin-pagination border-top">
+        <span class="text-muted font-sm">Showing page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        <nav>
+            <ul class="pagination pagination-sm mb-0">
+                {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link rounded-start-pill px-3 border text-success" href="?page=1">First</a></li>
+                    <li class="page-item"><a class="page-link px-3 border text-success" href="?page={{ page_obj.previous_page_number }}">Prev</a></li>
+                {% endif %}
+                
+                <li class="page-item active"><span class="page-link bg-success border-success text-white px-3">{{ page_obj.number }}</span></li>
+                
+                {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link px-3 border text-success" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                    <li class="page-item"><a class="page-link rounded-end-pill px-3 border text-success" href="?page={{ page_obj.paginator.num_pages }}">Last</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

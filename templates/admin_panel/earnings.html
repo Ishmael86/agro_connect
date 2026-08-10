@@ -1,0 +1,121 @@
+{% extends "admin_panel/base_admin.html" %}
+
+{% block title %}Earnings & Payouts - AgroConnect Admin{% endblock %}
+
+{% block admin_content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-1">Earnings & Payouts</h4>
+        <p class="text-muted small mb-0">Monitor marketplace gross revenues, commission fees, and payout balances.</p>
+    </div>
+    <div>
+        <a href="{% url 'admin_payouts' %}" class="btn btn-success rounded-pill px-4"><i class="fas fa-file-invoice-dollar me-1"></i> Review Payout Requests</a>
+    </div>
+</div>
+
+<!-- Financial Statistics Row -->
+<div class="row g-4 mb-4">
+    <!-- Gross Sales -->
+    <div class="col-xl-3 col-sm-6">
+        <div class="stat-card card-sales">
+            <div>
+                <div class="stat-card-title">Gross Sales</div>
+                <div class="stat-card-number">GHS {{ gross_sales|floatformat:2 }}</div>
+                <div class="text-muted font-xs mt-1">Total platform volume</div>
+            </div>
+            <div class="stat-icon-box">
+                <i class="fas fa-coins text-warning"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Platform Commission -->
+    <div class="col-xl-3 col-sm-6">
+        <div class="stat-card card-users">
+            <div>
+                <div class="stat-card-title">Platform Commission</div>
+                <div class="stat-card-number">GHS {{ platform_revenue|floatformat:2 }}</div>
+                <div class="text-muted font-xs mt-1">AgroConnect commissions</div>
+            </div>
+            <div class="stat-icon-box">
+                <i class="fas fa-percent text-info"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Farmer Earnings -->
+    <div class="col-xl-3 col-sm-6">
+        <div class="stat-card card-farmers">
+            <div>
+                <div class="stat-card-title">Farmer Earnings</div>
+                <div class="stat-card-number">GHS {{ farmer_earnings|floatformat:2 }}</div>
+                <div class="text-muted font-xs mt-1">Growers shares</div>
+            </div>
+            <div class="stat-icon-box">
+                <i class="fas fa-tractor text-success"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Pending Payouts -->
+    <div class="col-xl-3 col-sm-6">
+        <div class="stat-card card-orders">
+            <div>
+                <div class="stat-card-title">Pending Payouts</div>
+                <div class="stat-card-number">GHS {{ pending_payouts|floatformat:2 }}</div>
+                <div class="text-muted font-xs mt-1">Requested withdrawals</div>
+            </div>
+            <div class="stat-icon-box">
+                <i class="fas fa-clock text-danger"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Earnings line chart -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm p-4 h-100" style="border-radius: var(--agro-radius); background-color: var(--agro-white);">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0 text-dark">Earnings Trend</h5>
+                <span class="badge bg-success-light text-success fw-semibold">Past 6 Months</span>
+            </div>
+            <div style="height: 320px; position: relative;">
+                <canvas id="earningsTrendChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Performing Farmers -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm p-4 h-100" style="border-radius: var(--agro-radius); background-color: var(--agro-white);">
+            <h5 class="fw-bold text-dark mb-4">Top Performing Farmers</h5>
+            
+            <div class="d-flex flex-column gap-3">
+                {% for item in top_farmers %}
+                <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded-3">
+                    <div class="overflow-hidden">
+                        <div class="fw-bold text-dark text-truncate small">{{ item.farmer__farm_name }}</div>
+                        <div style="font-size: 0.7rem;" class="text-muted">Owner: {{ item.farmer__user__first_name }} {{ item.farmer__user__last_name }}</div>
+                    </div>
+                    <span class="fw-bold text-success small" style="white-space: nowrap;">GHS {{ item.sales|floatformat:2 }}</span>
+                </div>
+                {% empty %}
+                <div class="text-center text-muted py-5">
+                    <i class="fas fa-user-slash fs-2 mb-3 d-block text-secondary"></i>
+                    No farmer earnings recorded yet.
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    initSalesChart('earningsTrendChart', {{ months_labels|safe }}, {{ months_values|safe }});
+});
+</script>
+{% endblock %}

@@ -1,0 +1,112 @@
+{% extends "admin_panel/base_admin.html" %}
+
+{% block title %}Support Tickets - AgroConnect Admin{% endblock %}
+
+{% block admin_content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-1">Support Tickets</h4>
+        <p class="text-muted small mb-0">Help resolve customer inquiries and support requests.</p>
+    </div>
+</div>
+
+<!-- Support Tickets filters -->
+<div class="card border-0 shadow-sm p-3 mb-4" style="border-radius: var(--agro-radius); background-color: var(--agro-white);">
+    <form method="GET" class="row g-3 align-items-center">
+        <!-- Status filter -->
+        <div class="col-md-9">
+            <select name="status" class="form-select rounded-pill px-3 border" onchange="this.form.submit()">
+                <option value="">All Support Tickets Status</option>
+                <option value="open" {% if selected_status == 'open' %}selected{% endif %}>Open</option>
+                <option value="in_progress" {% if selected_status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                <option value="resolved" {% if selected_status == 'resolved' %}selected{% endif %}>Resolved</option>
+                <option value="closed" {% if selected_status == 'closed' %}selected{% endif %}>Closed</option>
+            </select>
+        </div>
+        <div class="col-md-3 d-grid">
+            <button type="submit" class="btn btn-success rounded-pill px-4">Apply Filters</button>
+        </div>
+    </form>
+</div>
+
+<!-- Tickets Table Card -->
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="table admin-table mb-0">
+            <thead>
+                <tr>
+                    <th>Ticket ID</th>
+                    <th>User</th>
+                    <th>Subject</th>
+                    <th>Category</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ticket in page_obj %}
+                <tr>
+                    <td class="fw-bold text-dark">#TKT-{{ ticket.id }}</td>
+                    <td>
+                        <div class="fw-semibold">{{ ticket.user.get_full_name }}</div>
+                        <div style="font-size: 0.75rem;" class="text-muted">Role: {{ ticket.user.get_account_type_display }}</div>
+                    </td>
+                    <td>
+                        <div class="fw-medium text-dark">{{ ticket.subject }}</div>
+                        <div style="font-size: 0.75rem;" class="text-muted">Created: {{ ticket.created_at|date:"M d, Y" }}</div>
+                    </td>
+                    <td>
+                        <span class="badge bg-light text-dark border px-2 py-1 font-xs">{{ ticket.category|upper }}</span>
+                    </td>
+                    <td>
+                        {% if ticket.priority == 'URGENT' or ticket.priority == 'HIGH' %}
+                            <span class="badge bg-danger-light text-danger fw-semibold font-xs px-2 py-1"><i class="fas fa-exclamation-circle me-1"></i> {{ ticket.get_priority_display }}</span>
+                        {% else %}
+                            <span class="badge bg-secondary-light text-secondary fw-semibold font-xs px-2 py-1">{{ ticket.get_priority_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge-status badge-status-{{ ticket.status|lower }}">
+                            {{ ticket.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{% url 'admin_ticket_detail' ticket.id %}" class="btn btn-light btn-sm rounded-pill border"><i class="fas fa-headset text-muted me-1"></i> Respond</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        <i class="fas fa-headset fs-2 mb-3 d-block text-secondary"></i>
+                        No support tickets found in history.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paging controls -->
+    {% if page_obj.has_other_pages %}
+    <div class="admin-pagination border-top">
+        <span class="text-muted font-sm">Showing page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        <nav>
+            <ul class="pagination pagination-sm mb-0">
+                {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link rounded-start-pill px-3 border text-success" href="?page=1&status={{ selected_status }}">First</a></li>
+                    <li class="page-item"><a class="page-link px-3 border text-success" href="?page={{ page_obj.previous_page_number }}&status={{ selected_status }}">Prev</a></li>
+                {% endif %}
+                
+                <li class="page-item active"><span class="page-link bg-success border-success text-white px-3">{{ page_obj.number }}</span></li>
+                
+                {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link px-3 border text-success" href="?page={{ page_obj.next_page_number }}&status={{ selected_status }}">Next</a></li>
+                    <li class="page-item"><a class="page-link rounded-end-pill px-3 border text-success" href="?page={{ page_obj.paginator.num_pages }}&status={{ selected_status }}">Last</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
