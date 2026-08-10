@@ -13,34 +13,33 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 from pathlib import Path
 from dotenv import load_dotenv
 import os
+import json
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# env_paths = [
-#     BASE_DIR / '.env',  # /agro_connect/.env
-#     BASE_DIR.parent / '.env',  # /agro_connect/.env (project root)
-# ]
-
-# for env_path in env_paths:
-#     if env_path.exists():
-#         load_dotenv(env_path)
-#         break
-# else:
-#     # If no .env found, still call load_dotenv to check system env vars
-#     load_dotenv()
+# Load environment variables from a .env file in the project package root.
+env_file = BASE_DIR / ".env"
+if env_file.exists():
+    load_dotenv(env_file)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-)_wel-xh9en$#*h&p3wa+$6ki+d_02k8vm_f5dnjpg-roy2(+#"
+SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-fallback-secret-key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-ALLOWED_HOSTS = []
-#DEBUG = os.getenv('DEBUG', 'True') == 'True'
-#ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '["*", "127.0.0.1:8000"]').split(',')
+DEBUG = os.getenv("DEBUG", "False").lower() in ("1", "true", "yes")
+
+ALLOWED_HOSTS = ['*']
+allowed_hosts_env = os.getenv("ALLOWED_HOSTS")
+if allowed_hosts_env:
+    try:
+        ALLOWED_HOSTS = json.loads(allowed_hosts_env)
+    except json.JSONDecodeError:
+        ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_env.split(",") if host.strip()]
 
 
 # Application definition
@@ -65,13 +64,13 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    #"whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
 ROOT_URLCONF = "agro_connect.urls"
@@ -100,10 +99,14 @@ WSGI_APPLICATION = "agro_connect.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": os.getenv('DB_ENGINE', 'django.db.backends.sqlite3'),
-        "NAME": BASE_DIR / os.getenv('DB_NAME', 'db.sqlite3'),
+        "ENGINE": os.getenv("DB_ENGINE", "django.db.backends.sqlite3"),
+        "NAME": BASE_DIR / os.getenv("DB_NAME", "db.sqlite3"),
     }
 }
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+if DATABASE_URL:
+    DATABASES["default"] = dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=not DEBUG)
 
 
 # Password validation
@@ -141,8 +144,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
 STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+WHITENOISE_USE_FINDERS = True
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
