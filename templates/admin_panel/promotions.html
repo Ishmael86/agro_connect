@@ -17,7 +17,7 @@
             <h5 class="fw-bold text-dark mb-4">Create Campaign</h5>
             
             <form method="POST" enctype="multipart/form-data">
-                {% csrf_csrf_token %}
+                {% csrf_token %}
                 <div class="mb-3">
                     <label class="form-label font-sm fw-medium text-muted">Campaign Title</label>
                     {{ form.title }}

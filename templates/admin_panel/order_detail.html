@@ -127,7 +127,7 @@
             </div>
             
             <form method="POST">
-                {% csrf_csrf_token %}
+                {% csrf_token %}
                 <div class="mb-4">
                     <label class="form-label font-sm fw-medium text-muted">Update Status State</label>
                     {{ form.status }}

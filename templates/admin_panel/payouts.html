@@ -55,7 +55,7 @@
                             <div class="d-flex gap-1">
                                 <!-- Approve Form -->
                                 <form method="POST" action="{% url 'admin_payouts' %}">
-                                    {% csrf_csrf_token %}
+                                    {% csrf_token %}
                                     <input type="hidden" name="action" value="approve">
                                     <input type="hidden" name="payout_id" value="{{ payout.id }}">
                                     <button type="submit" class="btn btn-success btn-sm rounded-pill font-xs px-2" data-confirm="Are you sure you want to approve this payout of GHS {{ payout.amount }}? Verify that you have transferred the funds.">
@@ -64,7 +64,7 @@
                                 </form>
                                 <!-- Reject Form -->
                                 <form method="POST" action="{% url 'admin_payouts' %}">
-                                    {% csrf_csrf_token %}
+                                    {% csrf_token %}
                                     <input type="hidden" name="action" value="reject">
                                     <input type="hidden" name="payout_id" value="{{ payout.id }}">
                                     <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill font-xs px-2" data-confirm="Are you sure you want to reject this payout request?">

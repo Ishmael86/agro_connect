@@ -66,7 +66,7 @@
             <!-- Admin Verification Toggles -->
             <div class="d-grid gap-2 border-top pt-3">
                 <form method="POST" action="{% url 'admin_farmer_detail' profile.id %}">
-                    {% csrf_csrf_token %}
+                    {% csrf_token %}
                     {% if profile.verified %}
                         <input type="hidden" name="action" value="reject_farmer">
                         <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill w-100" data-confirm="Are you sure you want to revoke verification status for this farmer?">
