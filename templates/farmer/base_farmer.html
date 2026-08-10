@@ -10,15 +10,7 @@
 {% block content %}
 <div class="container my-5">
     <!-- Render Django messages aligned in layout container -->
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" style="border-radius: var(--agro-radius);">
-                <i class="fas {% if message.tags == 'error' %}fa-exclamation-circle{% else %}fa-check-circle{% endif %} me-2"></i>
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        {% endfor %}
-    {% endif %}
+    {% include 'partials/messages.html' %}
 
     <!-- Mobile Header Toggler Bar (Screen < 992px Only) -->
     <div class="d-flex d-lg-none justify-content-between align-items-center bg-white p-3 rounded-3 shadow-sm mb-4 border">
