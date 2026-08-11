@@ -110,6 +110,105 @@ a:hover {
     box-shadow: 0 2px 15px rgba(0, 0, 0, 0.02);
 }
 
+/* Cart Page */
+.cart-table {
+    overflow-x: auto;
+}
+
+.cart-item-img {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+.qty-control-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.qty-btn {
+    min-width: 32px;
+    min-height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background-color: #FFFFFF;
+    color: var(--text-dark);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qty-btn:hover {
+    background-color: var(--primary-green-light);
+    color: var(--primary-green);
+}
+
+.qty-input {
+    width: 42px;
+    text-align: center;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.55rem 0.5rem;
+    background-color: #FFFFFF;
+}
+
+.cart-remove-btn {
+    min-width: 36px;
+    min-height: 36px;
+    padding: 0;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.summary-box {
+    background-color: #FFFFFF;
+    border-radius: var(--radius-lg);
+    padding: 26px;
+    border: 1px solid var(--border-color);
+}
+
+@media (max-width: 991.98px) {
+    .summary-box {
+        position: sticky;
+        top: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .table-responsive table {
+        min-width: 720px;
+    }
+
+    .table-responsive td,
+    .table-responsive th {
+        vertical-align: middle;
+        padding: 0.65rem 0.75rem;
+        white-space: nowrap;
+    }
+
+    .cart-item-img {
+        width: 56px;
+        height: 56px;
+    }
+
+    .qty-control-wrapper {
+        gap: 0.25rem;
+    }
+
+    .summary-box {
+        margin-top: 1rem;
+    }
+}
+
 .navbar-brand {
     font-family: var(--font-heading);
     font-weight: 700;
@@ -881,7 +980,7 @@ a:hover {
     background-color: #FFFFFF;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
-    overflow: hidden;
+    overflow-x: auto;
     box-shadow: var(--shadow-soft);
 }
 
@@ -890,6 +989,11 @@ a:hover {
     color: var(--primary-green);
     font-weight: 600;
     padding: 18px 24px;
+}
+
+.cart-table th,
+.cart-table td {
+    white-space: nowrap;
 }
 
 .cart-table td {

@@ -40,7 +40,7 @@
                             {% for item in items %}
                                 <tr id="cart-row-{{ item.id }}" style="transition: all 0.3s ease;">
                                     <!-- Product Info -->
-                                    <td>
+                                    <td data-label="Product">
                                         <div class="d-flex align-items-center gap-3">
                                             {% if item.product.main_image %}
                                                 <img src="{{ item.product.main_image.url }}" alt="{{ item.product.name }}" class="cart-item-img border">
@@ -55,19 +55,19 @@
                                     </td>
                                     
                                     <!-- Farmer info -->
-                                    <td>
+                                    <td data-label="Farmer">
                                         <a href="{% url 'farmer_detail' item.product.farmer.id %}" class="small fw-semibold text-success">
                                             {{ item.product.farmer.farm_name }}
                                         </a>
                                     </td>
                                     
                                     <!-- Price -->
-                                    <td>
+                                    <td data-label="Price">
                                         <span class="small fw-semibold text-dark">GHS {{ item.product.final_price|floatformat:2 }}</span>
                                     </td>
                                     
                                     <!-- Quantity Modifier -->
-                                    <td>
+                                    <td data-label="Quantity">
                                         <div class="qty-control-wrapper">
                                             <button class="qty-btn cart-qty-btn" type="button" data-item-id="{{ item.id }}" data-action="decrease">-</button>
                                             <input type="text" class="qty-input cart-qty-input" value="{{ item.quantity }}" readonly>
@@ -76,12 +76,12 @@
                                     </td>
                                     
                                     <!-- Subtotal -->
-                                    <td>
+                                    <td data-label="Subtotal">
                                         <strong class="cart-item-subtotal text-success">GHS {{ item.subtotal|floatformat:2 }}</strong>
                                     </td>
                                     
                                     <!-- Actions -->
-                                    <td class="text-center">
+                                    <td data-label="Remove" class="text-center">
                                         <button class="btn btn-sm btn-outline-danger cart-remove-btn" data-item-id="{{ item.id }}" aria-label="Remove item">
                                             <i class="far fa-trash-can"></i>
                                         </button>
