@@ -8,6 +8,7 @@ cryptography==50.0.0
 cssselect2==0.9.0
 dj-database-url==3.1.2
 Django==6.1
+psycopg2-binary==2.9.10
 dotenv==0.9.9
 gunicorn==26.0.0
 html5lib==1.1

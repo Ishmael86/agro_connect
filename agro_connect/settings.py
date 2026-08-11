@@ -100,9 +100,19 @@ WSGI_APPLICATION = "agro_connect.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": os.getenv("DB_ENGINE", "django.db.backends.sqlite3"),
-        "NAME": BASE_DIR / os.getenv("DB_NAME", "db.sqlite3"),
     }
 }
+
+if DATABASES["default"]["ENGINE"] == "django.db.backends.sqlite3":
+    DATABASES["default"]["NAME"] = BASE_DIR / os.getenv("DB_NAME", "db.sqlite3")
+else:
+    DATABASES["default"].update({
+        "NAME": os.getenv("DB_NAME", "agroconnect"),
+        "USER": os.getenv("DB_USER", ""),
+        "PASSWORD": os.getenv("DB_PASSWORD", ""),
+        "HOST": os.getenv("DB_HOST", "localhost"),
+        "PORT": os.getenv("DB_PORT", "5432"),
+    })
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 if DATABASE_URL:
