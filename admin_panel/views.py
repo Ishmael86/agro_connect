@@ -485,6 +485,30 @@ def admin_categories(request):
 
 @login_required
 @admin_required
+def admin_edit_category(request, id):
+    category = get_object_or_404(Category, id=id)
+    context = get_admin_context(request)
+    
+    if request.method == 'POST':
+        form = CategoryForm(request.POST, request.FILES, instance=category)
+        if form.is_valid():
+            form.save()
+            log_admin_action(request, f"Updated category '{category.name}'")
+            messages.success(request, f"Category '{category.name}' updated successfully!")
+            return redirect('admin_categories')
+        else:
+            messages.error(request, "Failed to update category. Verify forms data.")
+    else:
+        form = CategoryForm(instance=category)
+        
+    context.update({
+        'category': category,
+        'form': form,
+    })
+    return render(request, 'admin_panel/edit_category.html', context)
+
+@login_required
+@admin_required
 def admin_orders(request):
     context = get_admin_context(request)
     orders_qs = Order.objects.all().order_by('-created_at')

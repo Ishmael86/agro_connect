@@ -19,44 +19,86 @@ document.addEventListener('DOMContentLoaded', function() {
     const csrftoken = getCookie('csrftoken');
 
     // 2. Custom Toast System
-    const toastContainer = document.querySelector('.toast-container');
     function showToast(message, isError = false) {
-        if (!toastContainer) return;
+        let container = document.querySelector('.messages-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'messages-container';
+            container.style.cssText = 'position: fixed; top: 90px; right: 20px; z-index: 9999; min-width: 350px; max-width: 500px;';
+            document.body.appendChild(container);
+        }
+        
         const toast = document.createElement('div');
-        toast.className = `toast-custom p-3 mb-2 shadow d-flex justify-content-between align-items-center ${isError ? 'error' : ''}`;
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateY(20px)';
-        toast.style.transition = 'all 0.3s ease';
-
-        const textSpan = document.createElement('span');
-        textSpan.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle text-danger' : 'fa-check-circle text-success'} me-2"></i> ${message}`;
-        toast.appendChild(textSpan);
-
-        const closeBtn = document.createElement('button');
-        closeBtn.className = 'btn-close ms-2';
-        closeBtn.style.fontSize = '0.75rem';
-        closeBtn.onclick = function() {
-            toast.style.opacity = '0';
-            setTimeout(() => toast.remove(), 300);
-        };
-        toast.appendChild(closeBtn);
-
-        toastContainer.appendChild(toast);
-
-        // Animate in
-        setTimeout(() => {
-            toast.style.opacity = '1';
-            toast.style.transform = 'translateY(0)';
-        }, 10);
-
-        // Auto remove
+        toast.className = `alert alert-dismissible fade show alert-${isError ? 'danger' : 'success'} message-item`;
+        toast.style.cssText = `
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15); 
+            border: none; 
+            border-radius: 12px; 
+            margin-bottom: 15px;
+            border-left: 4px solid;
+            animation: slideInRight 0.5s ease-out;
+        `;
+        
+        toast.innerHTML = `
+            <div class="d-flex align-items-start">
+                <div class="flex-shrink-0 me-3">
+                    <i class="fas ${isError ? 'fa-exclamation-triangle fa-lg' : 'fa-check-circle fa-lg'}" style="color: ${isError ? '#dc3545' : '#198754'};"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-start mb-1">
+                        <strong class="message-title" style="font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
+                            ${isError ? 'Error!' : 'Success!'}
+                        </strong>
+                        <button type="button" class="btn-close btn-close-custom" data-bs-dismiss="alert" aria-label="Close"
+                                style="font-size: 0.7rem; padding: 0.5rem;"></button>
+                    </div>
+                    <div class="message-content" style="line-height: 1.4; font-size: 0.9rem;">
+                        ${message}
+                    </div>
+                    <div class="progress mt-2" style="height: 3px; background-color: rgba(0,0,0,0.1);">
+                        <div class="progress-bar progress-bar-${isError ? 'danger' : 'success'}" 
+                             role="progressbar" 
+                             style="width: 100%; transition: width 5s linear;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        container.appendChild(toast);
+        
+        const progressBar = toast.querySelector('.progress-bar');
+        if (progressBar) {
+            setTimeout(() => {
+                progressBar.style.width = '0%';
+            }, 100);
+        }
+        
         setTimeout(() => {
             if (toast.parentNode) {
                 toast.style.opacity = '0';
-                toast.style.transform = 'translateY(-20px)';
-                setTimeout(() => toast.remove(), 300);
+                toast.style.transform = 'translateX(100%)';
+                toast.style.transition = 'all 0.5s ease';
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.remove();
+                    }
+                }, 500);
             }
         }, 5000);
+        
+        toast.addEventListener('click', function(e) {
+            if (!e.target.classList.contains('btn-close')) {
+                this.style.opacity = '0';
+                this.style.transform = 'translateX(100%)';
+                this.style.transition = 'all 0.5s ease';
+                setTimeout(() => {
+                    if (this.parentNode) {
+                        this.remove();
+                    }
+                }, 500);
+            }
+        });
     }
 
     // Export global toast triggers for inline usage

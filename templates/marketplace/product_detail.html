@@ -127,32 +127,38 @@
                 </div>
 
                 <!-- Quantity Control & Purchase Buttons -->
-                {% if product.stock_quantity > 0 %}
-                    <div class="d-flex flex-wrap align-items-center gap-4 py-3 border-top border-bottom mb-4">
-                        <!-- Qty -->
-                        <div class="detail-qty-wrapper">
-                            <span class="small fw-semibold text-muted d-block me-3">Quantity</span>
-                            <div class="qty-control-wrapper">
-                                <button class="qty-btn qty-minus" type="button">-</button>
-                                <input type="text" class="qty-input" value="1" data-max-stock="{{ product.stock_quantity }}" readonly>
-                                <button class="qty-btn qty-plus" type="button">+</button>
-                            </div>
-                        </div>
-
-                        <!-- Action Buttons -->
-                        <div class="d-flex gap-3 flex-grow-1">
-                            <button class="btn btn-primary-green flex-grow-1 ajax-add-to-cart" data-product-id="{{ product.id }}">
-                                <i class="fas fa-shopping-basket me-2"></i> Add to Cart
-                            </button>
-                            <a href="{% url 'cart' %}" class="btn btn-outline-green ajax-add-to-cart flex-grow-1 text-center" data-product-id="{{ product.id }}">
-                                Buy Now
-                            </a>
-                        </div>
+                {% if request.user.is_authenticated and request.user.account_type == 'FARMER' %}
+                    <div class="alert alert-warning py-3 mb-4">
+                        <i class="fas fa-info-circle me-2"></i> Farmer accounts are not allowed to buy or order produce.
                     </div>
                 {% else %}
-                    <div class="alert alert-danger py-3 mb-4">
-                        <i class="fas fa-exclamation-triangle me-2"></i> This product is currently out of stock.
-                    </div>
+                    {% if product.stock_quantity > 0 %}
+                        <div class="d-flex flex-wrap align-items-center gap-4 py-3 border-top border-bottom mb-4">
+                            <!-- Qty -->
+                            <div class="detail-qty-wrapper">
+                                <span class="small fw-semibold text-muted d-block me-3">Quantity</span>
+                                <div class="qty-control-wrapper">
+                                    <button class="qty-btn qty-minus" type="button">-</button>
+                                    <input type="text" class="qty-input" value="1" data-max-stock="{{ product.stock_quantity }}" readonly>
+                                    <button class="qty-btn qty-plus" type="button">+</button>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="d-flex gap-3 flex-grow-1">
+                                <button class="btn btn-primary-green flex-grow-1 ajax-add-to-cart" data-product-id="{{ product.id }}">
+                                    <i class="fas fa-shopping-basket me-2"></i> Add to Cart
+                                </button>
+                                <a href="{% url 'cart' %}" class="btn btn-outline-green ajax-add-to-cart flex-grow-1 text-center" data-product-id="{{ product.id }}">
+                                    Buy Now
+                                </a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-danger py-3 mb-4">
+                            <i class="fas fa-exclamation-triangle me-2"></i> This product is currently out of stock.
+                        </div>
+                    {% endif %}
                 {% endif %}
 
                 <!-- Meta Details Table -->

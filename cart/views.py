@@ -19,6 +19,10 @@ def get_or_create_cart(request):
         return cart
 
 def cart_view(request):
+    if request.user.is_authenticated and request.user.account_type == 'FARMER':
+        messages.warning(request, "Farmers are not allowed to buy or order crops. Redirected to your dashboard.")
+        return redirect('farmer_dashboard')
+        
     cart = None
     if request.user.is_authenticated:
         cart = Cart.objects.filter(user=request.user).first()
@@ -37,6 +41,12 @@ def cart_view(request):
 
 @require_POST
 def cart_add_view(request, product_id):
+    if request.user.is_authenticated and request.user.account_type == 'FARMER':
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'success': False, 'message': 'Farmers are not allowed to buy or order crops.'}, status=403)
+        messages.warning(request, "Farmers are not allowed to buy or order crops. Redirected to your dashboard.")
+        return redirect('farmer_dashboard')
+        
     product = get_object_or_404(Product, id=product_id)
     quantity = int(request.POST.get('quantity', 1))
     

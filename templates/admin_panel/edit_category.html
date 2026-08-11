@@ -1,0 +1,57 @@
+{% extends "admin_panel/base_admin.html" %}
+
+{% block title %}Edit Category - AgroConnect Admin{% endblock %}
+
+{% block admin_content %}
+<div class="mb-4">
+    <a href="{% url 'admin_categories' %}" class="btn btn-light rounded-pill border btn-sm mb-3"><i class="fas fa-arrow-left me-1"></i> Back to Categories</a>
+    <h4 class="fw-bold mb-1">Edit Category: {{ category.name }}</h4>
+    <p class="text-muted small mb-0">Modify the category parameters, description text, and showcase cover image.</p>
+</div>
+
+<div class="row g-4">
+    <!-- Edit Form (Left: 7 cols) -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm p-4" style="border-radius: var(--agro-radius); background-color: var(--agro-white);">
+            <h5 class="fw-bold text-dark mb-4">Category Attributes</h5>
+            
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label class="form-label font-sm fw-medium text-muted">Category Name</label>
+                    {{ form.name }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label font-sm fw-medium text-muted">Description</label>
+                    {{ form.description }}
+                </div>
+                <div class="mb-4">
+                    <label class="form-label font-sm fw-medium text-muted">Showcase Image</label>
+                    {{ form.image }}
+                </div>
+                
+                <div class="border-top pt-3 text-end">
+                    <button type="submit" class="btn btn-success rounded-pill px-5"><i class="fas fa-save me-1"></i> Save Changes</button>
+                    <a href="{% url 'admin_categories' %}" class="btn btn-outline-secondary rounded-pill px-4 ms-2">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Info Badge (Right: 4 cols) -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm p-4 text-center" style="border-radius: var(--agro-radius); background-color: var(--agro-white);">
+            <h5 class="fw-bold text-dark mb-3">Category Preview</h5>
+            <div class="border rounded-3 p-3 bg-light d-flex align-items-center justify-content-center mb-3" style="min-height: 180px;">
+                {% if category.image %}
+                    <img src="{{ category.image.url }}" alt="Category" class="img-fluid rounded shadow-sm" style="max-height: 160px; object-fit: cover;">
+                {% else %}
+                    <img src="https://images.unsplash.com/photo-1592417817098-8f3d6eb19675?auto=format&fit=crop&w=300&q=80" alt="Category" class="img-fluid rounded shadow-sm" style="max-height: 160px; object-fit: cover;">
+                {% endif %}
+            </div>
+            <span class="text-muted font-xs"><i class="fas fa-info-circle me-1"></i> Changing name alters the slug identifier.</span>
+        </div>
+    </div>
+</div>
+{% endblock %}

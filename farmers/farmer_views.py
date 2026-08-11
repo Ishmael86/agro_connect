@@ -221,6 +221,16 @@ def farmer_add_product(request):
             product = form.save(commit=False)
             product.farmer = profile
             product.save()
+            # Handle multiple uploaded images
+            images = request.FILES.getlist('images')
+            from products.models import ProductImage
+            if images:
+                # If no main_image was provided, set the first uploaded as main
+                if not product.main_image:
+                    product.main_image = images[0]
+                    product.save()
+                for idx, img in enumerate(images):
+                    ProductImage.objects.create(product=product, image=img, order=idx)
             messages.success(request, f"Product '{product.name}' added successfully!")
             return redirect('farmer_products')
         else:
@@ -244,6 +254,15 @@ def farmer_edit_product(request, slug):
         form = ProductForm(request.POST, request.FILES, instance=product)
         if form.is_valid():
             form.save()
+            # Handle additional uploaded images on edit
+            images = request.FILES.getlist('images')
+            from products.models import ProductImage
+            if images:
+                if not product.main_image:
+                    product.main_image = images[0]
+                    product.save()
+                for idx, img in enumerate(images):
+                    ProductImage.objects.create(product=product, image=img, order=idx)
             messages.success(request, f"Product '{product.name}' updated successfully!")
             return redirect('farmer_products')
         else:

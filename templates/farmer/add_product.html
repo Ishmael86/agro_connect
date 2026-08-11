@@ -84,6 +84,10 @@
                     <div class="col-12">
                         <label class="form-label fw-bold text-dark small">Crop Cover Image *</label>
                         {{ form.main_image }}
+                        <div class="mt-2">
+                            <label class="form-label fw-bold text-dark small">Additional Images (optional)</label>
+                            {{ form.images }}
+                        </div>
                         {% if form.main_image.errors %}
                             <div class="text-danger small mt-1">{{ form.main_image.errors.0 }}</div>
                         {% endif %}

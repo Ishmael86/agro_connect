@@ -18,6 +18,15 @@ class FarmerProfileForm(forms.ModelForm):
         }
 
 class ProductForm(forms.ModelForm):
+    # Use a widget that explicitly allows multiple file selection
+    class MultiFileInput(forms.ClearableFileInput):
+        allow_multiple_selected = True
+
+    images = forms.FileField(
+        widget=MultiFileInput(attrs={'class': 'form-control rounded-pill', 'multiple': True}),
+        required=False,
+        help_text='Upload one or more product images (JPG/PNG).'
+    )
     class Meta:
         model = Product
         fields = ['name', 'category', 'description', 'price', 'discount_price', 'unit', 'stock_quantity', 'location', 'main_image', 'is_available', 'is_featured']

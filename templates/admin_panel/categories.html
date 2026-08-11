@@ -48,6 +48,7 @@
                             <th>Slug</th>
                             <th>Products</th>
                             <th>Total Sales</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -69,6 +70,9 @@
                             <td class="text-muted font-xs fw-semibold">{{ item.category.slug }}</td>
                             <td class="fw-semibold">{{ item.prod_count }} products</td>
                             <td class="fw-bold text-success">GHS {{ item.sales_sum|floatformat:2 }}</td>
+                            <td>
+                                <a href="{% url 'admin_edit_category' item.category.id %}" class="btn btn-light btn-sm rounded-pill border px-3 font-xs text-success fw-semibold"><i class="fas fa-edit me-1"></i> Edit</a>
+                            </td>
                         </tr>
                         {% empty %}
                         <tr>

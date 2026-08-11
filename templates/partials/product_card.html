@@ -69,12 +69,16 @@
                 <span>/ {{ product.unit }}</span>
             </div>
             
-            {% if product.stock_quantity > 0 %}
-                <button class="add-to-cart-circle ajax-add-to-cart" data-product-id="{{ product.id }}" aria-label="Add to cart">
-                    <i class="fas fa-shopping-basket"></i>
-                </button>
+            {% if request.user.is_authenticated and request.user.account_type == 'FARMER' %}
+                <span class="text-muted font-xs py-1 px-2 bg-light border rounded">Grower</span>
             {% else %}
-                <span class="text-danger fw-semibold" style="font-size: 0.85rem;">Out of Stock</span>
+                {% if product.stock_quantity > 0 %}
+                    <button class="add-to-cart-circle ajax-add-to-cart" data-product-id="{{ product.id }}" aria-label="Add to cart">
+                        <i class="fas fa-shopping-basket"></i>
+                    </button>
+                {% else %}
+                    <span class="text-danger fw-semibold" style="font-size: 0.85rem;">Out of Stock</span>
+                {% endif %}
             {% endif %}
         </div>
     </div>

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Product, ContactMessage
+from .models import Category, Product, ContactMessage, ProductImage
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -20,3 +20,10 @@ class ContactMessageAdmin(admin.ModelAdmin):
     list_display = ['subject', 'full_name', 'email', 'phone', 'created_at']
     search_fields = ['full_name', 'email', 'subject', 'message']
     ordering = ['-created_at']
+
+
+@admin.register(ProductImage)
+class ProductImageAdmin(admin.ModelAdmin):
+    list_display = ['product', 'image', 'order', 'created_at']
+    list_filter = ['product']
+    readonly_fields = ['created_at']

@@ -19,6 +19,18 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+class ProductImage(models.Model):
+    product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='products/')
+    alt_text = models.CharField(max_length=255, blank=True)
+    order = models.PositiveSmallIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['order', 'id']
+
+    def __str__(self):
+        return f"Image for {self.product.name} ({self.id})"
 class Product(models.Model):
     farmer = models.ForeignKey('farmers.FarmerProfile', on_delete=models.CASCADE, related_name='products')
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='products')
