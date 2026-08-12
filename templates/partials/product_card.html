@@ -28,7 +28,11 @@
                 {% endif %}
             {% endif %}
         </a>
-        <button class="wishlist-btn" onclick="showAgroToast('Added to Wishlist!')" aria-label="Add to wishlist">
+        <button class="wishlist-btn" 
+                onclick="toggleWishlist(this)" 
+                data-authenticated="{% if request.user.is_authenticated %}true{% else %}false{% endif %}" 
+                data-account-type="{{ request.user.account_type|default:'' }}"
+                aria-label="Add to wishlist">
             <i class="far fa-heart"></i>
         </button>
     </div>
@@ -70,7 +74,9 @@
             </div>
             
             {% if request.user.is_authenticated and request.user.account_type == 'FARMER' %}
-                <span class="text-muted font-xs py-1 px-2 bg-light border rounded">Grower</span>
+                <button class="add-to-cart-circle text-muted" disabled style="opacity: 0.55; cursor: not-allowed; border: 1px dashed #ccc;" title="Growers cannot purchase crops">
+                    <i class="fas fa-shopping-basket"></i>
+                </button>
             {% else %}
                 {% if product.stock_quantity > 0 %}
                     <button class="add-to-cart-circle ajax-add-to-cart" data-product-id="{{ product.id }}" aria-label="Add to cart">

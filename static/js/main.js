@@ -104,6 +104,35 @@ document.addEventListener('DOMContentLoaded', function() {
     // Export global toast triggers for inline usage
     window.showAgroToast = showToast;
 
+    function toggleWishlist(btn) {
+        const isAuth = btn.getAttribute('data-authenticated') === 'true';
+        const accountType = btn.getAttribute('data-account-type');
+        
+        if (!isAuth) {
+            showToast('Please log in or register an account to add crops to your wishlist.', true);
+            return;
+        }
+        
+        if (accountType === 'FARMER') {
+            showToast('Farmers are not allowed to use the wishlist feature.', true);
+            return;
+        }
+        
+        const icon = btn.querySelector('i');
+        if (icon.classList.contains('far')) {
+            icon.classList.remove('far');
+            icon.classList.add('fas');
+            icon.style.color = '#ef4444';
+            showToast('Added to Wishlist!');
+        } else {
+            icon.classList.remove('fas');
+            icon.classList.add('far');
+            icon.style.color = '';
+            showToast('Removed from Wishlist!');
+        }
+    }
+    window.toggleWishlist = toggleWishlist;
+
     // 3. Register Form Account Type Toggle
     const tabFarmer = document.getElementById('tab-farmer');
     const tabBuyer = document.getElementById('tab-buyer');
