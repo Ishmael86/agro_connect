@@ -74,7 +74,9 @@
             </div>
             
             {% if request.user.is_authenticated and request.user.account_type == 'FARMER' %}
-                <button class="add-to-cart-circle text-muted" disabled style="opacity: 0.55; cursor: not-allowed; border: 1px dashed #ccc;" title="Growers cannot purchase crops">
+                <button class="add-to-cart-circle" disabled 
+                        style="opacity: 0.4; cursor: not-allowed; pointer-events: none; background-color: #b0b0b0;" 
+                        title="Growers cannot purchase crops">
                     <i class="fas fa-shopping-basket"></i>
                 </button>
             {% else %}

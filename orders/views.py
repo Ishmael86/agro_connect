@@ -8,7 +8,11 @@ from .models import Order, OrderItem
 from .forms import CheckoutForm
 
 def checkout_view(request):
-    if request.user.is_authenticated and request.user.account_type == 'FARMER':
+    if not request.user.is_authenticated:
+        messages.warning(request, "Please log in or create an account to place your order.")
+        return redirect('login')
+        
+    if request.user.account_type == 'FARMER':
         messages.warning(request, "Farmers are not allowed to checkout or buy crops. Redirected to your dashboard.")
         return redirect('farmer_dashboard')
         
