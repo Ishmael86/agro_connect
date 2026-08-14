@@ -107,6 +107,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function toggleWishlist(btn) {
         const isAuth = btn.getAttribute('data-authenticated') === 'true';
         const accountType = btn.getAttribute('data-account-type');
+        const productId = btn.getAttribute('data-product-id');
         
         if (!isAuth) {
             showToast('Please log in or register an account to add crops to your wishlist.', true);
@@ -118,18 +119,39 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        const icon = btn.querySelector('i');
-        if (icon.classList.contains('far')) {
-            icon.classList.remove('far');
-            icon.classList.add('fas');
-            icon.style.color = '#ef4444';
-            showToast('Added to Wishlist!');
-        } else {
-            icon.classList.remove('fas');
-            icon.classList.add('far');
-            icon.style.color = '';
-            showToast('Removed from Wishlist!');
-        }
+        // Make AJAX POST to toggle wishlist in the database
+        const formData = new FormData();
+        formData.append('product_id', productId);
+        
+        fetch('/accounts/ajax-wishlist-toggle/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const icon = btn.querySelector('i');
+                if (data.status === 'added') {
+                    icon.classList.remove('far');
+                    icon.classList.add('fas');
+                    icon.style.color = '#ef4444';
+                } else {
+                    icon.classList.remove('fas');
+                    icon.classList.add('far');
+                    icon.style.color = '';
+                }
+                showToast(data.message);
+            } else {
+                showToast(data.message || 'Something went wrong.', true);
+            }
+        })
+        .catch(() => {
+            showToast('Network error. Please try again.', true);
+        });
     }
     window.toggleWishlist = toggleWishlist;
 

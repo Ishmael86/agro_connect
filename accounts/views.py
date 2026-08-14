@@ -1,10 +1,13 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
 from django.db import transaction
 from .forms import LoginForm, RegistrationForm
+from .models import Wishlist
 from farmers.models import FarmerProfile
 from cart.models import Cart, CartItem
 from orders.models import Order, OrderItem
@@ -66,6 +69,8 @@ def login_view(request):
                 # Role-based direct dashboard routing - only Admin goes direct
                 if user.is_superuser or user.is_staff:
                     return redirect('admin_dashboard')
+                if user.account_type == 'FARMER':
+                    return redirect('farmer_dashboard')
                 return redirect('home')
             else:
                 messages.error(request, "Invalid username/email or password.")
@@ -159,3 +164,28 @@ def dashboard_view(request):
         return redirect('farmer_dashboard')
         
     return render(request, 'accounts/dashboard.html', {})
+
+
+@require_POST
+@login_required
+def ajax_toggle_wishlist(request):
+    """AJAX endpoint to add/remove a product from the user's wishlist."""
+    product_id = request.POST.get('product_id')
+    if not product_id:
+        return JsonResponse({'success': False, 'message': 'No product specified.'}, status=400)
+    
+    product = get_object_or_404(Product, id=product_id)
+    
+    wish, created = Wishlist.objects.get_or_create(buyer=request.user, product=product)
+    if not created:
+        wish.delete()
+        return JsonResponse({
+            'success': True,
+            'status': 'removed',
+            'message': f'{product.name} removed from wishlist.'
+        })
+    return JsonResponse({
+        'success': True,
+        'status': 'added',
+        'message': f'{product.name} added to wishlist.'
+    })

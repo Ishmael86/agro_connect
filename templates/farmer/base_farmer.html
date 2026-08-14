@@ -153,8 +153,15 @@
             <!-- Desktop Header Header (Screen >= 992px Only) -->
             <div class="d-none d-lg-flex justify-content-between align-items-center bg-white p-4 rounded-3 shadow-sm mb-4 border" style="border-radius: var(--agro-radius-lg) !important;">
                 <div>
-                    <h5 class="fw-bold text-dark mb-1">Good morning, {{ request.user.first_name|default:request.user.username }}! 👋</h5>
+                    <h5 class="fw-bold text-dark mb-1"><span id="farmer-greeting-text">Hello</span>, {{ request.user.first_name|default:request.user.username }}! 👋</h5>
                     <span class="text-muted font-xs">Here is what is happening with your farm business today.</span>
+                    <script>
+                        (function() {
+                            var h = new Date().getHours();
+                            var g = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+                            document.getElementById('farmer-greeting-text').textContent = g;
+                        })();
+                    </script>
                 </div>
                 <div class="d-flex align-items-center gap-3">
                     <!-- Messages Icon -->

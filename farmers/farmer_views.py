@@ -369,6 +369,16 @@ def farmer_order_detail(request, order_number):
         elif action == 'mark_delivered' and current_status == 'SHIPPED':
             next_status = 'DELIVERED'
             msg = "Your order has been successfully delivered."
+        elif action == 'mark_paid':
+            order.payment_status = 'PAID'
+            order.save()
+            messages.success(request, "Order payment status marked as PAID!")
+            return redirect('farmer_order_detail', order_number=order.order_number)
+        elif action == 'mark_unpaid':
+            order.payment_status = 'UNPAID'
+            order.save()
+            messages.success(request, "Order payment status marked as UNPAID!")
+            return redirect('farmer_order_detail', order_number=order.order_number)
             
         if next_status:
             order.status = next_status

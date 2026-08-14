@@ -15,6 +15,11 @@ class Order(models.Model):
         CARD_PAYMENT = 'CARD_PAYMENT', 'Card Payment'
         CASH_ON_DELIVERY = 'CASH_ON_DELIVERY', 'Cash on Delivery'
 
+    class PaymentStatusChoices(models.TextChoices):
+        UNPAID = 'UNPAID', 'Unpaid'
+        PAID = 'PAID', 'Paid'
+        REFUNDED = 'REFUNDED', 'Refunded'
+
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
     order_number = models.CharField(max_length=50, unique=True)
     full_name = models.CharField(max_length=150)
@@ -23,6 +28,7 @@ class Order(models.Model):
     region = models.CharField(max_length=50, choices=GHANA_REGIONS)
     city = models.CharField(max_length=100)
     payment_method = models.CharField(max_length=30, choices=PaymentMethodChoices.choices, default=PaymentMethodChoices.MOBILE_MONEY)
+    payment_status = models.CharField(max_length=20, choices=PaymentStatusChoices.choices, default=PaymentStatusChoices.UNPAID)
     subtotal = models.DecimalField(max_digits=10, decimal_places=2)
     delivery_fee = models.DecimalField(max_digits=10, decimal_places=2, default=10.00)
     total = models.DecimalField(max_digits=10, decimal_places=2)

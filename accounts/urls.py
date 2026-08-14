@@ -6,6 +6,7 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('register/', views.register_view, name='register'),
     path('logout/', views.logout_view, name='logout'),
+    path('ajax-wishlist-toggle/', views.ajax_toggle_wishlist, name='ajax_toggle_wishlist'),
     path('dashboard/', views.dashboard_view, name='dashboard'),
     
     # Buyer Dashboard URLs

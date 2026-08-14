@@ -30,10 +30,15 @@
         </a>
         <button class="wishlist-btn" 
                 onclick="toggleWishlist(this)" 
+                data-product-id="{{ product.id }}"
                 data-authenticated="{% if request.user.is_authenticated %}true{% else %}false{% endif %}" 
                 data-account-type="{{ request.user.account_type|default:'' }}"
                 aria-label="Add to wishlist">
-            <i class="far fa-heart"></i>
+            {% if request.user.is_authenticated and product.id in user_wishlist_ids %}
+                <i class="fas fa-heart" style="color: #ef4444;"></i>
+            {% else %}
+                <i class="far fa-heart"></i>
+            {% endif %}
         </button>
     </div>
     

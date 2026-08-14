@@ -123,25 +123,54 @@
             </div>
         </div>
         
-        <!-- Status actions controller -->
-        {% if order.status != 'DELIVERED' and order.status != 'CANCELLED' %}
-            <div class="agro-card bg-light border-success">
-                <h6 class="fw-bold text-success mb-3"><i class="fas fa-tasks me-2"></i>Actions Required</h6>
-                <p class="small text-muted mb-4">Advance this order along the shipping stages to process payouts. Status changes send real-time notifications to the buyer.</p>
-                
-                <form method="POST" action="" class="d-flex gap-3">
-                    {% csrf_token %}
-                    {% if order.status == 'PENDING' %}
-                        <button type="submit" name="action" value="accept" class="btn btn-success rounded-pill px-4"><i class="fas fa-check me-2"></i>Accept Order</button>
-                        <button type="submit" name="action" value="reject" class="btn btn-outline-danger rounded-pill px-4"><i class="fas fa-times me-2"></i>Reject / Cancel</button>
-                    {% elif order.status == 'PROCESSING' %}
-                        <button type="submit" name="action" value="mark_ready" class="btn btn-success rounded-pill px-4"><i class="fas fa-truck-loading me-2"></i>Mark Ready & Ship</button>
-                    {% elif order.status == 'SHIPPED' %}
-                        <button type="submit" name="action" value="mark_delivered" class="btn btn-success rounded-pill px-4"><i class="fas fa-check-double me-2"></i>Mark Delivered</button>
+        <!-- Status actions controllers -->
+        <div class="row g-4 mt-1">
+            {% if order.status != 'CANCELLED' %}
+            <div class="col-md-6">
+                <div class="agro-card bg-light border border-success h-100 p-4">
+                    <h6 class="fw-bold text-success mb-3"><i class="fas fa-tasks me-2"></i>Order Actions</h6>
+                    <p class="small text-muted mb-4">Advance this order along the shipping stages.</p>
+                    {% if order.status != 'DELIVERED' %}
+                    <form method="POST" action="" class="d-flex gap-2 flex-wrap">
+                        {% csrf_token %}
+                        {% if order.status == 'PENDING' %}
+                            <button type="submit" name="action" value="accept" class="btn btn-success btn-sm rounded-pill px-4"><i class="fas fa-check me-2"></i>Accept Order</button>
+                            <button type="submit" name="action" value="reject" class="btn btn-outline-danger btn-sm rounded-pill px-4"><i class="fas fa-times me-2"></i>Reject / Cancel</button>
+                        {% elif order.status == 'PROCESSING' %}
+                            <button type="submit" name="action" value="mark_ready" class="btn btn-success btn-sm rounded-pill px-4"><i class="fas fa-truck-loading me-2"></i>Mark Ready & Ship</button>
+                        {% elif order.status == 'SHIPPED' %}
+                            <button type="submit" name="action" value="mark_delivered" class="btn btn-success btn-sm rounded-pill px-4"><i class="fas fa-check-double me-2"></i>Mark Delivered</button>
+                        {% endif %}
+                    </form>
+                    {% else %}
+                        <span class="badge bg-success rounded-pill px-3 py-2 font-xs"><i class="fas fa-check-double me-1"></i> Order Completed & Delivered</span>
                     {% endif %}
-                </form>
+                </div>
             </div>
-        {% endif %}
+            
+            <div class="col-md-6">
+                <div class="agro-card bg-light border border-primary h-100 p-4">
+                    <h6 class="fw-bold text-primary mb-3"><i class="fas fa-money-bill-wave me-2"></i>Payment Actions</h6>
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <span class="small text-muted">Current Status:</span>
+                        {% if order.payment_status == 'PAID' %}
+                            <span class="badge bg-success rounded-pill px-3 py-2 font-xs"><i class="fas fa-check-circle me-1"></i> PAID</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark rounded-pill px-3 py-2 font-xs"><i class="fas fa-exclamation-circle me-1"></i> UNPAID</span>
+                        {% endif %}
+                    </div>
+                    <form method="POST" action="" class="d-flex gap-2 flex-wrap">
+                        {% csrf_token %}
+                        {% if order.payment_status == 'PAID' %}
+                            <button type="submit" name="action" value="mark_unpaid" class="btn btn-outline-secondary btn-sm rounded-pill px-4"><i class="fas fa-undo me-2"></i>Mark Unpaid</button>
+                        {% else %}
+                            <button type="submit" name="action" value="mark_paid" class="btn btn-success btn-sm rounded-pill px-4"><i class="fas fa-check-circle me-2"></i>Mark as Paid</button>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+        </div>
     </div>
     
     <!-- Customer details sidebar -->
@@ -178,6 +207,14 @@
                 <div>
                     <span class="text-muted font-xs d-block">Payment Method</span>
                     <span class="fw-bold text-dark font-sm">{{ order.get_payment_method_display }}</span>
+                </div>
+                <div>
+                    <span class="text-muted font-xs d-block mb-1">Payment Status</span>
+                    {% if order.payment_status == 'PAID' %}
+                        <span class="badge bg-success rounded-pill font-xs"><i class="fas fa-check-circle me-1"></i> Paid</span>
+                    {% else %}
+                        <span class="badge bg-warning text-dark rounded-pill font-xs"><i class="fas fa-exclamation-circle me-1"></i> Unpaid</span>
+                    {% endif %}
                 </div>
             </div>
         </div>
