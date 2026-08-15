@@ -79,32 +79,32 @@
                         {% for msg in messages_list %}
                             {% if msg.sender == request.user %}
                                 <!-- Outgoing Message (Right) -->
-                                <div class="align-self-end text-end" style="max-width: 75%;">
+                                <div class="align-self-end text-end" style="max-width: 75%;" data-msg-id="{{ msg.id }}">
                                     <div class="p-3 bg-success text-white rounded-3 shadow-sm font-sm text-start" style="border-radius: 18px 18px 0px 18px !important;">
                                         {{ msg.message }}
                                     </div>
-                                    <span class="text-muted font-xs d-block mt-1">{{ msg.created_at|date:"H:i A" }}</span>
+                                    <span class="text-muted font-xs d-block mt-1">{{ msg.created_at|date:"h:i A" }}</span>
                                 </div>
                             {% else %}
                                 <!-- Incoming Message (Left) -->
-                                <div class="align-self-start" style="max-width: 75%;">
+                                <div class="align-self-start" style="max-width: 75%;" data-msg-id="{{ msg.id }}">
                                     <div class="p-3 bg-white text-dark rounded-3 shadow-sm font-sm" style="border-radius: 18px 18px 18px 0px !important;">
                                         {{ msg.message }}
                                     </div>
-                                    <span class="text-muted font-xs d-block mt-1">{{ msg.created_at|date:"H:i A" }}</span>
+                                    <span class="text-muted font-xs d-block mt-1">{{ msg.created_at|date:"h:i A" }}</span>
                                 </div>
                             {% endif %}
                         {% empty %}
-                            <p class="text-muted text-center py-5 small mb-0">Send a greeting message to start the conversation.</p>
+                            <p class="text-muted text-center py-5 small mb-0 no-messages-placeholder">Send a greeting message to start the conversation.</p>
                         {% endfor %}
                     </div>
                 </div>
 
                 <!-- Active Message Input Form -->
                 <div class="p-3 bg-white border-top">
-                    <form action="" method="POST" class="d-flex gap-2">
+                    <form id="chatSendForm" class="d-flex gap-2">
                         {% csrf_token %}
-                        <input type="text" name="message_text" class="form-control rounded-pill px-4 border" placeholder="Type your message here..." required style="height: 48px; font-size: 0.9rem;">
+                        <input type="text" id="chatMessageInput" name="message_text" class="form-control rounded-pill px-4 border" placeholder="Type your message here..." required style="height: 48px; font-size: 0.9rem;" autocomplete="off">
                         <button type="submit" class="btn btn-success rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; padding: 0;">
                             <i class="fas fa-paper-plane"></i>
                         </button>
@@ -129,11 +129,131 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Auto scroll messages to the bottom
         const chatWindow = document.getElementById('chatMessageList');
-        if (chatWindow) {
-            chatWindow.scrollTop = chatWindow.scrollHeight;
+        const chatForm = document.getElementById('chatSendForm');
+        const messageInput = document.getElementById('chatMessageInput');
+        
+        function scrollToBottom() {
+            if (chatWindow) {
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            }
         }
+        scrollToBottom();
+        
+        {% if active_conversation %}
+        const activeConvId = "{{ active_conversation.id }}";
+        let lastMessageId = 0;
+        
+        // Find latest message id in DOM
+        const messageItems = chatWindow.querySelectorAll('[data-msg-id]');
+        if (messageItems.length > 0) {
+            lastMessageId = parseInt(messageItems[messageItems.length - 1].getAttribute('data-msg-id'));
+        }
+        
+        // Poll for new messages every 3 seconds
+        function pollNewMessages() {
+            fetch(`/accounts/ajax/messages/${activeConvId}/?last_msg_id=${lastMessageId}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.messages.length > 0) {
+                    const msgContainer = chatWindow.querySelector('.d-flex.flex-column');
+                    
+                    // Remove placeholder if present
+                    const placeholder = msgContainer.querySelector('.no-messages-placeholder');
+                    if (placeholder) placeholder.remove();
+                    
+                    data.messages.forEach(msg => {
+                        if (chatWindow.querySelector(`[data-msg-id="${msg.id}"]`)) return;
+                        
+                        const bubble = document.createElement('div');
+                        if (msg.is_outgoing) {
+                            bubble.className = 'align-self-end text-end';
+                            bubble.setAttribute('data-msg-id', msg.id);
+                            bubble.style.maxWidth = '75%';
+                            bubble.innerHTML = `
+                                <div class="p-3 bg-success text-white rounded-3 shadow-sm font-sm text-start" style="border-radius: 18px 18px 0px 18px !important;">
+                                    ${msg.message}
+                                </div>
+                                <span class="text-muted font-xs d-block mt-1">${msg.created_at}</span>
+                            `;
+                        } else {
+                            bubble.className = 'align-self-start';
+                            bubble.setAttribute('data-msg-id', msg.id);
+                            bubble.style.maxWidth = '75%';
+                            bubble.innerHTML = `
+                                <div class="p-3 bg-white text-dark rounded-3 shadow-sm font-sm" style="border-radius: 18px 18px 18px 0px !important;">
+                                    ${msg.message}
+                                </div>
+                                <span class="text-muted font-xs d-block mt-1">${msg.created_at}</span>
+                            `;
+                        }
+                        msgContainer.appendChild(bubble);
+                        lastMessageId = Math.max(lastMessageId, msg.id);
+                    });
+                    scrollToBottom();
+                }
+            })
+            .catch(err => console.error("Error polling messages:", err));
+        }
+        
+        setInterval(pollNewMessages, 3000);
+        
+        if (chatForm) {
+            chatForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const text = messageInput.value.trim();
+                if (!text) return;
+                
+                messageInput.value = '';
+                
+                const formData = new FormData();
+                formData.append('message_text', text);
+                
+                fetch(`/accounts/ajax/messages/send/${activeConvId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const msg = data.message_data;
+                        if (!chatWindow.querySelector(`[data-msg-id="${msg.id}"]`)) {
+                            const msgContainer = chatWindow.querySelector('.d-flex.flex-column');
+                            const placeholder = msgContainer.querySelector('.no-messages-placeholder');
+                            if (placeholder) placeholder.remove();
+                            
+                            const bubble = document.createElement('div');
+                            bubble.className = 'align-self-end text-end';
+                            bubble.setAttribute('data-msg-id', msg.id);
+                            bubble.style.maxWidth = '75%';
+                            bubble.innerHTML = `
+                                <div class="p-3 bg-success text-white rounded-3 shadow-sm font-sm text-start" style="border-radius: 18px 18px 0px 18px !important;">
+                                    ${msg.message}
+                                </div>
+                                <span class="text-muted font-xs d-block mt-1">${msg.created_at}</span>
+                            `;
+                            msgContainer.appendChild(bubble);
+                            lastMessageId = Math.max(lastMessageId, msg.id);
+                            scrollToBottom();
+                        }
+                    } else {
+                        alert(data.message || 'Failed to send message.');
+                    }
+                })
+                .catch(() => {
+                    alert('Failed to send message. Please verify connection.');
+                });
+            });
+        }
+        {% endif %}
     });
 </script>
 {% endblock %}

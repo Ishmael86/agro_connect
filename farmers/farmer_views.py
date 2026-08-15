@@ -2,6 +2,7 @@ import json
 from decimal import Decimal
 import datetime
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
@@ -616,7 +617,7 @@ def farmer_messages(request):
                 message=msg_text
             )
             active_conversation.save() # Updates updated_at timestamp
-            return redirect(f"/farmer/messages/?conv={active_conversation.id}")
+            return redirect(reverse('farmer_messages') + f"?conv={active_conversation.id}")
             
     context.update({
         'conversations': conversations,

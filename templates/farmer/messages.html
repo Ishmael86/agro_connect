@@ -69,27 +69,29 @@
                 
                 <!-- Messages Bubble Thread -->
                 <div id="chatMessageList" class="flex-grow-1 p-3 overflow-y-auto" style="height: 380px; background-color: #fafbfc;">
-                    {% for msg in messages_list %}
-                        <div class="d-flex mb-3 {% if msg.sender == request.user %}justify-content-end{% else %}justify-content-start{% endif %}">
-                            <div class="rounded-3 px-3 py-2 shadow-sm" style="max-width: 75%; {% if msg.sender == request.user %}background-color: var(--agro-green); color: #FFFFFF; border-bottom-right-radius: 0 !important;{% else %}background-color: #FFFFFF; color: var(--agro-text-dark); border-bottom-left-radius: 0 !important; border: 1px solid var(--agro-border);{% endif %}">
-                                <p class="mb-1 font-sm">{{ msg.message }}</p>
-                                <span class="font-xs d-block text-end {% if msg.sender == request.user %}text-white text-opacity-70{% else %}text-muted{% endif %}" style="font-size: 0.65rem;">
-                                    {{ msg.created_at|date:"h:i A" }}
-                                </span>
+                    <div class="d-flex flex-column gap-2" id="chatMessageInnerList">
+                        {% for msg in messages_list %}
+                            <div class="d-flex mb-3 {% if msg.sender == request.user %}justify-content-end{% else %}justify-content-start{% endif %}" data-msg-id="{{ msg.id }}">
+                                <div class="rounded-3 px-3 py-2 shadow-sm" style="max-width: 75%; {% if msg.sender == request.user %}background-color: var(--agro-green); color: #FFFFFF; border-bottom-right-radius: 0 !important;{% else %}background-color: #FFFFFF; color: var(--agro-text-dark); border-bottom-left-radius: 0 !important; border: 1px solid var(--agro-border);{% endif %}">
+                                    <p class="mb-1 font-sm">{{ msg.message }}</p>
+                                    <span class="font-xs d-block text-end {% if msg.sender == request.user %}text-white text-opacity-70{% else %}text-muted{% endif %}" style="font-size: 0.65rem;">
+                                        {{ msg.created_at|date:"h:i A" }}
+                                    </span>
+                                </div>
                             </div>
-                        </div>
-                    {% empty %}
-                        <div class="text-center py-5 text-muted">
-                            <p class="mb-0 font-sm">Write a message below to start chatting.</p>
-                        </div>
-                    {% endfor %}
+                        {% empty %}
+                            <div class="text-center py-5 text-muted no-messages-placeholder">
+                                <p class="mb-0 font-sm">Write a message below to start chatting.</p>
+                            </div>
+                        {% endfor %}
+                    </div>
                 </div>
                 
                 <!-- Message Submission Input Bar -->
                 <div class="p-3 border-top bg-white">
-                    <form method="POST" action="" class="d-flex gap-2">
+                    <form id="chatSendForm" class="d-flex gap-2">
                         {% csrf_token %}
-                        <input type="text" name="message_text" class="form-control rounded-pill px-3 font-sm" placeholder="Write your message here..." required autocomplete="off">
+                        <input type="text" id="chatMessageInput" name="message_text" class="form-control rounded-pill px-3 font-sm" placeholder="Write your message here..." required autocomplete="off">
                         <button type="submit" class="btn btn-success rounded-circle d-flex align-items-center justify-content-center shadow" style="width: 40px; height: 40px; flex-shrink: 0; padding: 0;">
                             <i class="fas fa-paper-plane text-white fs-6"></i>
                         </button>
@@ -108,4 +110,138 @@
         {% endif %}
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const chatWindow = document.getElementById('chatMessageList');
+        const chatForm = document.getElementById('chatSendForm');
+        const messageInput = document.getElementById('chatMessageInput');
+        
+        function scrollToBottom() {
+            if (chatWindow) {
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            }
+        }
+        scrollToBottom();
+        
+        {% if active_conversation %}
+        const activeConvId = "{{ active_conversation.id }}";
+        let lastMessageId = 0;
+        
+        // Find latest message id in DOM
+        const messageItems = chatWindow.querySelectorAll('[data-msg-id]');
+        if (messageItems.length > 0) {
+            lastMessageId = parseInt(messageItems[messageItems.length - 1].getAttribute('data-msg-id'));
+        }
+        
+        // Poll for new messages every 3 seconds
+        function pollNewMessages() {
+            fetch(`/accounts/ajax/messages/${activeConvId}/?last_msg_id=${lastMessageId}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.messages.length > 0) {
+                    const msgContainer = document.getElementById('chatMessageInnerList');
+                    
+                    // Remove placeholder if present
+                    const placeholder = msgContainer.querySelector('.no-messages-placeholder');
+                    if (placeholder) placeholder.remove();
+                    
+                    data.messages.forEach(msg => {
+                        if (chatWindow.querySelector(`[data-msg-id="${msg.id}"]`)) return;
+                        
+                        const bubble = document.createElement('div');
+                        bubble.setAttribute('data-msg-id', msg.id);
+                        if (msg.is_outgoing) {
+                            bubble.className = 'd-flex mb-3 justify-content-end';
+                            bubble.innerHTML = `
+                                <div class="rounded-3 px-3 py-2 shadow-sm" style="max-width: 75%; background-color: var(--agro-green); color: #FFFFFF; border-bottom-right-radius: 0 !important;">
+                                    <p class="mb-1 font-sm">${msg.message}</p>
+                                    <span class="font-xs d-block text-end text-white text-opacity-70" style="font-size: 0.65rem;">
+                                        ${msg.created_at}
+                                    </span>
+                                </div>
+                            `;
+                        } else {
+                            bubble.className = 'd-flex mb-3 justify-content-start';
+                            bubble.innerHTML = `
+                                <div class="rounded-3 px-3 py-2 shadow-sm" style="max-width: 75%; background-color: #FFFFFF; color: var(--agro-text-dark); border-bottom-left-radius: 0 !important; border: 1px solid var(--agro-border);">
+                                    <p class="mb-1 font-sm">${msg.message}</p>
+                                    <span class="font-xs d-block text-end text-muted" style="font-size: 0.65rem;">
+                                        ${msg.created_at}
+                                    </span>
+                                </div>
+                            `;
+                        }
+                        msgContainer.appendChild(bubble);
+                        lastMessageId = Math.max(lastMessageId, msg.id);
+                    });
+                    scrollToBottom();
+                }
+            })
+            .catch(err => console.error("Error polling messages:", err));
+        }
+        
+        setInterval(pollNewMessages, 3000);
+        
+        if (chatForm) {
+            chatForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const text = messageInput.value.trim();
+                if (!text) return;
+                
+                messageInput.value = '';
+                
+                const formData = new FormData();
+                formData.append('message_text', text);
+                
+                fetch(`/accounts/ajax/messages/send/${activeConvId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const msg = data.message_data;
+                        if (!chatWindow.querySelector(`[data-msg-id="${msg.id}"]`)) {
+                            const msgContainer = document.getElementById('chatMessageInnerList');
+                            const placeholder = msgContainer.querySelector('.no-messages-placeholder');
+                            if (placeholder) placeholder.remove();
+                            
+                            const bubble = document.createElement('div');
+                            bubble.setAttribute('data-msg-id', msg.id);
+                            bubble.className = 'd-flex mb-3 justify-content-end';
+                            bubble.innerHTML = `
+                                <div class="rounded-3 px-3 py-2 shadow-sm" style="max-width: 75%; background-color: var(--agro-green); color: #FFFFFF; border-bottom-right-radius: 0 !important;">
+                                    <p class="mb-1 font-sm">${msg.message}</p>
+                                    <span class="font-xs d-block text-end text-white text-opacity-70" style="font-size: 0.65rem;">
+                                        ${msg.created_at}
+                                    </span>
+                                </div>
+                            `;
+                            msgContainer.appendChild(bubble);
+                            lastMessageId = Math.max(lastMessageId, msg.id);
+                            scrollToBottom();
+                        }
+                    } else {
+                        alert(data.message || 'Failed to send message.');
+                    }
+                })
+                .catch(() => {
+                    alert('Failed to send message. Please verify connection.');
+                });
+            });
+        }
+        {% endif %}
+    });
+</script>
 {% endblock %}

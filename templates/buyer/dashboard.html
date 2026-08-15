@@ -4,29 +4,6 @@
 {% block title %}Buyer Dashboard | AgroConnect{% endblock %}
 
 {% block buyer_content %}
-<!-- Dashboard Header Greeting -->
-<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
-    <div>
-        <h3 class="fw-bold text-dark mb-1"><span id="greeting-text">Hello</span>, {{ request.user.first_name|default:request.user.username }}! 👋</h3>
-        <p class="text-muted font-sm mb-0">Here's what's happening with your orders and favorites today.</p>
-        <script>
-            (function() {
-                var h = new Date().getHours();
-                var g = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
-                document.getElementById('greeting-text').textContent = g;
-            })();
-        </script>
-    </div>
-    <!-- Search Bar in Header -->
-    <div class="d-flex align-items-center gap-2">
-        <form action="{% url 'product_list' %}" method="GET" class="position-relative">
-            <input type="text" name="search" class="form-control rounded-pill px-4 py-2 font-sm border-0 shadow-sm" placeholder="Search products, farmers..." style="width: 260px;">
-            <button type="submit" class="btn position-absolute top-50 end-0 translate-middle-y border-0 text-success me-2" style="background: none;">
-                <i class="fas fa-search"></i>
-            </button>
-        </form>
-    </div>
-</div>
 
 <!-- Statistics Cards Row (5 Cards) -->
 <div class="row g-3 mb-4">

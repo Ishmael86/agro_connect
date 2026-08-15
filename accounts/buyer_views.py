@@ -1,5 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse
 from django.contrib.auth.decorators import login_required
+from farmers.models import FarmerProfile
 from django.contrib import messages
 from django.http import JsonResponse
 from django.db import transaction
@@ -563,7 +565,7 @@ def buyer_messages(request):
             )
             # Update timestamp
             active_conversation.save()
-            return redirect(f"/buyer/messages/?conv={active_conversation.id}")
+            return redirect(reverse('buyer_messages') + f"?conv={active_conversation.id}")
             
     context.update({
         'conversations': conversations,
@@ -571,6 +573,14 @@ def buyer_messages(request):
         'messages_list': messages_list,
     })
     return render(request, 'buyer/messages.html', context)
+
+@login_required
+@buyer_required
+def buyer_messages_init(request, farmer_id):
+    farmer = get_object_or_404(FarmerProfile, id=farmer_id)
+    # Check if a conversation already exists
+    conv, created = Conversation.objects.get_or_create(buyer=request.user, farmer=farmer)
+    return redirect(reverse('buyer_messages') + f"?conv={conv.id}")
 
 @login_required
 @buyer_required
@@ -707,3 +717,75 @@ def buyer_download_invoice(request, order_number):
         return response
         
     return HttpResponse("Error generating invoice PDF", status=500)
+
+
+@login_required
+def ajax_get_messages(request, conv_id):
+    """AJAX endpoint to get all messages for a specific conversation."""
+    conv = get_object_or_404(Conversation, id=conv_id)
+    # Security check: User must be either the buyer or the farmer user
+    if request.user != conv.buyer and request.user != conv.farmer.user:
+        return JsonResponse({'success': False, 'message': 'Access denied.'}, status=403)
+        
+    last_msg_id = request.GET.get('last_msg_id')
+    messages_qs = conv.messages.all().order_by('created_at')
+    
+    if last_msg_id:
+        messages_qs = messages_qs.filter(id__gt=last_msg_id)
+        
+    messages_data = []
+    for msg in messages_qs:
+        # Mark as read if the current user is not the sender
+        if msg.sender != request.user and not msg.is_read:
+            msg.is_read = True
+            msg.save()
+            
+        messages_data.append({
+            'id': msg.id,
+            'sender_id': msg.sender.id,
+            'sender_username': msg.sender.username,
+            'message': msg.message,
+            'is_outgoing': msg.sender == request.user,
+            'created_at': msg.created_at.strftime('%I:%M %p'),
+        })
+        
+    return JsonResponse({
+        'success': True,
+        'messages': messages_data
+    })
+
+
+@login_required
+def ajax_send_message(request, conv_id):
+    """AJAX endpoint to send a message to a specific conversation."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Invalid request method.'}, status=400)
+        
+    conv = get_object_or_404(Conversation, id=conv_id)
+    # Security check: User must be either the buyer or the farmer user
+    if request.user != conv.buyer and request.user != conv.farmer.user:
+        return JsonResponse({'success': False, 'message': 'Access denied.'}, status=403)
+        
+    msg_text = request.POST.get('message_text')
+    if not msg_text or not msg_text.strip():
+        return JsonResponse({'success': False, 'message': 'Message cannot be empty.'}, status=400)
+        
+    msg = Message.objects.create(
+        conversation=conv,
+        sender=request.user,
+        message=msg_text.strip()
+    )
+    # Update timestamp
+    conv.save()
+    
+    return JsonResponse({
+        'success': True,
+        'message_data': {
+            'id': msg.id,
+            'sender_id': msg.sender.id,
+            'sender_username': msg.sender.username,
+            'message': msg.message,
+            'is_outgoing': True,
+            'created_at': msg.created_at.strftime('%I:%M %p'),
+        }
+    })

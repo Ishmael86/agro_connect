@@ -225,7 +225,17 @@ def admin_user_detail(request, id):
             messages.success(request, f"User account '{username}' deleted successfully.")
             return redirect('admin_users')
             
-    form = AdminUserForm(instance=user_item)
+        else:
+            form = AdminUserForm(request.POST, instance=user_item)
+            if form.is_valid():
+                form.save()
+                log_admin_action(request, f"Updated profile details of user {user_item.username}")
+                messages.success(request, "User information updated successfully!")
+                return redirect('admin_user_detail', id=user_item.id)
+            else:
+                messages.error(request, "Failed to update user. Please verify form data.")
+    else:
+        form = AdminUserForm(instance=user_item)
     context.update({
         'user_item': user_item,
         'form': form,
@@ -546,20 +556,9 @@ def admin_order_detail(request, order_number):
     
     items = order.items.all().select_related('product', 'farmer')
     
-    if request.method == 'POST':
-        form = OrderStatusForm(request.POST, instance=order)
-        if form.is_valid():
-            order = form.save()
-            log_admin_action(request, f"Updated order {order.order_number} status to {order.get_status_display()}")
-            messages.success(request, f"Order status updated to {order.get_status_display()} successfully.")
-            return redirect('admin_order_detail', order_number=order.order_number)
-    else:
-        form = OrderStatusForm(instance=order)
-        
     context.update({
         'order': order,
         'items': items,
-        'form': form,
     })
     return render(request, 'admin_panel/order_detail.html', context)
 

@@ -115,9 +115,9 @@
 
     <!-- Right Column: State update select controllers -->
     <div class="col-lg-4">
-        <!-- Update order status card -->
+        <!-- Order status details card -->
         <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: var(--agro-radius); background-color: var(--agro-white);">
-            <h5 class="fw-bold text-dark mb-4">Manage Order Status</h5>
+            <h5 class="fw-bold text-dark mb-4">Order Status Info</h5>
             
             <div class="mb-4">
                 <div class="text-muted small mb-1">Current Status:</div>
@@ -126,16 +126,9 @@
                 </span>
             </div>
             
-            <form method="POST">
-                {% csrf_token %}
-                <div class="mb-4">
-                    <label class="form-label font-sm fw-medium text-muted">Update Status State</label>
-                    {{ form.status }}
-                </div>
-                <div class="d-grid">
-                    <button type="submit" class="btn btn-success rounded-pill px-4"><i class="fas fa-sync me-1"></i> Update Order Status</button>
-                </div>
-            </form>
+            <div class="alert alert-info py-3 mb-0" style="border-radius: 10px; font-size: 0.85rem; line-height: 1.4;">
+                <i class="fas fa-info-circle me-2"></i> Order stages are managed exclusively by the respective farmers processing the crop shipments.
+            </div>
         </div>
 
         <!-- Payment details card -->
@@ -145,13 +138,13 @@
             <div class="border-top pt-3 small text-start">
                 <div class="d-flex justify-content-between mb-2">
                     <span class="text-muted">Payment status:</span>
-                    <span class="fw-bold {% if order.paid %}text-success{% else %}text-danger{% endif %}">
-                        {% if order.paid %}PAID{% else %}UNPAID{% endif %}
+                    <span class="fw-bold {% if order.payment_status == 'PAID' %}text-success{% else %}text-warning{% endif %}">
+                        {{ order.get_payment_status_display|upper }}
                     </span>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
                     <span class="text-muted">Payment Method:</span>
-                    <span class="fw-semibold text-dark">{{ order.payment_method|default:"Mobile Money" }}</span>
+                    <span class="fw-semibold text-dark">{{ order.get_payment_method_display }}</span>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
                     <span class="text-muted">Transaction Reference:</span>

@@ -24,18 +24,18 @@
             <!-- Messages Badge icon -->
             <a href="{% url 'buyer_messages' %}" class="position-relative text-decoration-none btn btn-light rounded-circle p-2" style="width: 38px; height: 38px;">
                 <i class="far fa-comment-dots text-muted"></i>
-                {% if unread_messages_count > 0 %}
+                {% if unread_messages > 0 %}
                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem;">
-                        {{ unread_messages_count }}
+                        {{ unread_messages }}
                     </span>
                 {% endif %}
             </a>
             <!-- Notifications Badge icon -->
             <a href="{% url 'buyer_notifications' %}" class="position-relative text-decoration-none btn btn-light rounded-circle p-2" style="width: 38px; height: 38px;">
                 <i class="far fa-bell text-muted"></i>
-                {% if unread_notifications_count > 0 %}
+                {% if unread_notifications > 0 %}
                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem;">
-                        {{ unread_notifications_count }}
+                        {{ unread_notifications }}
                     </span>
                 {% endif %}
             </a>
@@ -164,6 +164,42 @@
 
         <!-- Right Content Column -->
         <div class="col-lg-9">
+            <!-- Desktop Header Bar (Screen >= 992px Only) -->
+            <div class="d-none d-lg-flex justify-content-between align-items-center bg-white p-4 rounded-3 shadow-sm mb-4 border" style="border-radius: var(--agro-radius-lg) !important;">
+                <div>
+                    <h5 class="fw-bold text-dark mb-1"><span id="buyer-greeting-text">Hello</span>, {{ request.user.first_name|default:request.user.username }}! 👋</h5>
+                    <span class="text-muted font-xs">Here is what is happening with your orders and favorites today.</span>
+                    <script>
+                        (function() {
+                            var h = new Date().getHours();
+                            var g = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+                            document.getElementById('buyer-greeting-text').textContent = g;
+                        })();
+                    </script>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Messages Icon -->
+                    <a href="{% url 'buyer_messages' %}" class="position-relative text-decoration-none btn btn-light rounded-circle p-2" style="width: 40px; height: 40px;" title="Messages">
+                        <i class="far fa-comment-dots text-muted fs-5"></i>
+                        {% if unread_messages > 0 %}
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem;">
+                                {{ unread_messages }}
+                            </span>
+                        {% endif %}
+                    </a>
+                    
+                    <!-- Notifications Bell Icon -->
+                    <a href="{% url 'buyer_notifications' %}" class="position-relative text-decoration-none btn btn-light rounded-circle p-2" style="width: 40px; height: 40px;" title="Notifications">
+                        <i class="far fa-bell text-muted fs-5"></i>
+                        {% if unread_notifications > 0 %}
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem;">
+                                {{ unread_notifications }}
+                            </span>
+                        {% endif %}
+                    </a>
+                </div>
+            </div>
+
             {% block buyer_content %}{% endblock %}
         </div>
     </div>

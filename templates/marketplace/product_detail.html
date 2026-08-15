@@ -221,11 +221,14 @@
                 </p>
                 
                 <div class="row g-2">
-                    <div class="col-6">
+                    <div class="col-12">
                         <a href="{% url 'farmer_detail' product.farmer.id %}" class="btn btn-outline-green btn-sm w-100 py-2">View Shop</a>
                     </div>
                     <div class="col-6">
-                        <button class="btn btn-outline-green btn-sm w-100 py-2" onclick="showAgroToast('Farmer Phone: {{ product.farmer.phone }}')">Contact Farmer</button>
+                        <a href="{% url 'buyer_messages_init' product.farmer.id %}" class="btn btn-primary-green btn-sm w-100 py-2"><i class="far fa-comment-dots me-1"></i> Chat with Farmer</a>
+                    </div>
+                    <div class="col-6">
+                        <button class="btn btn-outline-secondary btn-sm w-100 py-2" onclick="showAgroToast('Farmer Phone: {{ product.farmer.phone }}')">Contact Farmer</button>
                     </div>
                 </div>
             </div>

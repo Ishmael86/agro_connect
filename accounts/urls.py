@@ -20,10 +20,13 @@ urlpatterns = [
     path('buyer/payments/', buyer_views.buyer_payments, name='buyer_payments'),
     path('buyer/reviews/', buyer_views.buyer_reviews, name='buyer_reviews'),
     path('buyer/messages/', buyer_views.buyer_messages, name='buyer_messages'),
+    path('buyer/messages/init/<int:farmer_id>/', buyer_views.buyer_messages_init, name='buyer_messages_init'),
     path('buyer/notifications/', buyer_views.buyer_notifications, name='buyer_notifications'),
     path('buyer/settings/', buyer_views.buyer_settings, name='buyer_settings'),
     path('buyer/profile/', buyer_views.buyer_profile, name='buyer_profile'),
     path('buyer/change-password/', buyer_views.buyer_change_password, name='buyer_change_password'),
     path('buyer/help/', buyer_views.buyer_help, name='buyer_help'),
     path('buyer/orders/<str:order_number>/invoice/', buyer_views.buyer_download_invoice, name='buyer_download_invoice'),
+    path('ajax/messages/<int:conv_id>/', buyer_views.ajax_get_messages, name='ajax_get_messages'),
+    path('ajax/messages/send/<int:conv_id>/', buyer_views.ajax_send_message, name='ajax_send_message'),
 ]
