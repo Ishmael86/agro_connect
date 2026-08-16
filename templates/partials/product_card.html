@@ -66,9 +66,15 @@
         </div>
         
         <!-- Location -->
-        <div class="product-location">
+        <div class="product-location" style="margin-bottom: 8px;">
             <i class="fas fa-map-marker-alt text-success"></i>
             <span>{{ product.farmer.location }}, {{ product.farmer.region }}</span>
+        </div>
+
+        <!-- Stock Quantity -->
+        <div class="product-stock mb-3" style="font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 4px;">
+            <i class="fas fa-layer-group text-success" style="width: 14px;"></i>
+            <span>Available: <strong>{{ product.stock_quantity }} {{ product.unit }}{% if product.stock_quantity > 1 %}s{% endif %}</strong></span>
         </div>
         
         <!-- Footer: Price & Cart Button -->

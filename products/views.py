@@ -129,7 +129,7 @@ def product_list_view(request):
         products_query = products_query.order_by('-created_at')
 
     # Pagination
-    paginator = Paginator(products_query, 9) # 9 products per page
+    paginator = Paginator(products_query, 16) # 16 products per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
