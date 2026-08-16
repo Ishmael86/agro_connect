@@ -29,4 +29,5 @@ urlpatterns = [
     path('buyer/orders/<str:order_number>/invoice/', buyer_views.buyer_download_invoice, name='buyer_download_invoice'),
     path('ajax/messages/<int:conv_id>/', buyer_views.ajax_get_messages, name='ajax_get_messages'),
     path('ajax/messages/send/<int:conv_id>/', buyer_views.ajax_send_message, name='ajax_send_message'),
+    path('buyer/messages/init/post/<int:farmer_id>/', buyer_views.buyer_messages_init_post, name='buyer_messages_init_post'),
 ]

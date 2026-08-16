@@ -43,7 +43,7 @@ TESTIMONIALS = [
 
 def home_view(request):
     featured_products = Product.objects.filter(is_featured=True, is_available=True).select_related('farmer', 'farmer__user')[:6]
-    categories = Category.objects.all()[:8] # Show up to 8 categories
+    categories = Category.objects.annotate(product_count=Count('products'))[:8] # Show up to 8 categories
 
     # Dynamic Statistics calculations from DB with realistic baselines
     farmers_count = FarmerProfile.objects.count() + 2500

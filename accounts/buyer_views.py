@@ -789,3 +789,34 @@ def ajax_send_message(request, conv_id):
             'created_at': msg.created_at.strftime('%I:%M %p'),
         }
     })
+
+
+def buyer_messages_init_post(request, farmer_id):
+    """View to handle submitting the 'Message Farmer' form from the farmer detail page."""
+    if not request.user.is_authenticated:
+        messages.warning(request, "Please log in or create an account to message the farmer.")
+        return redirect('login')
+        
+    if request.method == 'POST':
+        farmer = get_object_or_404(FarmerProfile, id=farmer_id)
+        
+        # Check if farmer is trying to message themselves
+        if request.user.account_type == 'FARMER' and getattr(request.user, 'farmer_profile', None) == farmer:
+            messages.error(request, "You cannot message yourself.")
+            return redirect(reverse('farmer_messages'))
+            
+        conv, created = Conversation.objects.get_or_create(buyer=request.user, farmer=farmer)
+        msg_text = request.POST.get('message_text')
+        if msg_text and msg_text.strip():
+            Message.objects.create(
+                conversation=conv,
+                sender=request.user,
+                message=msg_text.strip()
+            )
+            conv.save()
+            messages.success(request, "Message sent to farmer successfully! 📩")
+            
+        # Redirect to buyer dashboard messages page with the conversation selected
+        return redirect(reverse('buyer_messages') + f"?conv={conv.id}")
+        
+    return redirect('farmer_list')

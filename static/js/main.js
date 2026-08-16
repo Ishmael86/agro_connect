@@ -274,6 +274,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const formData = new FormData();
             formData.append('quantity', qty);
 
+            const isBuyNow = this.dataset.buyNow === 'true';
+
             fetch(`/cart/add/${productId}/`, {
                 method: 'POST',
                 headers: {
@@ -290,12 +292,16 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(data => {
                 if (data.success) {
-                    showToast(data.message);
-                    // Update all cart count badges
-                    document.querySelectorAll('.cart-badge').forEach(badge => {
-                        badge.textContent = data.cart_count;
-                        badge.style.display = data.cart_count > 0 ? 'inline-block' : 'none';
-                    });
+                    if (isBuyNow) {
+                        window.location.href = '/checkout/';
+                    } else {
+                        showToast(data.message);
+                        // Update all cart count badges
+                        document.querySelectorAll('.cart-badge').forEach(badge => {
+                            badge.textContent = data.cart_count;
+                            badge.style.display = data.cart_count > 0 ? 'inline-block' : 'none';
+                        });
+                    }
                 }
             })
             .catch(error => {
