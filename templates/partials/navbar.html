@@ -59,20 +59,38 @@
                 <!-- Auth Buttons / Dropdown -->
                 {% if request.user.is_authenticated %}
                     <div class="dropdown">
-                        <button class="btn btn-primary-green dropdown-toggle d-flex align-items-center gap-2 py-2 border-0" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false" style="border-radius: var(--radius-sm);">
-                            <i class="fas fa-user-circle fs-5"></i>
-                            <span>{{ request.user.first_name|default:request.user.username }}</span>
+                        <button class="btn dropdown-toggle d-flex align-items-center gap-2 p-1 pe-3 border" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false" style="border-radius: 50px; background-color: #f8f9fa; border-color: #e2e8f0 !important;">
+                            <div style="width: 30px; height: 30px; flex-shrink: 0;">
+                                {% if request.user.account_type == 'FARMER' and request.user.farmer_profile.profile_image %}
+                                    <img src="{{ request.user.farmer_profile.profile_image.url }}" alt="Avatar" class="w-100 h-100 object-fit-cover rounded-circle">
+                                {% elif request.user.account_type == 'BUYER' and request.user.buyer_profile.profile_image %}
+                                    <img src="{{ request.user.buyer_profile.profile_image.url }}" alt="Avatar" class="w-100 h-100 object-fit-cover rounded-circle">
+                                {% else %}
+                                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="Avatar" class="w-100 h-100 object-fit-cover rounded-circle">
+                                {% endif %}
+                            </div>
+                            <span class="fw-semibold text-dark small">{{ request.user.first_name|default:request.user.username }}</span>
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2 mt-2 rounded-3" aria-labelledby="userMenu" style="min-width: 220px; font-size: 0.9rem;">
-                            <li>
-                                <span class="dropdown-item-text text-muted small d-flex align-items-center justify-content-between">
-                                    <span>Account:</span>
-                                    <span class="badge bg-success-light text-success fw-bold px-2 py-1 rounded-pill" style="font-size: 0.75rem;">
-                                        {% if request.user.is_superuser %}Administrator{% else %}{{ request.user.get_account_type_display }}{% endif %}
-                                    </span>
-                                </span>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2 mt-2 rounded-3" aria-labelledby="userMenu" style="min-width: 245px; font-size: 0.9rem;">
+                            <li class="p-3 border-bottom mb-2 bg-light rounded-3">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div style="width: 44px; height: 44px; flex-shrink: 0;">
+                                        {% if request.user.account_type == 'FARMER' and request.user.farmer_profile.profile_image %}
+                                            <img src="{{ request.user.farmer_profile.profile_image.url }}" alt="Avatar" class="w-100 h-100 object-fit-cover rounded-circle">
+                                        {% elif request.user.account_type == 'BUYER' and request.user.buyer_profile.profile_image %}
+                                            <img src="{{ request.user.buyer_profile.profile_image.url }}" alt="Avatar" class="w-100 h-100 object-fit-cover rounded-circle">
+                                        {% else %}
+                                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="Avatar" class="w-100 h-100 object-fit-cover rounded-circle">
+                                        {% endif %}
+                                    </div>
+                                    <div class="overflow-hidden">
+                                        <h6 class="fw-bold text-dark mb-0 text-truncate" style="max-width: 135px;">{{ request.user.get_full_name|default:request.user.username }}</h6>
+                                        <span class="badge bg-success-light text-success font-xs fw-semibold mt-1" style="font-size: 0.7rem; padding: 3px 8px; border-radius: 20px;">
+                                            {% if request.user.is_superuser %}Admin{% else %}{{ request.user.get_account_type_display }}{% endif %}
+                                        </span>
+                                    </div>
+                                </div>
                             </li>
-                            <li><hr class="dropdown-divider"></li>
                             
                             {% if request.user.is_superuser or request.user.is_staff %}
                                 <li>
