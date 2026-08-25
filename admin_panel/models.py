@@ -88,3 +88,13 @@ class SiteSettings(models.Model):
 
     def __str__(self):
         return "Global Site Settings"
+
+
+class Page(models.Model):
+    title = models.CharField(max_length=200)
+    slug = models.SlugField(max_length=100, unique=True)
+    content = models.TextField(help_text="HTML or Plain Text content of the page")
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.title

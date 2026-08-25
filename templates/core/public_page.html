@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ page.title }} | AgroConnect{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Breadcrumbs -->
+    {% include 'partials/breadcrumb.html' with breadcrumbs=breadcrumbs %}
+
+    <div class="py-4 bg-white p-4 p-md-5 rounded-3 shadow-sm border mt-3" style="border-radius: var(--radius-lg) !important;">
+        <h1 class="fw-bold text-dark mb-4">{{ page.title }}</h1>
+        <div class="font-sm text-dark lh-lg">
+            {{ page.content|safe }}
+        </div>
+    </div>
+</div>
+{% endblock %}

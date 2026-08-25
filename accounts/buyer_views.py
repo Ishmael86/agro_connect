@@ -32,6 +32,11 @@ def buyer_required(view_func):
     def wrapper(request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect('login')
+        if getattr(request.user, 'is_suspended', False):
+            from django.contrib.auth import logout
+            logout(request)
+            messages.error(request, "Your account has been suspended by the administrator. Please contact support.")
+            return redirect('login')
         if request.user.account_type != 'BUYER':
             messages.error(request, "Access restricted to Buyer accounts.")
             return redirect('home')
@@ -111,6 +116,17 @@ def buyer_orders(request):
     if status_filter != 'ALL':
         orders_query = orders_query.filter(status=status_filter)
         
+    # Calculate counts for each status tab for this buyer
+    all_orders = Order.objects.filter(user=user)
+    counts = {
+        'ALL': all_orders.count(),
+        'PENDING': all_orders.filter(status='PENDING').count(),
+        'PROCESSING': all_orders.filter(status='PROCESSING').count(),
+        'SHIPPED': all_orders.filter(status='SHIPPED').count(),
+        'DELIVERED': all_orders.filter(status='DELIVERED').count(),
+        'CANCELLED': all_orders.filter(status='CANCELLED').count(),
+    }
+        
     paginator = Paginator(orders_query, 5) # 5 orders per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -118,6 +134,7 @@ def buyer_orders(request):
     context.update({
         'orders': page_obj,
         'status_filter': status_filter.lower(),
+        'counts': counts,
     })
     return render(request, 'buyer/orders.html', context)
 

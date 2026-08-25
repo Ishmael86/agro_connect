@@ -23,7 +23,7 @@
                 <!-- Gallery Thumbnails -->
                 <div class="gallery-thumbnails">
                     {% if product.main_image %}
-                        <img src="{{ product.main_image.url }}" alt="{{ product.name }} Thumbnail 1" class="active">
+                        <img src="{{ product.main_image.url }}" alt="{{ product.name }} Main Image Thumbnail" class="active">
                     {% else %}
                         {% if product.category.slug == 'fruits' %}
                             <img src="https://images.unsplash.com/photo-1550258987-190a2d41a8ba?q=80&w=400&auto=format&fit=crop" alt="Fruits Placeholder" class="active">
@@ -47,8 +47,9 @@
                             <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=400&auto=format&fit=crop" alt="Product Placeholder" class="active">
                         {% endif %}
                     {% endif %}
-                    <img src="https://images.unsplash.com/photo-1592924357228-91a4daadcfea?q=80&w=150&auto=format&fit=crop" alt="Crops Close up Thumbnail 2">
-                    <img src="https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?q=80&w=150&auto=format&fit=crop" alt="Farm Soil Thumbnail 3">
+                    {% for img in product.images.all %}
+                        <img src="{{ img.image.url }}" alt="{{ product.name }} Thumbnail {{ forloop.counter }}">
+                    {% endfor %}
                 </div>
                 
                 <!-- Main Image Box -->

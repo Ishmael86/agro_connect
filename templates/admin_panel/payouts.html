@@ -33,15 +33,15 @@
                     </td>
                     <td class="fw-bold text-success">GHS {{ payout.amount|floatformat:2 }}</td>
                     <td>
-                        <span class="badge bg-light text-dark border px-2 py-1 font-xs">{{ payout.payment_method|upper }}</span>
+                        <span class="badge bg-light text-dark border px-2 py-1 font-xs">{{ payout.get_payment_method_display }}</span>
                     </td>
                     <td>
-                        {% if payout.payment_method == 'momo' %}
-                            <div class="fw-semibold">{{ payout.momo_number }}</div>
-                            <div style="font-size: 0.7rem;" class="text-muted">Carrier: {{ payout.momo_carrier|upper }}</div>
+                        {% if payout.payment_method == 'BANK_TRANSFER' %}
+                            <div class="fw-semibold">{{ payout.account_number }}</div>
+                            <div style="font-size: 0.7rem;" class="text-muted">Bank: {{ payout.bank_name }}{% if payout.account_name %} ({{ payout.account_name }}){% endif %}</div>
                         {% else %}
-                            <div class="fw-semibold">{{ payout.bank_account_number }}</div>
-                            <div style="font-size: 0.7rem;" class="text-muted">Bank: {{ payout.bank_name }} ({{ payout.bank_account_name }})</div>
+                            <div class="fw-semibold">{{ payout.account_number }}</div>
+                            <div style="font-size: 0.7rem;" class="text-muted">Account Name: {{ payout.account_name|default:"N/A" }}</div>
                         {% endif %}
                     </td>
                     <td>{{ payout.requested_at|date:"M d, Y H:i" }}</td>
@@ -58,7 +58,7 @@
                                     {% csrf_token %}
                                     <input type="hidden" name="action" value="approve">
                                     <input type="hidden" name="payout_id" value="{{ payout.id }}">
-                                    <button type="submit" class="btn btn-success btn-sm rounded-pill font-xs px-2" data-confirm="Are you sure you want to approve this payout of GHS {{ payout.amount }}? Verify that you have transferred the funds.">
+                                    <button type="submit" class="btn btn-success btn-sm rounded-pill font-xs px-2" data-confirm="Are you sure you want to approve this payout of GHS {{ payout.amount }} to {{ payout.farmer.farm_name }}? Wallet/Account: {{ payout.account_number }}{% if payout.account_name %} ({{ payout.account_name }}){% endif %}. Verify that you have transferred the funds.">
                                         <i class="fas fa-check"></i> Approve
                                     </button>
                                 </form>
@@ -67,7 +67,7 @@
                                     {% csrf_token %}
                                     <input type="hidden" name="action" value="reject">
                                     <input type="hidden" name="payout_id" value="{{ payout.id }}">
-                                    <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill font-xs px-2" data-confirm="Are you sure you want to reject this payout request?">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill font-xs px-2" data-confirm="Are you sure you want to reject this payout request for {{ payout.farmer.farm_name }}?">
                                         <i class="fas fa-times"></i> Reject
                                     </button>
                                 </form>

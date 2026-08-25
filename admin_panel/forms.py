@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth import get_user_model
-from .models import SiteSettings, Promotion, SupportTicket, SupportTicketMessage
+from .models import SiteSettings, Promotion, SupportTicket, SupportTicketMessage, Page
 from products.models import Category, Product
 from orders.models import Order
 from farmers.models import FarmerProfile, Payout
@@ -102,4 +102,14 @@ class AdminProfileForm(forms.ModelForm):
             'last_name': forms.TextInput(attrs={'class': 'form-control rounded-pill px-3'}),
             'email': forms.EmailInput(attrs={'class': 'form-control rounded-pill px-3'}),
             'phone': forms.TextInput(attrs={'class': 'form-control rounded-pill px-3'}),
+        }
+
+
+class PageForm(forms.ModelForm):
+    class Meta:
+        model = Page
+        fields = ['title', 'content']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control rounded-pill px-3'}),
+            'content': forms.Textarea(attrs={'class': 'form-control rounded-3', 'rows': 15, 'placeholder': 'Write your HTML or plain text page content here...'}),
         }

@@ -180,7 +180,7 @@ def checkout_view(request):
     else:
         # Prepopulate name, phone if user is authenticated
         initial_data = {}
-        if request.user.is_authenticated:
+        if request.user.is_authenticated and not (request.user.is_superuser or request.user.is_staff):
             initial_data = {
                 'full_name': request.user.get_full_name() or request.user.username,
                 'phone': request.user.phone or '',

@@ -18,10 +18,10 @@ from orders.models import Order, OrderItem
 from accounts.models import Conversation, Message
 from notifications.models import Notification
 
-from .models import ActivityLog, SupportTicket, SupportTicketMessage, Promotion, SiteSettings
+from .models import ActivityLog, SupportTicket, SupportTicketMessage, Promotion, SiteSettings, Page
 from .forms import (
     AdminUserForm, CategoryForm, OrderStatusForm,
-    PromotionForm, SettingsForm, SupportTicketReplyForm, AdminProfileForm
+    PromotionForm, SettingsForm, SupportTicketReplyForm, AdminProfileForm, PageForm
 )
 
 User = get_user_model()
@@ -212,10 +212,17 @@ def admin_user_detail(request, id):
     if request.method == 'POST':
         action = request.POST.get('action')
         if action == 'toggle_status':
-            user_item.is_active = not user_item.is_active
+            if user_item.is_suspended:
+                user_item.is_suspended = False
+                user_item.is_active = True
+                action_text = "activated"
+            else:
+                user_item.is_suspended = True
+                user_item.is_active = False
+                action_text = "suspended"
             user_item.save()
-            log_admin_action(request, f"Toggled status of user {user_item.username} to {user_item.is_active}")
-            messages.success(request, f"User status updated successfully.")
+            log_admin_action(request, f"Toggled status of user {user_item.username} to {action_text}")
+            messages.success(request, f"User account has been {action_text} successfully.")
             return redirect('admin_user_detail', id=user_item.id)
             
         elif action == 'delete_user':
@@ -320,7 +327,9 @@ def admin_farmer_detail(request, id):
             return redirect('admin_farmer_detail', id=profile.id)
             
     crops = profile.products.all().select_related('category')
-    sales_total = OrderItem.objects.filter(farmer=profile, order__status='DELIVERED').aggregate(tot=Sum('subtotal'))['tot'] or Decimal('0.00')
+    sales_total_raw = OrderItem.objects.filter(farmer=profile, order__status='DELIVERED').aggregate(tot=Sum('subtotal'))['tot'] or Decimal('0.00')
+    completed_payouts = Payout.objects.filter(farmer=profile, status='COMPLETED').aggregate(sum_amt=Sum('amount'))['sum_amt'] or Decimal('0.00')
+    sales_total = sales_total_raw - completed_payouts
     orders_count = OrderItem.objects.filter(farmer=profile).values('order').distinct().count()
     
     context.update({
@@ -783,8 +792,78 @@ def admin_promotions(request):
 @admin_required
 def admin_pages(request):
     context = get_admin_context(request)
-    # Simple Content moderation overview template
+    
+    # Initialize default pages in the database if they do not exist
+    default_pages = [
+        {
+            'slug': 'about-us',
+            'title': 'About Us',
+            'content': '<h2>Our Mission</h2><p>AgroConnect connects organic local growers directly with buyers in Ghana.</p>'
+        },
+        {
+            'slug': 'contact-guidelines',
+            'title': 'Contact Guidelines',
+            'content': '<p>Support hours: Mon-Fri 8am-5pm. Email: support@agroconnect.com. Phone: +233 24 123 4567</p>'
+        },
+        {
+            'slug': 'terms-of-service',
+            'title': 'Terms of Service',
+            'content': '<p>By using AgroConnect, you agree to local buyer and seller guidelines and commissions.</p>'
+        },
+        {
+            'slug': 'privacy-policy',
+            'title': 'Privacy Policy',
+            'content': '<p>We respect your privacy. Personal data is securely encrypted.</p>'
+        },
+        {
+            'slug': 'faqs',
+            'title': 'Frequently Asked Questions (FAQs)',
+            'content': '<h3>How do payouts work?</h3><p>Payouts are requested via Mobile Money and processed within 24-48 hours.</p>'
+        },
+        {
+            'slug': 'how-it-works',
+            'title': 'How AgroConnect Works',
+            'content': '<p>Farmers post crops. Buyers purchase. Payments are held in escrow until delivery.</p>'
+        }
+    ]
+    
+    for dp in default_pages:
+        Page.objects.get_or_create(slug=dp['slug'], defaults={
+            'title': dp['title'],
+            'content': dp['content']
+        })
+        
+    pages = Page.objects.all().order_by('title')
+    pages_dict = {p.slug.replace('-', '_'): p for p in pages}
+    context.update({
+        'pages': pages,
+        'pages_dict': pages_dict
+    })
     return render(request, 'admin_panel/pages.html', context)
+
+@login_required
+@admin_required
+def admin_edit_page(request, slug):
+    context = get_admin_context(request)
+    page = get_object_or_404(Page, slug=slug)
+    
+    if request.method == 'POST':
+        form = PageForm(request.POST, instance=page)
+        if form.is_valid():
+            form.save()
+            log_admin_action(request, f"Updated content for static page: {page.title}")
+            messages.success(request, f"Page '{page.title}' updated successfully.")
+            return redirect('admin_pages')
+        else:
+            messages.error(request, "Failed to update page. Verify input fields.")
+    else:
+        form = PageForm(instance=page)
+        
+    context.update({
+        'page': page,
+        'form': form
+    })
+    return render(request, 'admin_panel/edit_page.html', context)
 
 @login_required
 @admin_required
@@ -885,6 +964,14 @@ def admin_ticket_detail(request, id):
                 if ticket.status == 'OPEN':
                     ticket.status = 'IN_PROGRESS'
                     ticket.save()
+                    
+                # Create a user notification for the farmer
+                Notification.objects.create(
+                    buyer=ticket.user,
+                    title="Support Ticket Update",
+                    message=f"Admin has replied to your support ticket #{ticket.id}: \"{ticket.subject}\". Check your support dashboard to view the reply.",
+                    notification_type='MESSAGE'
+                )
                     
                 log_admin_action(request, f"Submitted official reply on support ticket ID {ticket.id}")
                 messages.success(request, "Your reply has been submitted successfully.")

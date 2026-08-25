@@ -11,32 +11,32 @@
 <ul class="nav nav-pills gap-2 mb-4 p-2 bg-white rounded-pill border shadow-sm flex-wrap justify-content-start" style="border-radius: 50px !important;">
     <li class="nav-item">
         <a class="nav-link rounded-pill font-sm px-3 {% if selected_status == 'all' or selected_status == 'ALL' %}active bg-success{% else %}text-muted{% endif %}" href="{% url 'farmer_orders' %}?status=all">
-            All Orders
+            All Orders ({{ counts.ALL }})
         </a>
     </li>
     <li class="nav-item">
         <a class="nav-link rounded-pill font-sm px-3 {% if selected_status == 'PENDING' %}active bg-success{% else %}text-muted{% endif %}" href="{% url 'farmer_orders' %}?status=pending">
-            Pending
+            Pending ({{ counts.PENDING }})
         </a>
     </li>
     <li class="nav-item">
         <a class="nav-link rounded-pill font-sm px-3 {% if selected_status == 'PROCESSING' %}active bg-success{% else %}text-muted{% endif %}" href="{% url 'farmer_orders' %}?status=processing">
-            Processing
+            Processing ({{ counts.PROCESSING }})
         </a>
     </li>
     <li class="nav-item">
         <a class="nav-link rounded-pill font-sm px-3 {% if selected_status == 'SHIPPED' %}active bg-success{% else %}text-muted{% endif %}" href="{% url 'farmer_orders' %}?status=shipped">
-            Shipped
+            Shipped ({{ counts.SHIPPED }})
         </a>
     </li>
     <li class="nav-item">
         <a class="nav-link rounded-pill font-sm px-3 {% if selected_status == 'DELIVERED' %}active bg-success{% else %}text-muted{% endif %}" href="{% url 'farmer_orders' %}?status=delivered">
-            Delivered
+            Delivered ({{ counts.DELIVERED }})
         </a>
     </li>
     <li class="nav-item">
         <a class="nav-link rounded-pill font-sm px-3 {% if selected_status == 'CANCELLED' %}active bg-success{% else %}text-muted{% endif %}" href="{% url 'farmer_orders' %}?status=cancelled">
-            Cancelled
+            Cancelled ({{ counts.CANCELLED }})
         </a>
     </li>
 </ul>

@@ -7,7 +7,15 @@
     <!-- Breadcrumbs -->
     {% include 'partials/breadcrumb.html' with breadcrumbs=breadcrumbs %}
 
-    <div class="text-center max-width-600 mx-auto mb-5 py-3">
+    {% if page and page.content and page.content != "<p>Farmers post crops. Buyers purchase. Payments are held in escrow until delivery.</p>" %}
+        <div class="py-4 bg-white p-4 p-md-5 rounded-3 shadow-sm border mt-3 mb-5" style="border-radius: var(--radius-lg) !important;">
+            <h1 class="fw-bold text-dark mb-4">{{ page.title }}</h1>
+            <div class="font-sm text-dark lh-lg">
+                {{ page.content|safe }}
+            </div>
+        </div>
+    {% else %}
+        <div class="text-center max-width-600 mx-auto mb-5 py-3">
         <h1 class="display-5 fw-bold mb-3">How AgroConnect Works</h1>
         <p class="lead text-muted">We provide an intuitive, direct bridge for agricultural trade. Learn how you can get started as a Buyer or a Farmer.</p>
     </div>
@@ -112,5 +120,6 @@
             </div>
         </div>
     </div>
+    {% endif %}
 </div>
 {% endblock %}

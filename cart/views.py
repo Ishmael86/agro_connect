@@ -47,13 +47,13 @@ def cart_add_view(request, product_id):
         messages.warning(request, "Farmers are not allowed to buy or order crops. Redirected to your dashboard.")
         return redirect('farmer_dashboard')
         
-    product = get_object_or_404(Product, id=product_id)
+    product = get_object_or_404(Product.objects.select_related('farmer', 'farmer__user'), id=product_id)
     quantity = int(request.POST.get('quantity', 1))
     
-    if not product.is_available or product.stock_quantity <= 0:
+    if not product.is_available or product.stock_quantity <= 0 or not product.farmer.user.is_active or product.farmer.user.is_suspended:
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            return JsonResponse({'success': False, 'message': 'Product is currently out of stock.'}, status=400)
-        messages.error(request, f"{product.name} is currently out of stock.")
+            return JsonResponse({'success': False, 'message': 'Product is currently not available.'}, status=400)
+        messages.error(request, f"{product.name} is currently not available.")
         return redirect(request.META.get('HTTP_REFERER', 'product_list'))
 
     cart = get_or_create_cart(request)

@@ -131,4 +131,57 @@
         </div>
     </div>
 </div>
+
+<!-- My Support Tickets Section -->
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="agro-card">
+            <h5 class="fw-bold text-dark mb-3">My Support Inquiries</h5>
+            <p class="small text-muted mb-4">Track the status of your queries and correspond with the administration team.</p>
+            
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Ticket ID</th>
+                            <th>Subject</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                            <th>Last Updated</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ticket in tickets %}
+                            <tr>
+                                <td class="fw-bold text-success">#TKT-{{ ticket.id }}</td>
+                                <td>{{ ticket.subject }}</td>
+                                <td>
+                                    <span class="badge bg-light text-dark border px-2 py-1 font-xs">{{ ticket.get_priority_display }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge {% if ticket.status == 'OPEN' %}bg-warning text-white{% elif ticket.status == 'IN_PROGRESS' %}bg-info text-white{% elif ticket.status == 'RESOLVED' %}bg-success text-white{% else %}bg-secondary text-white{% endif %} font-xs" style="padding: 4px 8px; border-radius: 4px;">
+                                        {{ ticket.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>{{ ticket.updated_at|date:"M d, Y H:i" }}</td>
+                                <td>
+                                    <a href="{% url 'farmer_ticket_detail' ticket.id %}" class="btn btn-outline-success btn-sm rounded-pill px-3 font-xs">
+                                        View Thread
+                                    </a>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted small">
+                                    No support tickets found. Submit the form above to start one.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

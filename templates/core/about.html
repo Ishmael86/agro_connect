@@ -8,8 +8,16 @@
     <!-- Breadcrumbs -->
     {% include 'partials/breadcrumb.html' with breadcrumbs=breadcrumbs %}
 
-    <!-- Main Header -->
-    <div class="row align-items-center g-5 py-4">
+    {% if page and page.content and page.content != "<h2>Our Mission</h2><p>AgroConnect connects organic local growers directly with buyers in Ghana.</p>" %}
+        <div class="py-4 bg-white p-4 p-md-5 rounded-3 shadow-sm border mt-3 mb-5" style="border-radius: var(--radius-lg) !important;">
+            <h1 class="fw-bold text-dark mb-4">{{ page.title }}</h1>
+            <div class="font-sm text-dark lh-lg">
+                {{ page.content|safe }}
+            </div>
+        </div>
+    {% else %}
+        <!-- Main Header -->
+        <div class="row align-items-center g-5 py-4">
         <div class="col-lg-6">
             <h1 class="display-4 fw-bold mb-4">Growing Agriculture<br><span class="text-success">Through Connection</span></h1>
             <p class="lead text-muted">
@@ -84,5 +92,6 @@
             </div>
         </div>
     </div>
+    {% endif %}
 </div>
 {% endblock %}

@@ -34,8 +34,8 @@
             <div class="border-top pt-3 text-start small">
                 <div class="d-flex justify-content-between mb-2">
                     <span class="text-muted">Account Status:</span>
-                    <span class="fw-semibold {% if user_item.is_active %}text-success{% else %}text-danger{% endif %}">
-                        {% if user_item.is_active %}Active{% else %}Suspended{% endif %}
+                    <span class="fw-semibold {% if user_item.is_suspended %}text-danger{% elif not user_item.is_active %}text-warning{% else %}text-success{% endif %}">
+                        {% if user_item.is_suspended %}Suspended{% elif not user_item.is_active %}Unverified{% else %}Active{% endif %}
                     </span>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
@@ -102,7 +102,7 @@
                 <form method="POST" action="{% url 'admin_user_detail' user_item.id %}">
                     {% csrf_token %}
                     <input type="hidden" name="action" value="toggle_status">
-                    {% if user_item.is_active %}
+                    {% if not user_item.is_suspended %}
                         <button type="submit" class="btn btn-warning rounded-pill px-4" data-confirm="Are you sure you want to suspend this user? They will be locked out of the platform.">
                             <i class="fas fa-ban me-1"></i> Suspend User
                         </button>

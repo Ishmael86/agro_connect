@@ -86,12 +86,19 @@ def login_view(request):
                     inactive_user = User.objects.filter(username=username, is_active=False).first()
                 
                 if inactive_user and inactive_user.check_password(password):
-                    messages.error(request, "Your account is not active. Please check your email for the activation link.")
-                    return render(request, 'accounts/login.html', {
-                        'form': form,
-                        'show_resend_link': True,
-                        'email': inactive_user.email
-                    })
+                    if inactive_user.is_suspended:
+                        messages.error(request, "Your account has been suspended by the administrator. Please contact support.")
+                        return render(request, 'accounts/login.html', {
+                            'form': form,
+                            'show_resend_link': False
+                        })
+                    else:
+                        messages.error(request, "Your account is not active. Please check your email for the activation link.")
+                        return render(request, 'accounts/login.html', {
+                            'form': form,
+                            'show_resend_link': True,
+                            'email': inactive_user.email
+                        })
                 else:
                     messages.error(request, "Invalid username/email or password.")
     else:
@@ -228,6 +235,9 @@ def activate_view(request, uidb64, token):
         user = None
 
     if user is not None and default_token_generator.check_token(user, token):
+        if user.is_suspended:
+            messages.error(request, "This account is suspended and cannot be activated.")
+            return redirect('login')
         user.is_active = True
         user.save()
         login(request, user)
@@ -268,6 +278,9 @@ def resend_activation_view(request):
         if email:
             user = User.objects.filter(email=email, is_active=False).first()
             if user:
+                if user.is_suspended:
+                    messages.error(request, "This account is suspended and cannot be activated.")
+                    return redirect('login')
                 send_activation_email(request, user)
                 messages.success(request, "A new activation link has been sent to your email.")
                 return redirect('activation_sent')

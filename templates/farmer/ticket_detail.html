@@ -1,0 +1,98 @@
+{% extends "farmer/base_farmer.html" %}
+{% load static %}
+
+{% block title %}Ticket #{{ ticket.id }} | AgroConnect{% endblock %}
+
+{% block buyer_content %}
+<div class="mb-4">
+    <a href="{% url 'farmer_support' %}" class="btn btn-light rounded-pill border btn-sm mb-3">
+        <i class="fas fa-arrow-left me-1"></i> Back to Support
+    </a>
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div>
+            <h4 class="fw-bold text-dark mb-1">Ticket #TKT-{{ ticket.id }}</h4>
+            <span class="text-muted font-xs">Opened on {{ ticket.created_at|date:"F d, Y H:i" }}</span>
+        </div>
+        <div>
+            <span class="badge {% if ticket.status == 'OPEN' %}bg-warning text-white{% elif ticket.status == 'IN_PROGRESS' %}bg-info text-white{% elif ticket.status == 'RESOLVED' %}bg-success text-white{% else %}bg-secondary text-white{% endif %} px-3 py-2 rounded-pill font-sm">
+                Status: {{ ticket.get_status_display }}
+            </span>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Ticket thread conversation window -->
+    <div class="col-12 col-lg-8">
+        <div class="agro-card p-0 overflow-hidden d-flex flex-column" style="min-height: 500px; max-height: 700px;">
+            <!-- Message thread header -->
+            <div class="p-3 border-bottom bg-light">
+                <h6 class="fw-bold text-dark mb-0"><i class="fas fa-comments text-success me-2"></i>Inquiry: {{ ticket.subject }}</h6>
+            </div>
+            
+            <!-- Messages scroll container -->
+            <div class="flex-grow-1 p-3 overflow-y-auto bg-light-gray" style="max-height: 480px; overflow-y: auto; background-color: #f8f9fa;">
+                <div class="d-flex flex-column gap-3">
+                    {% for msg in messages_list %}
+                        {% if msg.sender == request.user %}
+                            <!-- Outgoing (Farmer Message) -->
+                            <div class="align-self-end text-end" style="max-width: 75%;">
+                                <div class="p-3 bg-success text-white rounded-3 shadow-sm font-sm text-start" style="border-radius: 18px 18px 0px 18px !important;">
+                                    {{ msg.message }}
+                                </div>
+                                <span class="text-muted font-xs d-block mt-1">You • {{ msg.created_at|date:"M d, H:i" }}</span>
+                            </div>
+                        {% else %}
+                            <!-- Incoming (Admin / Support Message) -->
+                            <div class="align-self-start" style="max-width: 75%;">
+                                <div class="p-3 bg-white text-dark border rounded-3 shadow-sm font-sm" style="border-radius: 18px 18px 18px 0px !important;">
+                                    {{ msg.message }}
+                                </div>
+                                <span class="text-muted font-xs d-block mt-1">Support Team • {{ msg.created_at|date:"M d, H:i" }}</span>
+                            </div>
+                        {% endif %}
+                    {% empty %}
+                        <div class="text-center py-5 text-muted small">No correspondence yet.</div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Reply input card footer -->
+            <div class="p-3 border-top bg-white">
+                {% if ticket.status == 'CLOSED' %}
+                    <div class="alert alert-secondary mb-0 small text-center py-2 mb-2">
+                        This support ticket has been closed. Replying will automatically reopen it.
+                    </div>
+                {% endif %}
+                <form method="POST" action="" class="mt-1">
+                    {% csrf_token %}
+                    <div class="input-group">
+                        <input type="text" name="message_text" class="form-control font-sm rounded-start-pill px-3" placeholder="Type a message to reply..." required>
+                        <button class="btn btn-success rounded-end-pill px-4" type="submit">
+                            <i class="fas fa-paper-plane"></i> Send
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Ticket Sidebar details (Right) -->
+    <div class="col-12 col-lg-4">
+        <div class="agro-card">
+            <h5 class="fw-bold text-dark mb-3">Ticket Information</h5>
+            <hr class="my-3">
+            <div class="lh-lg font-sm text-dark">
+                <strong>Ticket ID:</strong> #TKT-{{ ticket.id }}<br>
+                <strong>Category:</strong> {{ ticket.category }}<br>
+                <strong>Priority:</strong> 
+                <span class="badge bg-light text-dark border px-2 py-1 font-xs">{{ ticket.get_priority_display }}</span><br>
+                <strong>Status:</strong> 
+                <span class="badge {% if ticket.status == 'OPEN' %}bg-warning{% elif ticket.status == 'IN_PROGRESS' %}bg-info{% elif ticket.status == 'RESOLVED' %}bg-success{% else %}bg-secondary{% endif %} text-white font-xs" style="padding: 3px 6px; border-radius: 4px;">{{ ticket.get_status_display }}</span><br>
+                <strong>Date Opened:</strong> {{ ticket.created_at|date:"M d, Y H:i" }}<br>
+                <strong>Last Updated:</strong> {{ ticket.updated_at|date:"M d, Y H:i" }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

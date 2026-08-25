@@ -19,4 +19,5 @@ urlpatterns = [
     path('settings/', farmer_views.farmer_settings, name='farmer_settings'),
     path('notifications/', farmer_views.farmer_notifications, name='farmer_notifications'),
     path('support/', farmer_views.farmer_support, name='farmer_support'),
+    path('support/ticket/<int:ticket_id>/', farmer_views.farmer_ticket_detail, name='farmer_ticket_detail'),
 ]

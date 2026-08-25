@@ -12,6 +12,7 @@ class User(AbstractUser):
         default=AccountType.BUYER
     )
     phone = models.CharField(max_length=20, blank=True, null=True)
+    is_suspended = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.username} ({self.get_account_type_display()})"

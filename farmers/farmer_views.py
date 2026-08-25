@@ -27,6 +27,11 @@ def farmer_required(view_func):
     def wrapper(request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect('login')
+        if getattr(request.user, 'is_suspended', False):
+            from django.contrib.auth import logout
+            logout(request)
+            messages.error(request, "Your account has been suspended by the administrator. Please contact support.")
+            return redirect('login')
         if request.user.account_type != 'FARMER':
             messages.error(request, "Access denied. Only registered farmers can access the Farmer Dashboard.")
             return redirect('dashboard')
@@ -72,10 +77,12 @@ def farmer_dashboard(request):
     context = get_farmer_context(request)
     
     # Basic Metrics
-    total_sales = OrderItem.objects.filter(
+    gross_sales = OrderItem.objects.filter(
         farmer=profile,
         order__status='DELIVERED'
     ).aggregate(sum_sales=Sum('subtotal'))['sum_sales'] or Decimal('0.00')
+    completed_payouts = Payout.objects.filter(farmer=profile, status='COMPLETED').aggregate(sum_amt=Sum('amount'))['sum_amt'] or Decimal('0.00')
+    total_sales = gross_sales - completed_payouts
     
     total_orders = OrderItem.objects.filter(
         farmer=profile
@@ -128,8 +135,7 @@ def farmer_dashboard(request):
     ).order_by('-qty_sold')[:5]
     
     # Financial Payout math
-    completed_earnings = total_sales
-    completed_payouts = Payout.objects.filter(farmer=profile, status='COMPLETED').aggregate(sum_amt=Sum('amount'))['sum_amt'] or Decimal('0.00')
+    completed_earnings = gross_sales
     pending_payouts = Payout.objects.filter(farmer=profile, status='PENDING').aggregate(sum_amt=Sum('amount'))['sum_amt'] or Decimal('0.00')
     available_balance = completed_earnings - completed_payouts - pending_payouts
     
@@ -322,6 +328,25 @@ def farmer_orders(request):
         orders_dict[o.order_number]['items_count'] += item.quantity
         orders_dict[o.order_number]['total_amount'] += item.subtotal
         
+    # Calculate counts for each status tab for this farmer
+    all_farmer_items = OrderItem.objects.filter(farmer=profile).select_related('order')
+    unique_orders = all_farmer_items.values('order__order_number', 'order__status').distinct()
+    
+    counts = {
+        'ALL': 0,
+        'PENDING': 0,
+        'PROCESSING': 0,
+        'SHIPPED': 0,
+        'DELIVERED': 0,
+        'CANCELLED': 0,
+    }
+    
+    for item in unique_orders:
+        status = item['order__status']
+        if status in counts:
+            counts[status] += 1
+        counts['ALL'] += 1
+        
     # Paginate grouped list
     grouped_list = sorted(orders_dict.values(), key=lambda x: x['created_at'], reverse=True)
     paginator = Paginator(grouped_list, 10)
@@ -331,6 +356,7 @@ def farmer_orders(request):
     context.update({
         'page_obj': page_obj,
         'selected_status': status_filter,
+        'counts': counts,
     })
     return render(request, 'farmer/orders.html', context)
 
@@ -451,14 +477,15 @@ def farmer_earnings(request):
     context = get_farmer_context(request)
     
     # Calculations
-    total_sales = OrderItem.objects.filter(
+    gross_sales = OrderItem.objects.filter(
         farmer=profile,
         order__status='DELIVERED'
     ).aggregate(sum_sales=Sum('subtotal'))['sum_sales'] or Decimal('0.00')
     
     completed_payouts = Payout.objects.filter(farmer=profile, status='COMPLETED').aggregate(sum_amt=Sum('amount'))['sum_amt'] or Decimal('0.00')
     pending_payouts = Payout.objects.filter(farmer=profile, status='PENDING').aggregate(sum_amt=Sum('amount'))['sum_amt'] or Decimal('0.00')
-    available_balance = total_sales - completed_payouts - pending_payouts
+    total_sales = gross_sales - completed_payouts
+    available_balance = gross_sales - completed_payouts - pending_payouts
     
     # Monthly / Weekly sales totals
     today = timezone.localdate()
@@ -532,14 +559,15 @@ def farmer_payouts(request):
     context = get_farmer_context(request)
     
     # Calculate Balance
-    total_sales = OrderItem.objects.filter(
+    gross_sales = OrderItem.objects.filter(
         farmer=profile,
         order__status='DELIVERED'
     ).aggregate(sum_sales=Sum('subtotal'))['sum_sales'] or Decimal('0.00')
     
     completed_payouts = Payout.objects.filter(farmer=profile, status='COMPLETED').aggregate(sum_amt=Sum('amount'))['sum_amt'] or Decimal('0.00')
     pending_payouts = Payout.objects.filter(farmer=profile, status='PENDING').aggregate(sum_amt=Sum('amount'))['sum_amt'] or Decimal('0.00')
-    available_balance = total_sales - completed_payouts - pending_payouts
+    total_sales = gross_sales - completed_payouts
+    available_balance = gross_sales - completed_payouts - pending_payouts
     
     if request.method == 'POST':
         form = PayoutRequestForm(request.POST)
@@ -801,7 +829,23 @@ def farmer_support(request):
     if request.method == 'POST':
         form = SupportForm(request.POST)
         if form.is_valid():
-            form.save()
+            contact_msg = form.save()
+            
+            # Create a corresponding SupportTicket for Admin dashboard
+            from admin_panel.models import SupportTicket, SupportTicketMessage
+            ticket = SupportTicket.objects.create(
+                user=request.user,
+                subject=contact_msg.subject or "Farmer Support Inquiry",
+                category="Farmer Support",
+                priority="MEDIUM",
+                status="OPEN"
+            )
+            SupportTicketMessage.objects.create(
+                ticket=ticket,
+                sender=request.user,
+                message=contact_msg.message
+            )
+            
             messages.success(request, "Your support message has been sent successfully. We will get back to you shortly.")
             return redirect('farmer_support')
         else:
@@ -813,7 +857,40 @@ def farmer_support(request):
             'phone': request.user.phone or request.user.farmer_profile.phone
         })
         
+    from admin_panel.models import SupportTicket
+    tickets = SupportTicket.objects.filter(user=request.user).order_by('-created_at')
+        
     context.update({
         'form': form,
+        'tickets': tickets,
     })
     return render(request, 'farmer/support.html', context)
+
+@login_required
+@farmer_required
+def farmer_ticket_detail(request, ticket_id):
+    from admin_panel.models import SupportTicket, SupportTicketMessage
+    ticket = get_object_or_404(SupportTicket, id=ticket_id, user=request.user)
+    
+    if request.method == 'POST':
+        reply_text = request.POST.get('message_text')
+        if reply_text:
+            SupportTicketMessage.objects.create(
+                ticket=ticket,
+                sender=request.user,
+                message=reply_text
+            )
+            # Reopen/update status if it was resolved or closed
+            if ticket.status in ['RESOLVED', 'CLOSED']:
+                ticket.status = 'OPEN'
+            ticket.save()
+            messages.success(request, "Your reply has been submitted successfully.")
+            return redirect('farmer_ticket_detail', ticket_id=ticket.id)
+            
+    messages_list = ticket.messages.all().select_related('sender').order_by('created_at')
+    context = get_farmer_context(request)
+    context.update({
+        'ticket': ticket,
+        'messages_list': messages_list,
+    })
+    return render(request, 'farmer/ticket_detail.html', context)

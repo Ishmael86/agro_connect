@@ -42,7 +42,12 @@ TESTIMONIALS = [
 ]
 
 def home_view(request):
-    featured_products = Product.objects.filter(is_featured=True, is_available=True).select_related('farmer', 'farmer__user')[:6]
+    featured_products = Product.objects.filter(
+        is_featured=True, 
+        is_available=True, 
+        farmer__user__is_active=True, 
+        farmer__user__is_suspended=False
+    ).select_related('farmer', 'farmer__user')[:6]
     categories = Category.objects.annotate(product_count=Count('products'))[:8] # Show up to 8 categories
 
     # Dynamic Statistics calculations from DB with realistic baselines
@@ -63,7 +68,11 @@ def home_view(request):
     return render(request, 'core/home.html', context)
 
 def product_list_view(request):
-    products_query = Product.objects.filter(is_available=True).select_related('farmer', 'farmer__user', 'category')
+    products_query = Product.objects.filter(
+        is_available=True,
+        farmer__user__is_active=True,
+        farmer__user__is_suspended=False
+    ).select_related('farmer', 'farmer__user', 'category')
     categories = Category.objects.annotate(product_count=Count('products'))
     
     # Filtering parameters
@@ -162,8 +171,19 @@ def product_list_view(request):
 
 def product_detail_view(request, slug):
     product = get_object_or_404(Product.objects.select_related('farmer', 'farmer__user', 'category'), slug=slug)
-    # Related products from same category, excluding current product
-    related_products = Product.objects.filter(category=product.category, is_available=True).exclude(id=product.id)[:4]
+    
+    # Block access if farmer user is inactive or suspended
+    if not product.farmer.user.is_active or product.farmer.user.is_suspended:
+        messages.error(request, "This product is currently not available.")
+        return redirect('product_list')
+        
+    # Related products from same category, excluding current product and suspended farmers
+    related_products = Product.objects.filter(
+        category=product.category, 
+        is_available=True,
+        farmer__user__is_active=True,
+        farmer__user__is_suspended=False
+    ).exclude(id=product.id)[:4]
     
     context = {
         'product': product,
@@ -180,16 +200,31 @@ def category_list_view(request):
     return render(request, 'marketplace/category_list.html', context)
 
 def about_view(request):
+    from admin_panel.models import Page
+    page = Page.objects.filter(slug='about-us').first()
     context = {
-        'breadcrumbs': [('About Us', '/about/')]
+        'breadcrumbs': [('About Us', '/about/')],
+        'page': page
     }
     return render(request, 'core/about.html', context)
 
 def how_it_works_view(request):
+    from admin_panel.models import Page
+    page = Page.objects.filter(slug='how-it-works').first()
     context = {
-        'breadcrumbs': [('How It Works', '/how-it-works/')]
+        'breadcrumbs': [('How It Works', '/how-it-works/')],
+        'page': page
     }
     return render(request, 'core/how_it_works.html', context)
+
+def public_page_view(request, slug):
+    from admin_panel.models import Page
+    page = get_object_or_404(Page, slug=slug)
+    context = {
+        'page': page,
+        'breadcrumbs': [(page.title, f'/{slug}/')]
+    }
+    return render(request, 'core/public_page.html', context)
 
 def contact_view(request):
     if request.method == 'POST':
@@ -217,15 +252,18 @@ def search_view(request):
 
     if query:
         products = Product.objects.filter(
-            Q(name__icontains=query) |
-            Q(description__icontains=query)
+            Q(name__icontains=query) | Q(description__icontains=query),
+            farmer__user__is_active=True,
+            farmer__user__is_suspended=False
         ).select_related('farmer', 'farmer__user')[:6]
 
         farmers = FarmerProfile.objects.filter(
             Q(farm_name__icontains=query) |
             Q(description__icontains=query) |
             Q(user__first_name__icontains=query) |
-            Q(user__last_name__icontains=query)
+            Q(user__last_name__icontains=query),
+            user__is_active=True,
+            user__is_suspended=False
         )[:6]
 
         categories = Category.objects.filter(

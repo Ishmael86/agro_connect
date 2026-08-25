@@ -23,6 +23,7 @@ urlpatterns = [
     path('analytics/', views.admin_analytics, name='admin_analytics'),
     path('promotions/', views.admin_promotions, name='admin_promotions'),
     path('pages/', views.admin_pages, name='admin_pages'),
+    path('pages/<slug:slug>/edit/', views.admin_edit_page, name='admin_edit_page'),
     path('settings/', views.admin_settings, name='admin_settings'),
     path('notifications/', views.admin_notifications, name='admin_notifications'),
     path('activity-logs/', views.admin_logs, name='admin_logs'),
