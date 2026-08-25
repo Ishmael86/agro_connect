@@ -50,6 +50,30 @@
                             <td class="text-muted">Payment Method</td>
                             <td class="fw-semibold text-dark">{{ order.get_payment_method_display }}</td>
                         </tr>
+                        {% if order.payment_method == 'MOBILE_MONEY' %}
+                        <tr>
+                            <td class="text-muted">MoMo Provider</td>
+                            <td class="fw-semibold text-dark">{{ order.momo_provider }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">MoMo Wallet</td>
+                            <td class="fw-semibold text-dark">{% if order.momo_number %}+233 {{ order.momo_number|slice:"1:3" }} **** {{ order.momo_number|slice:"-3:" }}{% else %}N/A{% endif %}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Transaction ID</td>
+                            <td class="fw-semibold text-success font-monospace">{{ order.transaction_id }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr>
+                            <td class="text-muted">Payment Status</td>
+                            <td>
+                                {% if order.payment_status == 'PAID' %}
+                                    <span class="badge bg-success text-white px-3 py-2 fw-bold" style="font-size: 0.75rem;">Paid</span>
+                                {% else %}
+                                    <span class="badge bg-secondary text-white px-3 py-2 fw-bold" style="font-size: 0.75rem;">Unpaid</span>
+                                {% endif %}
+                            </td>
+                        </tr>
                         <tr>
                             <td class="text-muted">Order Status</td>
                             <td>
