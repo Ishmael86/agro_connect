@@ -334,6 +334,36 @@ def farmer_orders(request):
     })
     return render(request, 'farmer/orders.html', context)
 
+def send_order_status_update_email(request, order, msg):
+    from django.core.mail import EmailMessage
+    from django.template.loader import render_to_string
+    
+    subject = f"AgroConnect Order Update - {order.order_number}"
+    recipient_email = order.user.email if (order.user and order.user.email) else "buyer@example.com"
+    
+    dashboard_url = request.build_absolute_uri(
+        reverse('buyer_order_detail', kwargs={'order_number': order.order_number})
+    )
+    
+    html_body = render_to_string('orders/email_status_update.html', {
+        'order': order,
+        'msg': msg,
+        'dashboard_url': dashboard_url
+    })
+    
+    email = EmailMessage(
+        subject=subject,
+        body=html_body,
+        from_email='noreply@agroconnect.com',
+        to=[recipient_email]
+    )
+    email.content_subtype = "html"
+    
+    try:
+        email.send(fail_silently=True)
+    except Exception:
+        pass
+
 @login_required
 @farmer_required
 def farmer_order_detail(request, order_number):
@@ -373,11 +403,15 @@ def farmer_order_detail(request, order_number):
         elif action == 'mark_paid':
             order.payment_status = 'PAID'
             order.save()
+            # Notify on payment status update
+            send_order_status_update_email(request, order, "Order payment status was marked as PAID.")
             messages.success(request, "Order payment status marked as PAID!")
             return redirect('farmer_order_detail', order_number=order.order_number)
         elif action == 'mark_unpaid':
             order.payment_status = 'UNPAID'
             order.save()
+            # Notify on payment status update
+            send_order_status_update_email(request, order, "Order payment status was marked as UNPAID.")
             messages.success(request, "Order payment status marked as UNPAID!")
             return redirect('farmer_order_detail', order_number=order.order_number)
             
@@ -392,6 +426,9 @@ def farmer_order_detail(request, order_number):
                 message=f"Status: {order.get_status_display()}. {msg}",
                 notification_type='ORDER_UPDATE'
             )
+            
+            # Send email update to the buyer
+            send_order_status_update_email(request, order, msg)
             
             messages.success(request, f"Order status updated to {order.get_status_display()} successfully!")
             return redirect('farmer_order_detail', order_number=order.order_number)

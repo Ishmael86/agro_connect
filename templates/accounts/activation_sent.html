@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Verification Email Sent | AgroConnect{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <div class="card border-0 shadow p-5" style="border-radius: var(--radius-lg);">
+                <div class="mb-4">
+                    <i class="fas fa-envelope-open-text text-success" style="font-size: 5rem;"></i>
+                </div>
+                <h1 class="h3 fw-bold mb-3">Check Your Email</h1>
+                <p class="text-muted mb-4">We have sent a secure verification link to your email address. Please click the link to activate your account and complete registration.</p>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'login' %}" class="btn btn-primary-green py-2">Back to Login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

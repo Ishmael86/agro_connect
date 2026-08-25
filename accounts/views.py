@@ -6,6 +6,11 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 from django.db import transaction
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from django.urls import reverse
 from .forms import LoginForm, RegistrationForm
 from .models import Wishlist
 from farmers.models import FarmerProfile
@@ -73,11 +78,50 @@ def login_view(request):
                     return redirect('farmer_dashboard')
                 return redirect('home')
             else:
-                messages.error(request, "Invalid username/email or password.")
+                # Check if account exists but is inactive
+                inactive_user = None
+                if '@' in username:
+                    inactive_user = User.objects.filter(email=username, is_active=False).first()
+                else:
+                    inactive_user = User.objects.filter(username=username, is_active=False).first()
+                
+                if inactive_user and inactive_user.check_password(password):
+                    messages.error(request, "Your account is not active. Please check your email for the activation link.")
+                    return render(request, 'accounts/login.html', {
+                        'form': form,
+                        'show_resend_link': True,
+                        'email': inactive_user.email
+                    })
+                else:
+                    messages.error(request, "Invalid username/email or password.")
     else:
         form = LoginForm()
 
     return render(request, 'accounts/login.html', {'form': form})
+
+def send_activation_email(request, user):
+    token = default_token_generator.make_token(user)
+    uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+    activation_link = request.build_absolute_uri(
+        reverse('activate', kwargs={'uidb64': uidb64, 'token': token})
+    )
+    
+    subject = "Verify your AgroConnect Account"
+    message_body = (
+        f"Hello {user.first_name or user.username},\n\n"
+        f"Thank you for registering on AgroConnect!\n\n"
+        f"Please click the link below to verify your email address and activate your account:\n"
+        f"{activation_link}\n\n"
+        f"If you did not request this, please ignore this email.\n\n"
+        f"Best regards,\nThe AgroConnect Team"
+    )
+    send_mail(
+        subject,
+        message_body,
+        'noreply@agroconnect.com',
+        [user.email],
+        fail_silently=True
+    )
 
 def register_view(request):
     if request.user.is_authenticated:
@@ -87,8 +131,10 @@ def register_view(request):
         form = RegistrationForm(request.POST)
         if form.is_valid():
             with transaction.atomic():
-                # Save the user (inactive/active)
+                # Save the user as inactive until email is verified
                 user = form.save(commit=False)
+                user.is_active = False
+                
                 # Split full_name into first and last name
                 full_name = form.cleaned_data['full_name']
                 names = full_name.split(' ', 1)
@@ -111,30 +157,11 @@ def register_view(request):
                         verified=False
                     )
 
-                # Log the user in directly after registering
-                login(request, user)
-                
-                # Merge guest cart
-                guest_cart_id = request.session.get('cart_id')
-                if guest_cart_id:
-                    guest_cart = Cart.objects.filter(id=guest_cart_id).first()
-                    if guest_cart:
-                        user_cart, created = Cart.objects.get_or_create(user=user)
-                        for item in guest_cart.items.all():
-                            existing_item = user_cart.items.filter(product=item.product).first()
-                            if existing_item:
-                                existing_item.quantity += item.quantity
-                                if existing_item.quantity > item.product.stock_quantity:
-                                    existing_item.quantity = item.product.stock_quantity
-                                existing_item.save()
-                            else:
-                                item.cart = user_cart
-                                item.save()
-                        guest_cart.delete()
-                        request.session.pop('cart_id', None)
+                # Send activation email
+                send_activation_email(request, user)
 
-                messages.success(request, "Registration successful! Welcome to AgroConnect.")
-                return redirect('home')
+                messages.success(request, "Registration successful! Please check your email to activate your account.")
+                return redirect('activation_sent')
         else:
             messages.error(request, "Please correct the errors below.")
     else:
@@ -189,3 +216,66 @@ def ajax_toggle_wishlist(request):
         'status': 'added',
         'message': f'{product.name} added to wishlist.'
     })
+
+def activation_sent_view(request):
+    return render(request, 'accounts/activation_sent.html')
+
+def activate_view(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+        login(request, user)
+        
+        # Merge guest cart
+        guest_cart_id = request.session.get('cart_id')
+        if guest_cart_id:
+            with transaction.atomic():
+                guest_cart = Cart.objects.filter(id=guest_cart_id).first()
+                if guest_cart:
+                    user_cart, created = Cart.objects.get_or_create(user=user)
+                    for item in guest_cart.items.all():
+                        existing_item = user_cart.items.filter(product=item.product).first()
+                        if existing_item:
+                            existing_item.quantity += item.quantity
+                            if existing_item.quantity > item.product.stock_quantity:
+                                existing_item.quantity = item.product.stock_quantity
+                            existing_item.save()
+                        else:
+                            item.cart = user_cart
+                            item.save()
+                    guest_cart.delete()
+                    request.session.pop('cart_id', None)
+
+        messages.success(request, f"Your email has been verified! Welcome to AgroConnect, {user.first_name or user.username}.")
+        if user.is_superuser or user.is_staff:
+            return redirect('admin_dashboard')
+        if user.account_type == 'FARMER':
+            return redirect('farmer_dashboard')
+        return redirect('home')
+    else:
+        messages.error(request, "The activation link is invalid or expired. Please request a new one.")
+        return redirect('login')
+
+def resend_activation_view(request):
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip()
+        if email:
+            user = User.objects.filter(email=email, is_active=False).first()
+            if user:
+                send_activation_email(request, user)
+                messages.success(request, "A new activation link has been sent to your email.")
+                return redirect('activation_sent')
+            else:
+                messages.warning(request, "This email is either already verified or not registered.")
+                return redirect('login')
+        else:
+            messages.error(request, "Please enter a valid email address.")
+    
+    email_initial = request.GET.get('email', '')
+    return render(request, 'accounts/resend_activation.html', {'email': email_initial})

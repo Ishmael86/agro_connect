@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>AgroConnect Order Invoice</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #f7fafc;
+            margin: 0;
+            padding: 0;
+            color: #2d3748;
+        }
+        .container {
+            max-width: 600px;
+            margin: 30px auto;
+            background: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+        }
+        .header {
+            background-color: #0E5A34;
+            color: #ffffff;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+        }
+        .header p {
+            margin: 5px 0 0;
+            font-size: 14px;
+            opacity: 0.85;
+        }
+        .content {
+            padding: 30px;
+        }
+        .invoice-details {
+            margin-bottom: 25px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .invoice-details table {
+            width: 100%;
+        }
+        .invoice-details td {
+            padding: 4px 0;
+        }
+        .invoice-title {
+            font-size: 12px;
+            color: #718096;
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #edf2f7;
+            padding-bottom: 5px;
+        }
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .items-table th {
+            text-align: left;
+            background-color: #f7fafc;
+            padding: 10px;
+            font-size: 12px;
+            color: #4a5568;
+            font-weight: bold;
+            border-bottom: 2px solid #edf2f7;
+        }
+        .items-table td {
+            padding: 12px 10px;
+            font-size: 14px;
+            border-bottom: 1px solid #edf2f7;
+        }
+        .text-right {
+            text-align: right;
+        }
+        .totals-section {
+            width: 100%;
+            margin-top: 15px;
+        }
+        .totals-section td {
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+        .totals-section .total-row {
+            font-size: 18px;
+            font-weight: bold;
+            color: #0E5A34;
+            border-top: 2px solid #edf2f7;
+        }
+        .footer {
+            background-color: #f7fafc;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #a0aec0;
+            border-top: 1px solid #edf2f7;
+        }
+        .footer a {
+            color: #0E5A34;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>AgroConnect</h1>
+            <p>Direct from local farms to your doorstep</p>
+        </div>
+        <div class="content">
+            <div class="invoice-details">
+                <p>Hello <strong>{{ order.full_name }}</strong>,</p>
+                <p>Thank you for shopping on AgroConnect! Your order has been placed successfully. A copy of the PDF invoice is attached to this email.</p>
+                
+                <table style="margin-top: 20px;">
+                    <tr>
+                        <td style="width: 50%; vertical-align: top;">
+                            <div class="invoice-title">Order Information</div>
+                            <strong>Order Number:</strong> {{ order.order_number }}<br>
+                            <strong>Date:</strong> {{ order.created_at|date:"M d, Y" }}<br>
+                            <strong>Payment Method:</strong> {{ order.get_payment_method_display }}
+                        </td>
+                        <td style="width: 50%; vertical-align: top; padding-left: 20px;">
+                            <div class="invoice-title">Delivery Address</div>
+                            {{ order.delivery_address }}<br>
+                            {{ order.city }}, {{ order.region }}<br>
+                            <strong>Phone:</strong> {{ order.phone }}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="invoice-title">Items Ordered</div>
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Farm</th>
+                        <th class="text-right">Price</th>
+                        <th style="text-align: center;">Qty</th>
+                        <th class="text-right">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td><strong>{{ item.product.name }}</strong></td>
+                        <td>{{ item.farmer.farm_name }}</td>
+                        <td class="text-right">GHS {{ item.unit_price|floatformat:2 }}</td>
+                        <td style="text-align: center;">{{ item.quantity }}</td>
+                        <td class="text-right">GHS {{ item.subtotal|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <table class="totals-section">
+                <tr>
+                    <td style="width: 60%;"></td>
+                    <td style="width: 20%; color: #718096;">Subtotal:</td>
+                    <td style="width: 20%;" class="text-right">GHS {{ order.subtotal|floatformat:2 }}</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td style="color: #718096;">Delivery:</td>
+                    <td class="text-right">
+                        {% if order.delivery_fee == 0 %}
+                            FREE
+                        {% else %}
+                            GHS {{ order.delivery_fee|floatformat:2 }}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr class="total-row">
+                    <td></td>
+                    <td>Total:</td>
+                    <td class="text-right">GHS {{ order.total|floatformat:2 }}</td>
+                </tr>
+            </table>
+        </div>
+        <div class="footer">
+            <p>If you have any questions, feel free to contact us at <a href="mailto:support@agroconnect.com.gh">support@agroconnect.com.gh</a></p>
+            <p>&copy; 2026 AgroConnect. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -116,10 +116,21 @@
             <div class="lh-lg font-sm text-dark">
                 <strong>Payment Method:</strong> {{ order.get_payment_method_display }}<br>
                 <strong>Payment Status:</strong> 
-                {% if order.status == 'DELIVERED' %}
+                {% if order.payment_status == 'PAID' %}
                     <span class="text-success fw-bold">Paid</span>
+                {% elif order.payment_status == 'REFUNDED' %}
+                    <span class="text-info fw-bold">Refunded</span>
                 {% else %}
-                    <span class="text-warning fw-semibold">Awaiting Settlement</span>
+                    <span class="text-warning fw-semibold">Unpaid</span>
+                {% endif %}
+                {% if order.transaction_id %}
+                    <br><strong>Transaction Reference:</strong> {{ order.transaction_id }}
+                {% endif %}
+                {% if order.momo_provider %}
+                    <br><strong>Payment Provider:</strong> {{ order.momo_provider }}
+                {% endif %}
+                {% if order.momo_number %}
+                    <br><strong>Account/Card:</strong> {{ order.momo_number }}
                 {% endif %}
             </div>
         </div>

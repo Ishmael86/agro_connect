@@ -5,6 +5,9 @@ from . import buyer_views
 urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('register/', views.register_view, name='register'),
+    path('activate/<str:uidb64>/<str:token>/', views.activate_view, name='activate'),
+    path('resend-activation/', views.resend_activation_view, name='resend_activation'),
+    path('activation-sent/', views.activation_sent_view, name='activation_sent'),
     path('logout/', views.logout_view, name='logout'),
     path('ajax-wishlist-toggle/', views.ajax_toggle_wishlist, name='ajax_toggle_wishlist'),
     path('dashboard/', views.dashboard_view, name='dashboard'),

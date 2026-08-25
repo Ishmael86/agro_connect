@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>AgroConnect Order Update</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #f7fafc;
+            margin: 0;
+            padding: 0;
+            color: #2d3748;
+        }
+        .container {
+            max-width: 600px;
+            margin: 30px auto;
+            background: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+        }
+        .header {
+            background-color: #0E5A34;
+            color: #ffffff;
+            padding: 35px 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 700;
+        }
+        .content {
+            padding: 35px 30px;
+        }
+        .greeting {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .intro-text {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #4a5568;
+            margin-bottom: 25px;
+        }
+        .status-card {
+            background-color: #f7fafc;
+            border-radius: 6px;
+            padding: 20px;
+            border: 1px solid #edf2f7;
+            margin-bottom: 25px;
+        }
+        .status-row {
+            display: table;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .status-label {
+            display: table-cell;
+            width: 120px;
+            font-size: 12px;
+            color: #718096;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        .status-value {
+            display: table-cell;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: bold;
+            border-radius: 20px;
+            text-transform: uppercase;
+        }
+        /* Custom Status badge colors */
+        .status-pending { background-color: #feebc8; color: #c05621; }
+        .status-processing { background-color: #e2e8f0; color: #4a5568; }
+        .status-shipped { background-color: #ebf8ff; color: #2b6cb0; }
+        .status-delivered { background-color: #c6f6d5; color: #22543d; }
+        .status-cancelled { background-color: #fed7d7; color: #9b2c2c; }
+        
+        .message-box {
+            font-style: italic;
+            font-size: 14px;
+            color: #4a5568;
+            border-left: 3px solid #0E5A34;
+            padding-left: 15px;
+            margin: 15px 0 0 0;
+        }
+        .btn-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .btn-action {
+            display: inline-block;
+            background-color: #0E5A34;
+            color: #ffffff !important;
+            padding: 12px 25px;
+            font-size: 14px;
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .footer {
+            background-color: #f7fafc;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #a0aec0;
+            border-top: 1px solid #edf2f7;
+        }
+        .footer a {
+            color: #0E5A34;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Order Status Updated</h1>
+        </div>
+        <div class="content">
+            <div class="greeting">Hello {{ order.full_name }},</div>
+            <div class="intro-text">
+                Your order status on AgroConnect has been updated. Below are the new status details:
+            </div>
+            
+            <div class="status-card">
+                <div class="status-row">
+                    <div class="status-label">Order Number:</div>
+                    <div class="status-value">{{ order.order_number }}</div>
+                </div>
+                <div class="status-row">
+                    <div class="status-label">New Status:</div>
+                    <div class="status-value">
+                        <span class="badge 
+                            {% if order.status == 'PENDING' %}status-pending
+                            {% elif order.status == 'PROCESSING' %}status-processing
+                            {% elif order.status == 'SHIPPED' %}status-shipped
+                            {% elif order.status == 'DELIVERED' %}status-delivered
+                            {% else %}status-cancelled{% endif %}">
+                            {{ order.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+                <div class="status-row">
+                    <div class="status-label">Payment:</div>
+                    <div class="status-value">{{ order.get_payment_status_display }}</div>
+                </div>
+                
+                <div class="message-box">
+                    "{{ msg }}"
+                </div>
+            </div>
+
+            <div class="btn-container">
+                <a href="{{ dashboard_url }}" class="btn-action">View Order Details</a>
+            </div>
+        </div>
+        <div class="footer">
+            <p>If you have any questions, feel free to contact us at <a href="mailto:support@agroconnect.com.gh">support@agroconnect.com.gh</a></p>
+            <p>&copy; 2026 AgroConnect. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

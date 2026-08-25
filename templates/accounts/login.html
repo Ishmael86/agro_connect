@@ -57,6 +57,17 @@
                     <p class="text-muted">Login to your account and continue connecting.</p>
                 </div>
 
+                {% if show_resend_link %}
+                <div class="alert alert-warning border-0 small py-3 mb-4 d-flex align-items-start gap-2" style="border-radius: var(--radius-sm); background: #fff3cd; color: #664d03;">
+                    <i class="fas fa-exclamation-triangle mt-1"></i>
+                    <div>
+                        <strong>Account not activated yet.</strong> Please verify your email first.
+                        <br>
+                        <a href="{% url 'resend_activation' %}?email={{ email }}" class="alert-link fw-bold text-success text-decoration-underline d-inline-block mt-1">Resend verification email</a>
+                    </div>
+                </div>
+                {% endif %}
+
                 <form action="{% url 'login' %}" method="POST" class="needs-validation" novalidate>
                     {% csrf_token %}
                     

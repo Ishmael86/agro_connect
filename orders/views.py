@@ -11,36 +11,46 @@ from .models import Order, OrderItem
 from .forms import CheckoutForm
 
 def send_order_confirmation_email(order, user_email):
-    from django.core.mail import send_mail
-    subject = f"Order Confirmation - {order.order_number}"
-    message_body = (
-        f"Hello {order.full_name},\n\n"
-        f"Thank you for shopping on AgroConnect! Your order has been successfully placed.\n\n"
-        f"Order Details:\n"
-        f"- Order Number: {order.order_number}\n"
-        f"- Total Amount: GHS {order.total:.2f}\n"
-        f"- Payment Method: {order.get_payment_method_display()}\n"
-    )
-    if order.payment_method in (Order.PaymentMethodChoices.MOBILE_MONEY, Order.PaymentMethodChoices.CARD_PAYMENT) and order.payment_status == Order.PaymentStatusChoices.PAID:
-        message_body += (
-            f"- Payment Channel: {order.momo_provider or 'Paystack'}\n"
-            f"- Reference/Card: {order.momo_number or 'N/A'}\n"
-            f"- Transaction ID: {order.transaction_id}\n"
-        )
-    message_body += (
-        f"- Delivery Address: {order.delivery_address}, {order.city}, {order.region}\n\n"
-        f"We are processing your order and will contact you shortly for delivery.\n\n"
-        f"Best regards,\nThe AgroConnect Team"
-    )
+    from django.core.mail import EmailMessage
+    from django.template.loader import render_to_string, get_template
+    from io import BytesIO
+    from xhtml2pdf import pisa
+    
+    subject = f"AgroConnect Order Invoice - {order.order_number}"
     recipient_email = user_email if user_email else "buyer@example.com"
+    
+    # 1. Generate HTML email body
+    items = order.items.all().select_related('product', 'farmer')
+    html_body = render_to_string('orders/email_invoice.html', {
+        'order': order,
+        'items': items
+    })
+    
+    email = EmailMessage(
+        subject=subject,
+        body=html_body,
+        from_email='noreply@agroconnect.com',
+        to=[recipient_email]
+    )
+    email.content_subtype = "html" # Send as HTML
+    
+    # 2. Render PDF invoice & attach
     try:
-        send_mail(
-            subject,
-            message_body,
-            'noreply@agroconnect.com',
-            [recipient_email],
-            fail_silently=True
-        )
+        pdf_template = get_template('buyer/invoice_pdf.html')
+        pdf_html = pdf_template.render({
+            'order': order,
+            'items': items
+        })
+        pdf_result = BytesIO()
+        pdf = pisa.pisaDocument(BytesIO(pdf_html.encode("UTF-8")), pdf_result)
+        
+        if not pdf.err:
+            email.attach(f"Invoice-{order.order_number}.pdf", pdf_result.getvalue(), "application/pdf")
+    except Exception:
+        pass
+        
+    try:
+        email.send(fail_silently=True)
     except Exception:
         pass
 
