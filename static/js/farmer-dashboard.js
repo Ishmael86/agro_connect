@@ -19,30 +19,84 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // 2. Crop Image Upload Preview
-    const imageUploadInput = document.querySelector('input[type="file"][name="main_image"]');
-    const imagePreviewContainer = document.getElementById('imagePreview');
-    
-    if (imageUploadInput && imagePreviewContainer) {
-        imageUploadInput.addEventListener('change', function() {
-            const file = this.files[0];
-            if (file) {
-                // Validate file size (max 5MB)
+    const mainImageInput = document.querySelector('input[name="main_image"]');
+    const additionalImagesInput = document.querySelector('input[name="images"]');
+    const previewContainer = document.getElementById('imagePreview');
+
+    if (previewContainer) {
+        // Save initial HTML to fallback to if no new files are chosen
+        previewContainer.dataset.existingPreview = previewContainer.innerHTML;
+
+        function updatePreviews() {
+            previewContainer.innerHTML = '';
+            let hasImages = false;
+
+            // Handle main cover image preview
+            if (mainImageInput && mainImageInput.files && mainImageInput.files[0]) {
+                const file = mainImageInput.files[0];
                 if (file.size > 5 * 1024 * 1024) {
-                    alert('Image file size must be less than 5MB.');
-                    this.value = '';
-                    imagePreviewContainer.innerHTML = '';
-                    return;
+                    alert('Cover Image file size must be less than 5MB.');
+                    mainImageInput.value = '';
+                } else {
+                    hasImages = true;
+                    const previewDiv = document.createElement('div');
+                    previewDiv.className = 'w-100 mb-3 text-start';
+                    previewDiv.innerHTML = `
+                        <span class="text-success font-xs fw-bold d-block mb-1">New Cover Image:</span>
+                        <img id="main-image-preview-el" class="img-thumbnail rounded-3 shadow-sm" style="max-height: 160px; object-fit: cover; width: 100%;">
+                    `;
+                    previewContainer.appendChild(previewDiv);
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        document.getElementById('main-image-preview-el').src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
                 }
-                
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    imagePreviewContainer.innerHTML = `<img src="${e.target.result}" class="img-thumbnail rounded-3 shadow-sm" style="max-height: 200px; object-fit: cover; width: 100%;">`;
-                };
-                reader.readAsDataURL(file);
-            } else {
-                imagePreviewContainer.innerHTML = '';
             }
-        });
+
+            // Handle additional images previews
+            if (additionalImagesInput && additionalImagesInput.files && additionalImagesInput.files.length > 0) {
+                const addDiv = document.createElement('div');
+                addDiv.className = 'w-100 text-start';
+                addDiv.innerHTML = `
+                    <span class="text-success font-xs fw-bold d-block mb-1">New Additional Images:</span>
+                    <div class="d-flex gap-2 flex-wrap" id="additional-previews-container"></div>
+                `;
+                previewContainer.appendChild(addDiv);
+                
+                const container = document.getElementById('additional-previews-container');
+                
+                Array.from(additionalImagesInput.files).forEach((file, index) => {
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert(`Additional image "${file.name}" must be less than 5MB.`);
+                        return;
+                    }
+                    hasImages = true;
+                    const imgEl = document.createElement('img');
+                    imgEl.className = 'img-thumbnail rounded-2 shadow-sm';
+                    imgEl.style.cssText = 'width: 72px; height: 72px; object-fit: cover;';
+                    container.appendChild(imgEl);
+
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        imgEl.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            if (!hasImages) {
+                previewContainer.innerHTML = previewContainer.dataset.existingPreview;
+            }
+        }
+
+        if (mainImageInput) {
+            mainImageInput.addEventListener('change', updatePreviews);
+        }
+        if (additionalImagesInput) {
+            additionalImagesInput.addEventListener('change', updatePreviews);
+        }
     }
 
     // 3. Auto Scroll messages in chat threads

@@ -9,8 +9,6 @@
 
 {% block content %}
 <div class="container my-5">
-    <!-- Render Django messages aligned in layout container -->
-    {% include 'partials/messages.html' %}
 
     <!-- Mobile Header Toggler Bar (Screen < 992px Only) -->
     <div class="d-flex d-lg-none justify-content-between align-items-center bg-white p-3 rounded-3 shadow-sm mb-4 border">
@@ -153,7 +151,7 @@
             <!-- Desktop Header Header (Screen >= 992px Only) -->
             <div class="d-none d-lg-flex justify-content-between align-items-center bg-white p-4 rounded-3 shadow-sm mb-4 border" style="border-radius: var(--agro-radius-lg) !important;">
                 <div>
-                    <h5 class="fw-bold text-dark mb-1"><span id="farmer-greeting-text">Hello</span>, {{ request.user.first_name|default:request.user.username }}! 👋</h5>
+                    <h5 class="fw-bold text-dark mb-1"><span id="farmer-greeting-text">Hello</span>, {{ request.user.first_name|default:request.user.username }}!</h5>
                     <span class="text-muted font-xs">Here is what is happening with your farm business today.</span>
                     <script>
                         (function() {

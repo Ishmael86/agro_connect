@@ -17,13 +17,24 @@ class FarmerProfileForm(forms.ModelForm):
             'cover_image': forms.ClearableFileInput(attrs={'class': 'form-control rounded-pill'}),
         }
 
-class ProductForm(forms.ModelForm):
-    # Use a widget that explicitly allows multiple file selection
-    class MultiFileInput(forms.ClearableFileInput):
-        allow_multiple_selected = True
+class MultipleFileInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
 
-    images = forms.FileField(
-        widget=MultiFileInput(attrs={'class': 'form-control rounded-pill', 'multiple': True}),
+class MultipleFileField(forms.FileField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("widget", MultipleFileInput(attrs={"multiple": True, "class": "form-control rounded-pill"}))
+        super().__init__(*args, **kwargs)
+
+    def clean(self, data, initial=None):
+        single_file_clean = super().clean
+        if isinstance(data, (list, tuple)):
+            result = [single_file_clean(d, initial) for d in data]
+        else:
+            result = single_file_clean(data, initial)
+        return result
+
+class ProductForm(forms.ModelForm):
+    images = MultipleFileField(
         required=False,
         help_text='Upload one or more product images (JPG/PNG).'
     )
