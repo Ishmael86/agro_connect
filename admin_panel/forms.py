@@ -10,14 +10,13 @@ User = get_user_model()
 class AdminUserForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email', 'phone', 'account_type', 'is_active']
+        fields = ['first_name', 'last_name', 'email', 'phone', 'account_type']
         widgets = {
             'first_name': forms.TextInput(attrs={'class': 'form-control rounded-pill px-3'}),
             'last_name': forms.TextInput(attrs={'class': 'form-control rounded-pill px-3'}),
             'email': forms.EmailInput(attrs={'class': 'form-control rounded-pill px-3'}),
             'phone': forms.TextInput(attrs={'class': 'form-control rounded-pill px-3'}),
             'account_type': forms.Select(attrs={'class': 'form-select rounded-pill px-3'}),
-            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
 class CategoryForm(forms.ModelForm):
