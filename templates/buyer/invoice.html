@@ -144,13 +144,14 @@
             <table class="table align-middle">
                 <thead>
                     <tr>
-                        <th class="ps-0 py-3" style="width: 50px;">S/N</th>
+                        <th class="ps-0 py-3" style="width: 40px;">S/N</th>
                         <th class="py-3">Agricultural Produce</th>
                         <th class="py-3">Category</th>
                         <th class="py-3">Grower / Farm</th>
-                        <th class="py-3 text-end" style="width: 120px;">Unit Price</th>
-                        <th class="py-3 text-center" style="width: 80px;">Qty</th>
-                        <th class="py-3 text-end pe-0" style="width: 120px;">Subtotal</th>
+                        <th class="py-3 text-center" style="width: 140px;">Farm Status</th>
+                        <th class="py-3 text-end" style="width: 110px;">Unit Price</th>
+                        <th class="py-3 text-center" style="width: 60px;">Qty</th>
+                        <th class="py-3 text-end pe-0" style="width: 110px;">Subtotal</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -162,6 +163,19 @@
                             </td>
                             <td class="py-3 text-muted">{{ item.product.category.name }}</td>
                             <td class="py-3 text-muted font-sm">{{ item.farmer.farm_name }}</td>
+                            <td class="py-3 text-center">
+                                {% if item.status == 'PENDING' %}
+                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle font-xs px-2 py-1 rounded-pill"><i class="fas fa-clock me-1"></i>Pending</span>
+                                {% elif item.status == 'PROCESSING' %}
+                                    <span class="badge bg-primary-subtle text-primary-emphasis border border-primary-subtle font-xs px-2 py-1 rounded-pill"><i class="fas fa-check-circle me-1"></i>Processing (Approved)</span>
+                                {% elif item.status == 'SHIPPED' %}
+                                    <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle font-xs px-2 py-1 rounded-pill"><i class="fas fa-truck me-1"></i>Shipped</span>
+                                {% elif item.status == 'DELIVERED' %}
+                                    <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle font-xs px-2 py-1 rounded-pill"><i class="fas fa-box-open me-1"></i>Delivered</span>
+                                {% else %}
+                                    <span class="badge bg-danger-subtle text-danger-emphasis border border-danger-subtle font-xs px-2 py-1 rounded-pill"><i class="fas fa-times-circle me-1"></i>Cancelled</span>
+                                {% endif %}
+                            </td>
                             <td class="py-3 text-end text-dark">GHS {{ item.unit_price|floatformat:2 }}</td>
                             <td class="py-3 text-center text-dark">{{ item.quantity }}</td>
                             <td class="py-3 text-end pe-0 text-dark fw-semibold">GHS {{ item.subtotal|floatformat:2 }}</td>

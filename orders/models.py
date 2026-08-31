@@ -39,16 +39,46 @@ class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def update_overall_status(self):
+        """
+        Recalculates and updates the overall order status based on individual item statuses.
+        """
+        items = self.items.all()
+        if not items.exists():
+            return
+        statuses = set(items.values_list('status', flat=True))
+        if statuses == {'DELIVERED'}:
+            self.status = Order.StatusChoices.DELIVERED
+        elif statuses == {'CANCELLED'}:
+            self.status = Order.StatusChoices.CANCELLED
+        elif 'SHIPPED' in statuses:
+            self.status = Order.StatusChoices.SHIPPED
+        elif 'PROCESSING' in statuses:
+            self.status = Order.StatusChoices.PROCESSING
+        elif 'PENDING' in statuses:
+            self.status = Order.StatusChoices.PENDING
+        self.save(update_fields=['status', 'updated_at'])
+
     def __str__(self):
         return f"Order {self.order_number} ({self.full_name})"
 
 class OrderItem(models.Model):
+    class StatusChoices(models.TextChoices):
+        PENDING = 'PENDING', 'Pending'
+        PROCESSING = 'PROCESSING', 'Processing'
+        SHIPPED = 'SHIPPED', 'Shipped'
+        DELIVERED = 'DELIVERED', 'Delivered'
+        CANCELLED = 'CANCELLED', 'Cancelled'
+
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey('products.Product', on_delete=models.SET_NULL, null=True)
     farmer = models.ForeignKey('farmers.FarmerProfile', on_delete=models.SET_NULL, null=True)
     quantity = models.PositiveIntegerField()
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
     subtotal = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(max_length=20, choices=StatusChoices.choices, default=StatusChoices.PENDING)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
 
     def __str__(self):
-        return f"{self.quantity} x {self.product.name if self.product else 'Deleted Product'} (Order {self.order.order_number})"
+        return f"{self.quantity} x {self.product.name if self.product else 'Deleted Product'} (Order {self.order.order_number}) - {self.get_status_display()}"

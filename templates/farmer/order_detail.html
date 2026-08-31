@@ -10,13 +10,13 @@
             <span class="text-muted font-xs">Placed on {{ order.created_at|date:"M d, Y, h:i A" }}</span>
         </div>
         <div>
-            {% if order.status == 'PENDING' %}
+            {% if farmer_items_status == 'PENDING' %}
                 <span class="badge-status badge-pending fs-6">Pending</span>
-            {% elif order.status == 'PROCESSING' %}
-                <span class="badge-status badge-processing fs-6">Processing</span>
-            {% elif order.status == 'SHIPPED' %}
+            {% elif farmer_items_status == 'PROCESSING' %}
+                <span class="badge-status badge-processing fs-6">Processing (Accepted)</span>
+            {% elif farmer_items_status == 'SHIPPED' %}
                 <span class="badge-status badge-shipped fs-6">Shipped</span>
-            {% elif order.status == 'DELIVERED' %}
+            {% elif farmer_items_status == 'DELIVERED' %}
                 <span class="badge-status badge-delivered fs-6">Delivered</span>
             {% else %}
                 <span class="badge-status badge-cancelled fs-6">Cancelled</span>
@@ -33,7 +33,7 @@
         
         <!-- Step 1: Pending -->
         <div class="col-md-3 col-6 mb-3 mb-md-0 position-relative" style="z-index: 2;">
-            <div class="rounded-circle mx-auto d-flex align-items-center justify-content-center border border-2 {% if order.status != 'CANCELLED' %}bg-success text-white border-success{% else %}bg-light text-muted border-secondary{% endif %}" style="width: 40px; height: 40px;">
+            <div class="rounded-circle mx-auto d-flex align-items-center justify-content-center border border-2 {% if farmer_items_status != 'CANCELLED' %}bg-success text-white border-success{% else %}bg-light text-muted border-secondary{% endif %}" style="width: 40px; height: 40px;">
                 <i class="fas fa-file-invoice"></i>
             </div>
             <span class="d-block small fw-bold mt-2">Order Placed</span>
@@ -41,7 +41,7 @@
         
         <!-- Step 2: Processing -->
         <div class="col-md-3 col-6 mb-3 mb-md-0 position-relative" style="z-index: 2;">
-            <div class="rounded-circle mx-auto d-flex align-items-center justify-content-center border border-2 {% if order.status == 'PROCESSING' or order.status == 'SHIPPED' or order.status == 'DELIVERED' %}bg-success text-white border-success{% else %}bg-white text-muted border-light{% endif %}" style="width: 40px; height: 40px;">
+            <div class="rounded-circle mx-auto d-flex align-items-center justify-content-center border border-2 {% if farmer_items_status == 'PROCESSING' or farmer_items_status == 'SHIPPED' or farmer_items_status == 'DELIVERED' %}bg-success text-white border-success{% else %}bg-white text-muted border-light{% endif %}" style="width: 40px; height: 40px;">
                 <i class="fas fa-cog"></i>
             </div>
             <span class="d-block small fw-bold mt-2">Processing</span>
@@ -49,7 +49,7 @@
         
         <!-- Step 3: Shipped -->
         <div class="col-md-3 col-6 mb-3 mb-md-0 position-relative" style="z-index: 2;">
-            <div class="rounded-circle mx-auto d-flex align-items-center justify-content-center border border-2 {% if order.status == 'SHIPPED' or order.status == 'DELIVERED' %}bg-success text-white border-success{% else %}bg-white text-muted border-light{% endif %}" style="width: 40px; height: 40px;">
+            <div class="rounded-circle mx-auto d-flex align-items-center justify-content-center border border-2 {% if farmer_items_status == 'SHIPPED' or farmer_items_status == 'DELIVERED' %}bg-success text-white border-success{% else %}bg-white text-muted border-light{% endif %}" style="width: 40px; height: 40px;">
                 <i class="fas fa-truck"></i>
             </div>
             <span class="d-block small fw-bold mt-2">Shipped</span>
@@ -57,7 +57,7 @@
         
         <!-- Step 4: Delivered -->
         <div class="col-md-3 col-6 mb-3 mb-md-0 position-relative" style="z-index: 2;">
-            <div class="rounded-circle mx-auto d-flex align-items-center justify-content-center border border-2 {% if order.status == 'DELIVERED' %}bg-success text-white border-success{% else %}bg-white text-muted border-light{% endif %}" style="width: 40px; height: 40px;">
+            <div class="rounded-circle mx-auto d-flex align-items-center justify-content-center border border-2 {% if farmer_items_status == 'DELIVERED' %}bg-success text-white border-success{% else %}bg-white text-muted border-light{% endif %}" style="width: 40px; height: 40px;">
                 <i class="fas fa-check-circle"></i>
             </div>
             <span class="d-block small fw-bold mt-2">Delivered</span>
@@ -75,6 +75,7 @@
                     <thead>
                         <tr>
                             <th>Crop Item</th>
+                            <th>Status</th>
                             <th>Unit Price</th>
                             <th>Quantity</th>
                             <th class="text-end">Subtotal</th>
@@ -97,6 +98,19 @@
                                             <span class="text-muted font-xs">{{ item.product.category.name }}</span>
                                         </div>
                                     </div>
+                                </td>
+                                <td>
+                                    {% if item.status == 'PENDING' %}
+                                        <span class="badge bg-warning text-dark font-xs rounded-pill px-2 py-1">Pending</span>
+                                    {% elif item.status == 'PROCESSING' %}
+                                        <span class="badge bg-primary text-white font-xs rounded-pill px-2 py-1">Processing</span>
+                                    {% elif item.status == 'SHIPPED' %}
+                                        <span class="badge bg-info text-white font-xs rounded-pill px-2 py-1">Shipped</span>
+                                    {% elif item.status == 'DELIVERED' %}
+                                        <span class="badge bg-success text-white font-xs rounded-pill px-2 py-1">Delivered</span>
+                                    {% else %}
+                                        <span class="badge bg-danger text-white font-xs rounded-pill px-2 py-1">Cancelled</span>
+                                    {% endif %}
                                 </td>
                                 <td>GHS {{ item.unit_price|floatformat:2 }}</td>
                                 <td>{{ item.quantity }} x {{ item.product.unit }}</td>
@@ -125,25 +139,25 @@
         
         <!-- Status actions controllers -->
         <div class="row g-4 mt-1">
-            {% if order.status != 'CANCELLED' %}
+            {% if farmer_items_status != 'CANCELLED' %}
             <div class="col-md-6">
                 <div class="agro-card bg-light border border-success h-100 p-4">
-                    <h6 class="fw-bold text-success mb-3"><i class="fas fa-tasks me-2"></i>Order Actions</h6>
-                    <p class="small text-muted mb-4">Advance this order along the shipping stages.</p>
-                    {% if order.status != 'DELIVERED' %}
+                    <h6 class="fw-bold text-success mb-3"><i class="fas fa-tasks me-2"></i>Product Actions</h6>
+                    <p class="small text-muted mb-4">Advance your crop items along the preparation and delivery stages.</p>
+                    {% if farmer_items_status != 'DELIVERED' %}
                     <form method="POST" action="" class="d-flex gap-2 flex-wrap">
                         {% csrf_token %}
-                        {% if order.status == 'PENDING' %}
-                            <button type="submit" name="action" value="accept" class="btn btn-success btn-sm rounded-pill px-4"><i class="fas fa-check me-2"></i>Accept Order</button>
+                        {% if farmer_items_status == 'PENDING' %}
+                            <button type="submit" name="action" value="accept" class="btn btn-success btn-sm rounded-pill px-4"><i class="fas fa-check me-2"></i>Accept Products</button>
                             <button type="submit" name="action" value="reject" class="btn btn-outline-danger btn-sm rounded-pill px-4"><i class="fas fa-times me-2"></i>Reject / Cancel</button>
-                        {% elif order.status == 'PROCESSING' %}
+                        {% elif farmer_items_status == 'PROCESSING' %}
                             <button type="submit" name="action" value="mark_ready" class="btn btn-success btn-sm rounded-pill px-4"><i class="fas fa-truck-loading me-2"></i>Mark Ready & Ship</button>
-                        {% elif order.status == 'SHIPPED' %}
+                        {% elif farmer_items_status == 'SHIPPED' %}
                             <button type="submit" name="action" value="mark_delivered" class="btn btn-success btn-sm rounded-pill px-4"><i class="fas fa-check-double me-2"></i>Mark Delivered</button>
                         {% endif %}
                     </form>
                     {% else %}
-                        <span class="badge bg-success rounded-pill px-3 py-2 font-xs"><i class="fas fa-check-double me-1"></i> Order Completed & Delivered</span>
+                        <span class="badge bg-success rounded-pill px-3 py-2 font-xs"><i class="fas fa-check-double me-1"></i> Products Completed & Delivered</span>
                     {% endif %}
                 </div>
             </div>

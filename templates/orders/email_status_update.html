@@ -160,6 +160,32 @@
                 </div>
             </div>
 
+            {% if items %}
+            <div style="margin: 20px 0;">
+                <div style="font-size: 13px; font-weight: bold; color: #4a5568; margin-bottom: 8px;">Order Products Status:</div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                    <thead>
+                        <tr style="background-color: #f7fafc; text-align: left; border-bottom: 2px solid #edf2f7;">
+                            <th style="padding: 8px;">Produce</th>
+                            <th style="padding: 8px;">Grower</th>
+                            <th style="padding: 8px; text-align: center;">Item Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        <tr style="border-bottom: 1px solid #edf2f7;">
+                            <td style="padding: 8px;">{{ item.product.name }}</td>
+                            <td style="padding: 8px; color: #718096;">{{ item.farmer.farm_name }}</td>
+                            <td style="padding: 8px; text-align: center;">
+                                <span style="font-weight: bold; font-size: 11px;">{{ item.get_status_display }}</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
             <div class="btn-container">
                 <a href="{{ dashboard_url }}" class="btn-action">View Order Details</a>
             </div>

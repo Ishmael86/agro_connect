@@ -142,12 +142,13 @@
         <thead>
             <tr>
                 <th style="width: 5%;">#</th>
-                <th style="width: 35%;">Produce Item</th>
-                <th style="width: 20%;">Category</th>
+                <th style="width: 30%;">Produce Item</th>
+                <th style="width: 15%;">Category</th>
                 <th style="width: 15%;">Farm</th>
-                <th class="text-right" style="width: 12%;">Price</th>
+                <th class="text-center" style="width: 15%;">Status</th>
+                <th class="text-right" style="width: 10%;">Price</th>
                 <th class="text-center" style="width: 5%;">Qty</th>
-                <th class="text-right" style="width: 13%;">Total</th>
+                <th class="text-right" style="width: 10%;">Total</th>
             </tr>
         </thead>
         <tbody>
@@ -157,6 +158,19 @@
                     <td><strong>{{ item.product.name }}</strong></td>
                     <td>{{ item.product.category.name }}</td>
                     <td>{{ item.farmer.farm_name }}</td>
+                    <td class="text-center">
+                        {% if item.status == 'PENDING' %}
+                            <span class="badge" style="background-color: #feebc8; color: #c05621;">Pending</span>
+                        {% elif item.status == 'PROCESSING' %}
+                            <span class="badge" style="background-color: #ebf8ff; color: #2b6cb0;">Processing</span>
+                        {% elif item.status == 'SHIPPED' %}
+                            <span class="badge" style="background-color: #e6fffa; color: #234e52;">Shipped</span>
+                        {% elif item.status == 'DELIVERED' %}
+                            <span class="badge" style="background-color: #f0fff4; color: #22543d;">Delivered</span>
+                        {% else %}
+                            <span class="badge" style="background-color: #fff5f5; color: #9b2c2c;">Cancelled</span>
+                        {% endif %}
+                    </td>
                     <td class="text-right">GHS {{ item.unit_price|floatformat:2 }}</td>
                     <td class="text-center">{{ item.quantity }}</td>
                     <td class="text-right"><strong>GHS {{ item.subtotal|floatformat:2 }}</strong></td>

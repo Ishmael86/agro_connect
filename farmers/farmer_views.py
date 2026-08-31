@@ -53,7 +53,7 @@ def get_farmer_context(request):
     # Pending orders count
     pending_orders_count = OrderItem.objects.filter(
         farmer=profile,
-        order__status='PENDING'
+        status='PENDING'
     ).values('order').distinct().count()
     
     # Unread notifications count
@@ -79,7 +79,7 @@ def farmer_dashboard(request):
     # Basic Metrics
     gross_sales = OrderItem.objects.filter(
         farmer=profile,
-        order__status='DELIVERED'
+        status='DELIVERED'
     ).aggregate(sum_sales=Sum('subtotal'))['sum_sales'] or Decimal('0.00')
     completed_payouts = Payout.objects.filter(farmer=profile, status='COMPLETED').aggregate(sum_amt=Sum('amount'))['sum_amt'] or Decimal('0.00')
     total_sales = gross_sales - completed_payouts
@@ -99,7 +99,7 @@ def farmer_dashboard(request):
     
     pending_orders = OrderItem.objects.filter(
         farmer=profile,
-        order__status='PENDING'
+        status='PENDING'
     ).values('order').distinct().count()
     
     # Percentage growth placeholder calculations (compare past 7 days)
@@ -111,22 +111,25 @@ def farmer_dashboard(request):
     order_ids = OrderItem.objects.filter(farmer=profile).values_list('order_id', flat=True).distinct()
     recent_orders = Order.objects.filter(id__in=order_ids).order_by('-created_at')[:5]
     
-    # Format orders to include farmer's portion only
+    # Format orders to include farmer's portion and farmer's specific items status
     formatted_recent_orders = []
     for order in recent_orders:
-        farmer_portion = OrderItem.objects.filter(order=order, farmer=profile).aggregate(tot=Sum('subtotal'))['tot'] or Decimal('0.00')
+        farmer_items = OrderItem.objects.filter(order=order, farmer=profile)
+        farmer_portion = farmer_items.aggregate(tot=Sum('subtotal'))['tot'] or Decimal('0.00')
+        first_item = farmer_items.first()
+        farmer_status = first_item.status if first_item else order.status
         formatted_recent_orders.append({
             'order_number': order.order_number,
             'full_name': order.full_name,
             'created_at': order.created_at,
             'amount': farmer_portion,
-            'status': order.status
+            'status': farmer_status
         })
         
     # Top Selling Products
     top_selling = OrderItem.objects.filter(
         farmer=profile,
-        order__status='DELIVERED'
+        status='DELIVERED'
     ).values(
         'product__id', 'product__name', 'product__main_image', 'product__slug', 'product__unit'
     ).annotate(
@@ -147,7 +150,7 @@ def farmer_dashboard(request):
     for d in days:
         sales_day = OrderItem.objects.filter(
             farmer=profile,
-            order__status='DELIVERED',
+            status='DELIVERED',
             order__created_at__date=d
         ).aggregate(sum_sales=Sum('subtotal'))['sum_sales'] or Decimal('0.00')
         chart_values.append(float(sales_day))
@@ -310,9 +313,9 @@ def farmer_orders(request):
     order_items = OrderItem.objects.filter(farmer=profile).select_related('order', 'product')
     
     if status_filter != 'ALL':
-        order_items = order_items.filter(order__status=status_filter)
+        order_items = order_items.filter(status=status_filter)
         
-    # Group orders
+    # Group orders by order_number for this farmer
     orders_dict = {}
     for item in order_items:
         o = item.order
@@ -321,31 +324,24 @@ def farmer_orders(request):
                 'order': o,
                 'items_count': 0,
                 'total_amount': Decimal('0.00'),
-                'status': o.status,
+                'status': item.status,
                 'created_at': o.created_at,
                 'full_name': o.full_name,
             }
         orders_dict[o.order_number]['items_count'] += item.quantity
         orders_dict[o.order_number]['total_amount'] += item.subtotal
         
-    # Calculate counts for each status tab for this farmer
-    all_farmer_items = OrderItem.objects.filter(farmer=profile).select_related('order')
-    unique_orders = all_farmer_items.values('order__order_number', 'order__status').distinct()
+    # Calculate counts for each status tab for this farmer based on item-level status
+    all_farmer_items = OrderItem.objects.filter(farmer=profile)
     
     counts = {
-        'ALL': 0,
-        'PENDING': 0,
-        'PROCESSING': 0,
-        'SHIPPED': 0,
-        'DELIVERED': 0,
-        'CANCELLED': 0,
+        'ALL': all_farmer_items.values('order').distinct().count(),
+        'PENDING': all_farmer_items.filter(status='PENDING').values('order').distinct().count(),
+        'PROCESSING': all_farmer_items.filter(status='PROCESSING').values('order').distinct().count(),
+        'SHIPPED': all_farmer_items.filter(status='SHIPPED').values('order').distinct().count(),
+        'DELIVERED': all_farmer_items.filter(status='DELIVERED').values('order').distinct().count(),
+        'CANCELLED': all_farmer_items.filter(status='CANCELLED').values('order').distinct().count(),
     }
-    
-    for item in unique_orders:
-        status = item['order__status']
-        if status in counts:
-            counts[status] += 1
-        counts['ALL'] += 1
         
     # Paginate grouped list
     grouped_list = sorted(orders_dict.values(), key=lambda x: x['created_at'], reverse=True)
@@ -360,7 +356,7 @@ def farmer_orders(request):
     })
     return render(request, 'farmer/orders.html', context)
 
-def send_order_status_update_email(request, order, msg):
+def send_order_status_update_email(request, order, msg, items=None):
     from django.core.mail import EmailMessage
     from django.template.loader import render_to_string
     
@@ -374,6 +370,7 @@ def send_order_status_update_email(request, order, msg):
     html_body = render_to_string('orders/email_status_update.html', {
         'order': order,
         'msg': msg,
+        'items': items or order.items.all(),
         'dashboard_url': dashboard_url
     })
     
@@ -408,55 +405,58 @@ def farmer_order_detail(request, order_number):
     delivery_fee = order.delivery_fee
     total = subtotal + delivery_fee
     
+    # Current status for this farmer's items in this order
+    first_item = items.first()
+    farmer_items_status = first_item.status if first_item else 'PENDING'
+    
     if request.method == 'POST':
         action = request.POST.get('action')
-        # Valid state machine transitions
-        current_status = order.status
         next_status = None
         
-        if action == 'accept' and current_status == 'PENDING':
+        produce_names = ", ".join([item.product.name for item in items if item.product]) or "produce"
+        
+        if action == 'accept' and farmer_items_status == 'PENDING':
             next_status = 'PROCESSING'
-            msg = "Your order has been accepted and is being processed."
-        elif action == 'reject' and current_status == 'PENDING':
+            msg = f"{profile.farm_name} has accepted your produce items ({produce_names}) and is processing them."
+        elif action == 'reject' and farmer_items_status == 'PENDING':
             next_status = 'CANCELLED'
-            msg = "Your order has been rejected due to stock issues."
-        elif action == 'mark_ready' and current_status == 'PROCESSING':
-            next_status = 'SHIPPED' # Represents Shipped in system choices
-            msg = "Your order has been dispatched and is on its way."
-        elif action == 'mark_delivered' and current_status == 'SHIPPED':
+            msg = f"{profile.farm_name} could not fulfill produce items ({produce_names})."
+        elif action == 'mark_ready' and farmer_items_status == 'PROCESSING':
+            next_status = 'SHIPPED'
+            msg = f"{profile.farm_name} has dispatched your produce items ({produce_names})."
+        elif action == 'mark_delivered' and farmer_items_status == 'SHIPPED':
             next_status = 'DELIVERED'
-            msg = "Your order has been successfully delivered."
+            msg = f"{profile.farm_name} marked your produce items ({produce_names}) as delivered."
         elif action == 'mark_paid':
             order.payment_status = 'PAID'
             order.save()
-            # Notify on payment status update
-            send_order_status_update_email(request, order, "Order payment status was marked as PAID.")
+            send_order_status_update_email(request, order, "Order payment status was marked as PAID.", items=items)
             messages.success(request, "Order payment status marked as PAID!")
             return redirect('farmer_order_detail', order_number=order.order_number)
         elif action == 'mark_unpaid':
             order.payment_status = 'UNPAID'
             order.save()
-            # Notify on payment status update
-            send_order_status_update_email(request, order, "Order payment status was marked as UNPAID.")
+            send_order_status_update_email(request, order, "Order payment status was marked as UNPAID.", items=items)
             messages.success(request, "Order payment status marked as UNPAID!")
             return redirect('farmer_order_detail', order_number=order.order_number)
             
         if next_status:
-            order.status = next_status
-            order.save()
+            # Update ONLY this farmer's items!
+            items.update(status=next_status)
+            order.update_overall_status()
             
             # Send notification to the buyer
             Notification.objects.create(
                 buyer=order.user,
-                title=f"Order Status Update: {order.order_number}",
-                message=f"Status: {order.get_status_display()}. {msg}",
+                title=f"Order Update: {profile.farm_name} ({order.order_number})",
+                message=msg,
                 notification_type='ORDER_UPDATE'
             )
             
             # Send email update to the buyer
-            send_order_status_update_email(request, order, msg)
+            send_order_status_update_email(request, order, msg, items=items)
             
-            messages.success(request, f"Order status updated to {order.get_status_display()} successfully!")
+            messages.success(request, f"Your product status has been updated to {dict(OrderItem.StatusChoices.choices).get(next_status, next_status)} successfully!")
             return redirect('farmer_order_detail', order_number=order.order_number)
         else:
             messages.error(request, "Invalid status transition action.")
@@ -464,6 +464,7 @@ def farmer_order_detail(request, order_number):
     context.update({
         'order': order,
         'items': items,
+        'farmer_items_status': farmer_items_status,
         'subtotal': subtotal,
         'delivery_fee': delivery_fee,
         'total': total,
@@ -476,10 +477,10 @@ def farmer_earnings(request):
     profile = request.user.farmer_profile
     context = get_farmer_context(request)
     
-    # Calculations
+    # Calculations based on delivered items
     gross_sales = OrderItem.objects.filter(
         farmer=profile,
-        order__status='DELIVERED'
+        status='DELIVERED'
     ).aggregate(sum_sales=Sum('subtotal'))['sum_sales'] or Decimal('0.00')
     
     completed_payouts = Payout.objects.filter(farmer=profile, status='COMPLETED').aggregate(sum_amt=Sum('amount'))['sum_amt'] or Decimal('0.00')
@@ -494,20 +495,20 @@ def farmer_earnings(request):
     
     sales_month = OrderItem.objects.filter(
         farmer=profile,
-        order__status='DELIVERED',
+        status='DELIVERED',
         order__created_at__date__gte=start_of_month
     ).aggregate(sum_sales=Sum('subtotal'))['sum_sales'] or Decimal('0.00')
     
     sales_week = OrderItem.objects.filter(
         farmer=profile,
-        order__status='DELIVERED',
+        status='DELIVERED',
         order__created_at__date__gte=start_of_week
     ).aggregate(sum_sales=Sum('subtotal'))['sum_sales'] or Decimal('0.00')
     
     # Chart: Earnings by category
     category_sales = OrderItem.objects.filter(
         farmer=profile,
-        order__status='DELIVERED'
+        status='DELIVERED'
     ).values('product__category__name').annotate(sales=Sum('subtotal')).order_by('-sales')
     
     pie_labels = [item['product__category__name'] or 'Produce' for item in category_sales]
@@ -521,7 +522,7 @@ def farmer_earnings(request):
         target_year = today.year if today.month - i > 0 else today.year - 1
         sales_m = OrderItem.objects.filter(
             farmer=profile,
-            order__status='DELIVERED',
+            status='DELIVERED',
             order__created_at__month=target_month,
             order__created_at__year=target_year
         ).aggregate(sum_sales=Sum('subtotal'))['sum_sales'] or Decimal('0.00')
@@ -531,7 +532,7 @@ def farmer_earnings(request):
     # Transaction history (delivered items)
     transactions_list = OrderItem.objects.filter(
         farmer=profile,
-        order__status='DELIVERED'
+        status='DELIVERED'
     ).select_related('order').order_by('-order__created_at')
     
     paginator = Paginator(transactions_list, 10)
@@ -561,7 +562,7 @@ def farmer_payouts(request):
     # Calculate Balance
     gross_sales = OrderItem.objects.filter(
         farmer=profile,
-        order__status='DELIVERED'
+        status='DELIVERED'
     ).aggregate(sum_sales=Sum('subtotal'))['sum_sales'] or Decimal('0.00')
     
     completed_payouts = Payout.objects.filter(farmer=profile, status='COMPLETED').aggregate(sum_amt=Sum('amount'))['sum_amt'] or Decimal('0.00')
