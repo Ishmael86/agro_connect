@@ -10,7 +10,11 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
+from django.conf import settings
+import logging
 from django.urls import reverse
+
+logger = logging.getLogger(__name__)
 from .forms import LoginForm, RegistrationForm
 from .models import Wishlist
 from farmers.models import FarmerProfile
@@ -122,13 +126,16 @@ def send_activation_email(request, user):
         f"If you did not request this, please ignore this email.\n\n"
         f"Best regards,\nThe AgroConnect Team"
     )
-    send_mail(
-        subject,
-        message_body,
-        'noreply@agroconnect.com',
-        [user.email],
-        fail_silently=True
-    )
+    try:
+        send_mail(
+            subject,
+            message_body,
+            settings.DEFAULT_FROM_EMAIL,
+            [user.email],
+            fail_silently=False
+        )
+    except Exception as e:
+        logger.error(f"Failed to send account activation email to {user.email}: {e}")
 
 def register_view(request):
     if request.user.is_authenticated:

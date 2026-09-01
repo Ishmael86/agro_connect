@@ -11,6 +11,8 @@ from .models import Order, OrderItem
 from .forms import CheckoutForm
 
 def send_order_confirmation_email(order, user_email):
+    import logging
+    logger = logging.getLogger(__name__)
     from django.core.mail import EmailMessage
     from django.template.loader import render_to_string, get_template
     from io import BytesIO
@@ -29,7 +31,7 @@ def send_order_confirmation_email(order, user_email):
     email = EmailMessage(
         subject=subject,
         body=html_body,
-        from_email='noreply@agroconnect.com',
+        from_email=settings.DEFAULT_FROM_EMAIL,
         to=[recipient_email]
     )
     email.content_subtype = "html" # Send as HTML
@@ -46,13 +48,13 @@ def send_order_confirmation_email(order, user_email):
         
         if not pdf.err:
             email.attach(f"Invoice-{order.order_number}.pdf", pdf_result.getvalue(), "application/pdf")
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning(f"Could not attach PDF invoice for order {order.order_number}: {e}")
         
     try:
-        email.send(fail_silently=True)
-    except Exception:
-        pass
+        email.send(fail_silently=False)
+    except Exception as e:
+        logger.error(f"Failed to send confirmation email for order {order.order_number} to {recipient_email}: {e}")
 
 def checkout_view(request):
     if not request.user.is_authenticated:

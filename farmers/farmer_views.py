@@ -357,8 +357,11 @@ def farmer_orders(request):
     return render(request, 'farmer/orders.html', context)
 
 def send_order_status_update_email(request, order, msg, items=None):
+    import logging
+    logger = logging.getLogger(__name__)
     from django.core.mail import EmailMessage
     from django.template.loader import render_to_string
+    from django.conf import settings
     
     subject = f"AgroConnect Order Update - {order.order_number}"
     recipient_email = order.user.email if (order.user and order.user.email) else "buyer@example.com"
@@ -377,15 +380,15 @@ def send_order_status_update_email(request, order, msg, items=None):
     email = EmailMessage(
         subject=subject,
         body=html_body,
-        from_email='noreply@agroconnect.com',
+        from_email=settings.DEFAULT_FROM_EMAIL,
         to=[recipient_email]
     )
     email.content_subtype = "html"
     
     try:
-        email.send(fail_silently=True)
-    except Exception:
-        pass
+        email.send(fail_silently=False)
+    except Exception as e:
+        logger.error(f"Failed to send status update email for order {order.order_number} to {recipient_email}: {e}")
 
 @login_required
 @farmer_required

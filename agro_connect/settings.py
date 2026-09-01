@@ -175,10 +175,11 @@ LOGOUT_REDIRECT_URL = "home"
 # Email configuration
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_TIMEOUT = 10  # Prevents requests from hanging if SMTP server is slow or unreachable
 
-SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY')
+SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY', '').strip()
 
-if SENDGRID_API_KEY:
+if SENDGRID_API_KEY and SENDGRID_API_KEY.startswith('SG.'):
     EMAIL_HOST = 'smtp.sendgrid.net'
     EMAIL_PORT = 587
     EMAIL_USE_TLS = True
