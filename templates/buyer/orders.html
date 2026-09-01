@@ -15,13 +15,13 @@
     </div>
 
     <!-- Filter Tabs -->
-    <div class="order-tabs border-bottom mb-4 d-flex flex-wrap gap-2">
-        <a href="{% url 'buyer_orders' %}?status=all" class="tab-link px-3 py-2 text-decoration-none {% if status_filter == 'all' %}active{% endif %}">All Orders ({{ counts.ALL }})</a>
-        <a href="{% url 'buyer_orders' %}?status=pending" class="tab-link px-3 py-2 text-decoration-none {% if status_filter == 'pending' %}active{% endif %}">Pending ({{ counts.PENDING }})</a>
-        <a href="{% url 'buyer_orders' %}?status=processing" class="tab-link px-3 py-2 text-decoration-none {% if status_filter == 'processing' %}active{% endif %}">Processing ({{ counts.PROCESSING }})</a>
-        <a href="{% url 'buyer_orders' %}?status=shipped" class="tab-link px-3 py-2 text-decoration-none {% if status_filter == 'shipped' %}active{% endif %}">Shipped ({{ counts.SHIPPED }})</a>
-        <a href="{% url 'buyer_orders' %}?status=delivered" class="tab-link px-3 py-2 text-decoration-none {% if status_filter == 'delivered' %}active{% endif %}">Delivered ({{ counts.DELIVERED }})</a>
-        <a href="{% url 'buyer_orders' %}?status=cancelled" class="tab-link px-3 py-2 text-decoration-none {% if status_filter == 'cancelled' %}active{% endif %}">Cancelled ({{ counts.CANCELLED }})</a>
+    <div class="order-tabs border-bottom mb-4 d-flex overflow-x-auto flex-nowrap gap-2 pb-2" style="-webkit-overflow-scrolling: touch;">
+        <a href="{% url 'buyer_orders' %}?status=all" class="tab-link px-3 py-2 text-nowrap text-decoration-none {% if status_filter == 'all' %}active{% endif %}">All Orders ({{ counts.ALL }})</a>
+        <a href="{% url 'buyer_orders' %}?status=pending" class="tab-link px-3 py-2 text-nowrap text-decoration-none {% if status_filter == 'pending' %}active{% endif %}">Pending ({{ counts.PENDING }})</a>
+        <a href="{% url 'buyer_orders' %}?status=processing" class="tab-link px-3 py-2 text-nowrap text-decoration-none {% if status_filter == 'processing' %}active{% endif %}">Processing ({{ counts.PROCESSING }})</a>
+        <a href="{% url 'buyer_orders' %}?status=shipped" class="tab-link px-3 py-2 text-nowrap text-decoration-none {% if status_filter == 'shipped' %}active{% endif %}">Shipped ({{ counts.SHIPPED }})</a>
+        <a href="{% url 'buyer_orders' %}?status=delivered" class="tab-link px-3 py-2 text-nowrap text-decoration-none {% if status_filter == 'delivered' %}active{% endif %}">Delivered ({{ counts.DELIVERED }})</a>
+        <a href="{% url 'buyer_orders' %}?status=cancelled" class="tab-link px-3 py-2 text-nowrap text-decoration-none {% if status_filter == 'cancelled' %}active{% endif %}">Cancelled ({{ counts.CANCELLED }})</a>
     </div>
 
     <!-- Orders Cards/Table List -->

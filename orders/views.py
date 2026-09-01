@@ -84,6 +84,7 @@ def send_farmer_new_order_email(request, order):
     import logging
     logger = logging.getLogger(__name__)
     from django.core.mail import EmailMultiAlternatives
+    from django.template.loader import render_to_string
     from django.urls import reverse
     
     farmer_items = {}
@@ -98,28 +99,42 @@ def send_farmer_new_order_email(request, order):
         if farmer.user and farmer.user.email:
             recipient_email = farmer.user.email
             farmer_order_url = request.build_absolute_uri(reverse('farmer_order_detail', kwargs={'order_number': order.order_number}))
+            farmer_subtotal = sum(i.subtotal for i in items)
             
-            subject = f"New Order Received - #{order.order_number} ({farmer.farm_name})"
+            subject = f"🌾 New Order Received - #{order.order_number} ({farmer.farm_name})"
             item_lines = "\n".join([f"- {i.quantity} x {i.product.name} (GHS {i.subtotal:.2f})" for i in items])
-            body = (
+            plain_text = (
                 f"Hello {farmer.farm_name},\n\n"
                 f"You have received a new order for your produce on AgroConnect!\n\n"
-                f"Order Number: {order.order_number}\n"
+                f"Order Number: #{order.order_number}\n"
+                f"Date: {order.created_at.strftime('%b %d, %Y at %I:%M %p')}\n"
                 f"Buyer: {order.full_name}\n"
                 f"Buyer Phone: {order.phone}\n"
-                f"Delivery Address: {order.delivery_address}, {order.city}, {order.region}\n\n"
+                f"Delivery Address: {order.delivery_address}, {order.city} ({order.region})\n"
+                f"Payment Status: {order.get_payment_method_display()} ({order.get_payment_status_display()})\n\n"
                 f"Items to prepare:\n{item_lines}\n\n"
+                f"Your Total Earnings: GHS {farmer_subtotal:.2f}\n\n"
                 f"Please log in to your Farmer Dashboard to review and accept this order:\n"
                 f"{farmer_order_url}\n\n"
                 f"Best regards,\nAgroConnect Team"
             )
+            
+            html_body = render_to_string('orders/email_farmer_new_order.html', {
+                'order': order,
+                'farmer': farmer,
+                'items': items,
+                'farmer_subtotal': farmer_subtotal,
+                'farmer_order_url': farmer_order_url
+            })
+            
             try:
                 email = EmailMultiAlternatives(
                     subject=subject,
-                    body=body,
+                    body=plain_text,
                     from_email=settings.DEFAULT_FROM_EMAIL,
                     to=[recipient_email]
                 )
+                email.attach_alternative(html_body, "text/html")
                 email.send(fail_silently=False)
                 print(f"[AgroConnect] Farmer notification email sent to {recipient_email} for order {order.order_number}")
                 logger.info(f"Farmer notification email sent to {recipient_email} for order {order.order_number}")

@@ -24,9 +24,9 @@
         .invoice-card {
             background-color: #ffffff;
             border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            max-width: 850px;
-            margin: 40px auto;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+            max-width: 960px;
+            margin: 30px auto;
             border: 1px solid var(--agro-border);
         }
         .invoice-header {
@@ -36,14 +36,49 @@
             color: var(--agro-green);
             font-weight: 800;
         }
-        .table th {
+        .table-responsive {
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch;
+            border: 1px solid var(--agro-border);
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        .table-responsive::-webkit-scrollbar {
+            height: 6px;
+        }
+        .table-responsive::-webkit-scrollbar-thumb {
+            background-color: #cbd5e0;
+            border-radius: 4px;
+        }
+        .table-responsive::-webkit-scrollbar-track {
+            background: #f7fafc;
+        }
+        .invoice-table {
+            min-width: 860px;
+            width: 100%;
+            margin-bottom: 0;
+        }
+        .invoice-table th {
             background-color: #f4f7f6 !important;
             color: var(--text-dark);
-            font-weight: 600;
+            font-weight: 700;
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap !important;
             border-bottom: 2px solid var(--agro-border);
+            padding: 12px 14px;
         }
-        .table td {
+        .invoice-table td {
             border-bottom: 1px solid var(--agro-border);
+            padding: 12px 14px;
+            vertical-align: middle;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+        .invoice-table td.produce-cell {
+            white-space: normal;
+            min-width: 180px;
         }
         .totals-block {
             border-top: 2px solid var(--agro-border);
@@ -74,9 +109,17 @@
                 box-shadow: none;
                 border: none;
                 max-width: 100%;
+                padding: 0 !important;
             }
             .no-print {
                 display: none !important;
+            }
+            .table-responsive {
+                overflow: visible !important;
+                border: none;
+            }
+            .invoice-table {
+                min-width: 100%;
             }
         }
     </style>
@@ -84,7 +127,7 @@
 <body onload="window.print()">
 
     <!-- Printable Header Controller (Screen Only) -->
-    <div class="container my-3 no-print max-width-850" style="max-width: 850px;">
+    <div class="container my-3 no-print max-width-850" style="max-width: 960px;">
         <div class="d-flex justify-content-between align-items-center bg-white p-3 rounded-3 shadow-sm border">
             <div>
                 <a href="{% url 'buyer_order_detail' order.order_number %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
@@ -139,26 +182,31 @@
             </div>
         </div>
 
+        <!-- Mobile Scroll Indicator Hint -->
+        <div class="d-flex align-items-center justify-content-between mb-2 d-md-none text-muted" style="font-size: 0.78rem;">
+            <span><i class="fas fa-arrows-left-right text-success me-1"></i> Scroll table horizontally to view all columns</span>
+        </div>
+
         <!-- Order Items Listing Table -->
-        <div class="table-responsive mb-4">
-            <table class="table align-middle">
+        <div class="table-responsive mb-4 shadow-none">
+            <table class="table align-middle invoice-table">
                 <thead>
                     <tr>
-                        <th class="ps-0 py-3" style="width: 40px;">S/N</th>
-                        <th class="py-3">Agricultural Produce</th>
-                        <th class="py-3">Category</th>
-                        <th class="py-3">Grower / Farm</th>
-                        <th class="py-3 text-center" style="width: 140px;">Farm Status</th>
-                        <th class="py-3 text-end" style="width: 110px;">Unit Price</th>
-                        <th class="py-3 text-center" style="width: 60px;">Qty</th>
-                        <th class="py-3 text-end pe-0" style="width: 110px;">Subtotal</th>
+                        <th class="ps-3 py-3" style="width: 45px;">S/N</th>
+                        <th class="py-3" style="min-width: 180px;">Agricultural Produce</th>
+                        <th class="py-3" style="min-width: 110px;">Category</th>
+                        <th class="py-3" style="min-width: 150px;">Grower / Farm</th>
+                        <th class="py-3 text-center" style="min-width: 150px;">Farm Status</th>
+                        <th class="py-3 text-end" style="min-width: 110px;">Unit Price</th>
+                        <th class="py-3 text-center" style="min-width: 60px;">Qty</th>
+                        <th class="py-3 text-end pe-3" style="min-width: 110px;">Subtotal</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for item in items %}
                         <tr>
-                            <td class="ps-0 py-3 text-muted">{{ forloop.counter }}</td>
-                            <td class="py-3">
+                            <td class="ps-3 py-3 text-muted">{{ forloop.counter }}</td>
+                            <td class="py-3 produce-cell">
                                 <span class="fw-bold text-dark d-block">{{ item.product.name }}</span>
                             </td>
                             <td class="py-3 text-muted">{{ item.product.category.name }}</td>
@@ -178,7 +226,7 @@
                             </td>
                             <td class="py-3 text-end text-dark">GHS {{ item.unit_price|floatformat:2 }}</td>
                             <td class="py-3 text-center text-dark">{{ item.quantity }}</td>
-                            <td class="py-3 text-end pe-0 text-dark fw-semibold">GHS {{ item.subtotal|floatformat:2 }}</td>
+                            <td class="py-3 text-end pe-3 text-dark fw-semibold">GHS {{ item.subtotal|floatformat:2 }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>

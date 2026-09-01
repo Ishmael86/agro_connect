@@ -79,9 +79,9 @@
 
             {% if recent_orders %}
                 <div class="table-responsive">
-                    <table class="table table-borderless align-middle mb-0">
+                    <table class="table table-borderless align-middle mb-0" style="min-width: 480px;">
                         <thead>
-                            <tr class="text-muted font-xs border-bottom">
+                            <tr class="text-muted font-xs border-bottom text-nowrap">
                                 <th class="pb-3 ps-0">Order ID</th>
                                 <th class="pb-3">Date</th>
                                 <th class="pb-3 text-end">Amount</th>
@@ -90,7 +90,7 @@
                         </thead>
                         <tbody>
                             {% for order in recent_orders %}
-                                <tr class="border-bottom-light">
+                                <tr class="border-bottom-light text-nowrap">
                                     <td class="py-3 ps-0 fw-semibold text-dark font-xs">
                                         <a href="{% url 'buyer_order_detail' order.order_number %}" class="text-decoration-none text-success">
                                             {{ order.order_number }}

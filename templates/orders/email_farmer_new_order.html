@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Order Alert - AgroConnect</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 0;
+            color: #2d3748;
+            -webkit-font-smoothing: antialiased;
+        }
+        .wrapper {
+            width: 100%;
+            background-color: #f4f7f6;
+            padding: 30px 15px;
+        }
+        .container {
+            max-width: 620px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e2e8f0;
+        }
+        .header {
+            background: linear-gradient(135deg, #0E5A34 0%, #157a47 100%);
+            color: #ffffff;
+            padding: 35px 30px;
+            text-align: center;
+        }
+        .header-icon {
+            font-size: 36px;
+            margin-bottom: 8px;
+            display: inline-block;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+        .header p {
+            margin: 6px 0 0;
+            font-size: 14px;
+            color: #c6f6d5;
+            font-weight: 500;
+        }
+        .content {
+            padding: 35px 30px;
+        }
+        .greeting {
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+        .greeting strong {
+            color: #0E5A34;
+        }
+        .highlight-box {
+            background-color: #f0fff4;
+            border: 1px solid #c6f6d5;
+            border-left: 4px solid #0E5A34;
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            font-size: 14px;
+            color: #22543d;
+        }
+        .order-meta-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+            background-color: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #edf2f7;
+        }
+        .order-meta-table td {
+            padding: 10px 14px;
+            font-size: 13px;
+            vertical-align: top;
+            border-bottom: 1px solid #edf2f7;
+        }
+        .order-meta-table tr:last-child td {
+            border-bottom: none;
+        }
+        .meta-label {
+            color: #718096;
+            font-weight: 600;
+            width: 35%;
+        }
+        .meta-value {
+            color: #1a202c;
+            font-weight: 700;
+        }
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: 20px;
+            text-transform: uppercase;
+        }
+        .badge-paid {
+            background-color: #c6f6d5;
+            color: #22543d;
+        }
+        .badge-unpaid {
+            background-color: #feebc8;
+            color: #744210;
+        }
+        .section-heading {
+            font-size: 14px;
+            color: #4a5568;
+            text-transform: uppercase;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            border-bottom: 2px solid #edf2f7;
+            padding-bottom: 6px;
+        }
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .items-table th {
+            text-align: left;
+            background-color: #edf2f7;
+            padding: 10px 12px;
+            font-size: 12px;
+            color: #4a5568;
+            font-weight: 700;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        .items-table td {
+            padding: 12px;
+            font-size: 13px;
+            border-bottom: 1px solid #edf2f7;
+        }
+        .items-table tr:last-child td {
+            border-bottom: none;
+        }
+        .text-right {
+            text-align: right;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .cta-container {
+            text-align: center;
+            margin: 35px 0 25px;
+        }
+        .btn-cta {
+            display: inline-block;
+            background-color: #0E5A34;
+            color: #ffffff !important;
+            padding: 14px 34px;
+            font-size: 15px;
+            font-weight: 700;
+            text-decoration: none;
+            border-radius: 50px;
+            box-shadow: 0 4px 10px rgba(14, 90, 52, 0.3);
+        }
+        .steps-box {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 18px 20px;
+            margin-top: 25px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .steps-box ol {
+            margin: 8px 0 0 18px;
+            padding: 0;
+        }
+        .steps-box li {
+            margin-bottom: 6px;
+            color: #4a5568;
+        }
+        .footer {
+            background-color: #f8fafc;
+            padding: 25px 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #a0aec0;
+            border-top: 1px solid #edf2f7;
+            line-height: 1.5;
+        }
+        .footer a {
+            color: #0E5A34;
+            text-decoration: none;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="container">
+            <!-- Header -->
+            <div class="header">
+                <div class="header-icon">&#127806;</div>
+                <h1>New Order Received!</h1>
+                <p>AgroConnect Farmer Notification</p>
+            </div>
+
+            <!-- Content Area -->
+            <div class="content">
+                <div class="greeting">
+                    Hello <strong>{{ farmer.farm_name }}</strong>,
+                </div>
+
+                <div class="highlight-box">
+                    &#127881; <strong>Great news!</strong> A buyer has placed a new order for your agricultural produce. Please review the items below and log in to your dashboard to accept and process the shipment.
+                </div>
+
+                <!-- Order Info -->
+                <div class="section-heading">Order Summary</div>
+                <table class="order-meta-table">
+                    <tr>
+                        <td class="meta-label">Order Reference:</td>
+                        <td class="meta-value" style="color: #0E5A34;">#{{ order.order_number }}</td>
+                    </tr>
+                    <tr>
+                        <td class="meta-label">Order Date:</td>
+                        <td class="meta-value">{{ order.created_at|date:"M d, Y \a\t h:i A" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="meta-label">Customer Name:</td>
+                        <td class="meta-value">{{ order.full_name }}</td>
+                    </tr>
+                    <tr>
+                        <td class="meta-label">Customer Phone:</td>
+                        <td class="meta-value">{{ order.phone }}</td>
+                    </tr>
+                    <tr>
+                        <td class="meta-label">Delivery Location:</td>
+                        <td class="meta-value">{{ order.delivery_address }}, {{ order.city }} ({{ order.region }})</td>
+                    </tr>
+                    <tr>
+                        <td class="meta-label">Payment Status:</td>
+                        <td class="meta-value">
+                            {% if order.payment_status == 'PAID' %}
+                                <span class="badge badge-paid">Paid</span>
+                            {% else %}
+                                <span class="badge badge-unpaid">{{ order.get_payment_method_display }} ({{ order.get_payment_status_display }})</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- Items Ordered from this Farmer -->
+                <div class="section-heading">Your Produce Items in this Order</div>
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 45%;">Produce Item</th>
+                            <th class="text-center" style="width: 15%;">Quantity</th>
+                            <th class="text-right" style="width: 20%;">Unit Price</th>
+                            <th class="text-right" style="width: 20%;">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        <tr>
+                            <td>
+                                <strong>{{ item.product.name }}</strong>
+                                {% if item.product.category %}
+                                    <div style="font-size: 11px; color: #718096;">{{ item.product.category.name }}</div>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">{{ item.quantity }} {{ item.product.unit|default:"pcs" }}</td>
+                            <td class="text-right">GHS {{ item.unit_price|floatformat:2 }}</td>
+                            <td class="text-right" style="font-weight: 700; color: #0E5A34;">GHS {{ item.subtotal|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <!-- Earnings total for this farmer -->
+                <table style="width: 100%; margin: 20px 0; background-color: #f7fafc; border: 2px dashed #cbd5e0; border-radius: 8px;">
+                    <tr>
+                        <td style="padding: 14px; font-size: 14px; color: #4a5568; font-weight: bold;">
+                            Your Total Earnings from this Order:
+                        </td>
+                        <td style="padding: 14px; text-align: right; font-size: 20px; font-weight: 800; color: #0E5A34;">
+                            GHS {{ farmer_subtotal|floatformat:2 }}
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- CTA Button -->
+                <div class="cta-container">
+                    <a href="{{ farmer_order_url }}" class="btn-cta">
+                        Accept & Process Order &rarr;
+                    </a>
+                </div>
+
+                <!-- Next Steps Guide -->
+                <div class="steps-box">
+                    <strong style="color: #2d3748;">&#128204; Recommended Next Steps:</strong>
+                    <ol>
+                        <li>Click the green button above to open your <strong>Farmer Dashboard</strong>.</li>
+                        <li>Click <strong>"Accept Products"</strong> to confirm you have stock and start packaging.</li>
+                        <li>Once ready for courier pickup or delivery, click <strong>"Mark Ready & Ship"</strong>.</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="footer">
+                <p>You received this email because you are a registered grower on AgroConnect.</p>
+                <p>Need support? Contact us at <a href="mailto:support@agroconnect.com.gh">support@agroconnect.com.gh</a> or call <strong>+233 24 123 4567</strong></p>
+                <p style="margin-top: 10px; color: #a0aec0;">&copy; 2026 AgroConnect Ltd. Empowering local Ghanaian growers.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
