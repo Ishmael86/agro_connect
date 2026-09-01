@@ -364,7 +364,10 @@ def send_order_status_update_email(request, order, msg, items=None):
     from django.conf import settings
     
     subject = f"AgroConnect Order Update - {order.order_number}"
-    recipient_email = order.user.email if (order.user and order.user.email) else "buyer@example.com"
+    recipient_email = order.email or (order.user.email if (order.user and order.user.email) else None)
+    if not recipient_email:
+        logger.warning(f"No recipient email found for order {order.order_number}. Skipping status update email.")
+        return
     
     dashboard_url = request.build_absolute_uri(
         reverse('buyer_order_detail', kwargs={'order_number': order.order_number})
@@ -387,6 +390,7 @@ def send_order_status_update_email(request, order, msg, items=None):
     
     try:
         email.send(fail_silently=False)
+        logger.info(f"Order status update email sent successfully to {recipient_email} for order {order.order_number}")
     except Exception as e:
         logger.error(f"Failed to send status update email for order {order.order_number} to {recipient_email}: {e}")
 

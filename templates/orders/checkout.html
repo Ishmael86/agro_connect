@@ -27,7 +27,7 @@
                     
                     <div class="row g-3">
                         <!-- Full Name -->
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label for="id_full_name" class="form-label fw-semibold small text-muted">Full Name</label>
                             {{ form.full_name }}
                             {% if form.full_name.errors %}
@@ -35,8 +35,17 @@
                             {% endif %}
                         </div>
 
+                        <!-- Email Address -->
+                        <div class="col-md-4">
+                            <label for="id_email" class="form-label fw-semibold small text-muted">Email Address (for Invoices)</label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                                <div class="invalid-feedback d-block">{{ form.email.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
                         <!-- Phone Number -->
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label for="id_phone" class="form-label fw-semibold small text-muted">Phone Number</label>
                             {{ form.phone }}
                             {% if form.phone.errors %}

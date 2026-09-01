@@ -10,7 +10,7 @@ from cart.models import Cart
 from .models import Order, OrderItem
 from .forms import CheckoutForm
 
-def send_order_confirmation_email(order, user_email):
+def send_order_confirmation_email(order, user_email=None):
     import logging
     logger = logging.getLogger(__name__)
     from django.core.mail import EmailMessage
@@ -18,8 +18,12 @@ def send_order_confirmation_email(order, user_email):
     from io import BytesIO
     from xhtml2pdf import pisa
     
+    recipient_email = user_email or order.email or (order.user.email if order.user else None)
+    if not recipient_email:
+        logger.warning(f"No recipient email found for order {order.order_number}. Skipping email.")
+        return
+        
     subject = f"AgroConnect Order Invoice - {order.order_number}"
-    recipient_email = user_email if user_email else "buyer@example.com"
     
     # 1. Generate HTML email body
     items = order.items.all().select_related('product', 'farmer')
@@ -53,8 +57,54 @@ def send_order_confirmation_email(order, user_email):
         
     try:
         email.send(fail_silently=False)
+        logger.info(f"Order confirmation email sent successfully to {recipient_email} for order {order.order_number}")
     except Exception as e:
         logger.error(f"Failed to send confirmation email for order {order.order_number} to {recipient_email}: {e}")
+
+def send_farmer_new_order_email(request, order):
+    import logging
+    logger = logging.getLogger(__name__)
+    from django.core.mail import EmailMessage
+    from django.urls import reverse
+    
+    farmer_items = {}
+    for item in order.items.all().select_related('farmer', 'product', 'farmer__user'):
+        farmer = item.farmer
+        if farmer:
+            if farmer not in farmer_items:
+                farmer_items[farmer] = []
+            farmer_items[farmer].append(item)
+            
+    for farmer, items in farmer_items.items():
+        if farmer.user and farmer.user.email:
+            recipient_email = farmer.user.email
+            farmer_order_url = request.build_absolute_uri(reverse('farmer_order_detail', kwargs={'order_number': order.order_number}))
+            
+            subject = f"New Order Received - #{order.order_number} ({farmer.farm_name})"
+            item_lines = "\n".join([f"- {i.quantity} x {i.product.name} (GHS {i.subtotal:.2f})" for i in items])
+            body = (
+                f"Hello {farmer.farm_name},\n\n"
+                f"You have received a new order for your produce on AgroConnect!\n\n"
+                f"Order Number: {order.order_number}\n"
+                f"Buyer: {order.full_name}\n"
+                f"Buyer Phone: {order.phone}\n"
+                f"Delivery Address: {order.delivery_address}, {order.city}, {order.region}\n\n"
+                f"Items to prepare:\n{item_lines}\n\n"
+                f"Please log in to your Farmer Dashboard to review and accept this order:\n"
+                f"{farmer_order_url}\n\n"
+                f"Best regards,\nAgroConnect Team"
+            )
+            try:
+                email = EmailMessage(
+                    subject=subject,
+                    body=body,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to=[recipient_email]
+                )
+                email.send(fail_silently=False)
+                logger.info(f"Farmer notification email sent to {recipient_email} for order {order.order_number}")
+            except Exception as e:
+                logger.error(f"Failed to send farmer notification email to {recipient_email}: {e}")
 
 def checkout_view(request):
     if not request.user.is_authenticated:
@@ -168,7 +218,9 @@ def checkout_view(request):
                         cart.items.all().delete()
                     
                     # Send Order Confirmation Email for CoD
-                    send_order_confirmation_email(order, request.user.email if request.user.is_authenticated else "buyer@example.com")
+                    buyer_email = order.email or (request.user.email if request.user.is_authenticated else None)
+                    send_order_confirmation_email(order, buyer_email)
+                    send_farmer_new_order_email(request, order)
                     
                     messages.success(request, "Your order has been placed successfully!")
                     return redirect('order_success', order_number=order.order_number)
@@ -180,11 +232,12 @@ def checkout_view(request):
         else:
             messages.error(request, "Please check the form inputs and try again.")
     else:
-        # Prepopulate name, phone if user is authenticated
+        # Prepopulate name, email, phone if user is authenticated
         initial_data = {}
         if request.user.is_authenticated and not (request.user.is_superuser or request.user.is_staff):
             initial_data = {
                 'full_name': request.user.get_full_name() or request.user.username,
+                'email': request.user.email or '',
                 'phone': request.user.phone or '',
             }
         form = CheckoutForm(initial=initial_data)
@@ -250,7 +303,9 @@ def paystack_callback_view(request):
                     cart.items.all().delete()
                     
             # Send Email
-            send_order_confirmation_email(order, order.user.email if order.user else "buyer@example.com")
+            buyer_email = order.email or (order.user.email if order.user else None)
+            send_order_confirmation_email(order, buyer_email)
+            send_farmer_new_order_email(request, order)
             
             messages.success(request, "Payment verified and order placed successfully!")
             return redirect('order_success', order_number=order.order_number)

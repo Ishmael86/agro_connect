@@ -5,12 +5,17 @@ from farmers.models import GHANA_REGIONS
 class CheckoutForm(forms.ModelForm):
     class Meta:
         model = Order
-        fields = ['full_name', 'phone', 'delivery_address', 'region', 'city', 'payment_method']
+        fields = ['full_name', 'email', 'phone', 'delivery_address', 'region', 'city', 'payment_method']
         widgets = {
             'full_name': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Enter your full name',
                 'id': 'id_full_name'
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter your email address for invoices',
+                'id': 'id_email'
             }),
             'phone': forms.TextInput(attrs={
                 'class': 'form-control',

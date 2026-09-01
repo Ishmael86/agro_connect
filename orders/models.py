@@ -23,6 +23,7 @@ class Order(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
     order_number = models.CharField(max_length=50, unique=True)
     full_name = models.CharField(max_length=150)
+    email = models.EmailField(max_length=254, blank=True, null=True)
     phone = models.CharField(max_length=20)
     delivery_address = models.TextField()
     region = models.CharField(max_length=50, choices=GHANA_REGIONS)
