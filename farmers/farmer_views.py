@@ -359,7 +359,7 @@ def farmer_orders(request):
 def send_order_status_update_email(request, order, msg, items=None):
     import logging
     logger = logging.getLogger(__name__)
-    from django.core.mail import EmailMessage
+    from django.core.mail import EmailMultiAlternatives
     from django.template.loader import render_to_string
     from django.conf import settings
     
@@ -373,6 +373,16 @@ def send_order_status_update_email(request, order, msg, items=None):
         reverse('buyer_order_detail', kwargs={'order_number': order.order_number})
     )
     
+    plain_text = (
+        f"Hello {order.full_name},\n\n"
+        f"Your order status on AgroConnect has been updated.\n\n"
+        f"Order Number: {order.order_number}\n"
+        f"Update: {msg}\n"
+        f"Current Order Status: {order.get_status_display()}\n\n"
+        f"View details on your Buyer Dashboard:\n{dashboard_url}\n\n"
+        f"Best regards,\nAgroConnect Team"
+    )
+    
     html_body = render_to_string('orders/email_status_update.html', {
         'order': order,
         'msg': msg,
@@ -380,18 +390,20 @@ def send_order_status_update_email(request, order, msg, items=None):
         'dashboard_url': dashboard_url
     })
     
-    email = EmailMessage(
+    email = EmailMultiAlternatives(
         subject=subject,
-        body=html_body,
+        body=plain_text,
         from_email=settings.DEFAULT_FROM_EMAIL,
         to=[recipient_email]
     )
-    email.content_subtype = "html"
+    email.attach_alternative(html_body, "text/html")
     
     try:
         email.send(fail_silently=False)
+        print(f"[AgroConnect] Status update email sent to {recipient_email} for order {order.order_number}")
         logger.info(f"Order status update email sent successfully to {recipient_email} for order {order.order_number}")
     except Exception as e:
+        print(f"[AgroConnect ERROR] Failed to send status update email for order {order.order_number} to {recipient_email}: {e}")
         logger.error(f"Failed to send status update email for order {order.order_number} to {recipient_email}: {e}")
 
 @login_required

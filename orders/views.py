@@ -13,7 +13,7 @@ from .forms import CheckoutForm
 def send_order_confirmation_email(order, user_email=None):
     import logging
     logger = logging.getLogger(__name__)
-    from django.core.mail import EmailMessage
+    from django.core.mail import EmailMultiAlternatives
     from django.template.loader import render_to_string, get_template
     from io import BytesIO
     from xhtml2pdf import pisa
@@ -25,22 +25,39 @@ def send_order_confirmation_email(order, user_email=None):
         
     subject = f"AgroConnect Order Invoice - {order.order_number}"
     
-    # 1. Generate HTML email body
     items = order.items.all().select_related('product', 'farmer')
+    item_lines = "\n".join([f"- {i.quantity} x {i.product.name} @ GHS {i.unit_price:.2f} = GHS {i.subtotal:.2f}" for i in items])
+    
+    plain_text = (
+        f"Hello {order.full_name},\n\n"
+        f"Thank you for your order on AgroConnect!\n\n"
+        f"Order Number: {order.order_number}\n"
+        f"Date: {order.created_at.strftime('%b %d, %Y')}\n"
+        f"Payment Method: {order.get_payment_method_display()}\n"
+        f"Payment Status: {order.get_payment_status_display()}\n"
+        f"Delivery Address: {order.delivery_address}, {order.city}, {order.region}\n\n"
+        f"Items Ordered:\n{item_lines}\n\n"
+        f"Subtotal: GHS {order.subtotal:.2f}\n"
+        f"Delivery Fee: GHS {order.delivery_fee:.2f}\n"
+        f"Total: GHS {order.total:.2f}\n\n"
+        f"Your official PDF invoice is attached to this email.\n\n"
+        f"Best regards,\nAgroConnect Team"
+    )
+    
     html_body = render_to_string('orders/email_invoice.html', {
         'order': order,
         'items': items
     })
     
-    email = EmailMessage(
+    email = EmailMultiAlternatives(
         subject=subject,
-        body=html_body,
+        body=plain_text,
         from_email=settings.DEFAULT_FROM_EMAIL,
         to=[recipient_email]
     )
-    email.content_subtype = "html" # Send as HTML
+    email.attach_alternative(html_body, "text/html")
     
-    # 2. Render PDF invoice & attach
+    # Render PDF invoice & attach
     try:
         pdf_template = get_template('buyer/invoice_pdf.html')
         pdf_html = pdf_template.render({
@@ -57,14 +74,16 @@ def send_order_confirmation_email(order, user_email=None):
         
     try:
         email.send(fail_silently=False)
+        print(f"[AgroConnect] Order confirmation email sent to {recipient_email} for order {order.order_number}")
         logger.info(f"Order confirmation email sent successfully to {recipient_email} for order {order.order_number}")
     except Exception as e:
+        print(f"[AgroConnect ERROR] Failed to send confirmation email for order {order.order_number} to {recipient_email}: {e}")
         logger.error(f"Failed to send confirmation email for order {order.order_number} to {recipient_email}: {e}")
 
 def send_farmer_new_order_email(request, order):
     import logging
     logger = logging.getLogger(__name__)
-    from django.core.mail import EmailMessage
+    from django.core.mail import EmailMultiAlternatives
     from django.urls import reverse
     
     farmer_items = {}
@@ -95,15 +114,17 @@ def send_farmer_new_order_email(request, order):
                 f"Best regards,\nAgroConnect Team"
             )
             try:
-                email = EmailMessage(
+                email = EmailMultiAlternatives(
                     subject=subject,
                     body=body,
                     from_email=settings.DEFAULT_FROM_EMAIL,
                     to=[recipient_email]
                 )
                 email.send(fail_silently=False)
+                print(f"[AgroConnect] Farmer notification email sent to {recipient_email} for order {order.order_number}")
                 logger.info(f"Farmer notification email sent to {recipient_email} for order {order.order_number}")
             except Exception as e:
+                print(f"[AgroConnect ERROR] Failed to send farmer notification email to {recipient_email}: {e}")
                 logger.error(f"Failed to send farmer notification email to {recipient_email}: {e}")
 
 def checkout_view(request):
