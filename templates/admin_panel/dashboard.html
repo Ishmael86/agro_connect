@@ -192,6 +192,15 @@
                 <span class="fw-bold text-dark">{{ total_categories }}</span>
             </div>
             <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded-3 mb-2">
+                <span class="text-muted"><i class="fas fa-envelope-open-text text-success me-2"></i> Contact Inquiries</span>
+                <a href="{% url 'admin_contact_messages' %}" class="fw-bold text-success text-decoration-none">
+                    {{ counts.ALL|default:unread_contact_messages_count }}
+                    {% if unread_contact_messages_count > 0 %}
+                        <span class="badge bg-danger rounded-pill font-xs ms-1">{{ unread_contact_messages_count }} new</span>
+                    {% endif %}
+                </a>
+            </div>
+            <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded-3 mb-2">
                 <span class="text-muted"><i class="fas fa-star text-info me-2"></i> Total Reviews</span>
                 <span class="fw-bold text-dark">{{ total_reviews }}</span>
             </div>

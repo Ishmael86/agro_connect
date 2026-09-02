@@ -47,6 +47,7 @@ def get_admin_context(request):
     open_tickets = SupportTicket.objects.filter(status='OPEN').count()
     pending_payouts = Payout.objects.filter(status='PENDING').count()
     pending_farmers = FarmerProfile.objects.filter(verified=False).count()
+    unread_contact_messages = ContactMessage.objects.filter(is_read=False).count()
     
     # Unread notifications for admin user
     unread_notifications = Notification.objects.filter(buyer=request.user, is_read=False).count()
@@ -56,6 +57,7 @@ def get_admin_context(request):
         'pending_payouts_count': pending_payouts,
         'pending_farmers_count': pending_farmers,
         'unread_notifications_count': unread_notifications,
+        'unread_contact_messages_count': unread_contact_messages,
     }
 
 @login_required
@@ -128,6 +130,7 @@ def admin_dashboard(request):
     # Platform Summary metrics
     active_products = Product.objects.filter(is_available=True).count()
     total_categories = Category.objects.count()
+    recent_contact_messages = ContactMessage.objects.all().order_by('-created_at')[:4]
     
     context.update({
         'total_users': total_users,
@@ -139,6 +142,7 @@ def admin_dashboard(request):
         'total_products': total_products,
         'total_reviews': total_reviews,
         'support_tickets': support_tickets,
+        'recent_contact_messages': recent_contact_messages,
         
         'sales_growth': sales_growth,
         'users_growth': users_growth,
@@ -738,6 +742,127 @@ def admin_messages(request):
         'messages_list': messages_list,
     })
     return render(request, 'admin_panel/messages.html', context)
+
+@login_required
+@admin_required
+def admin_contact_messages(request):
+    context = get_admin_context(request)
+    messages_qs = ContactMessage.objects.all().order_by('-created_at')
+    
+    # Filter by status
+    status_filter = request.GET.get('status', 'all')
+    if status_filter == 'unread':
+        messages_qs = messages_qs.filter(is_read=False)
+    elif status_filter == 'read':
+        messages_qs = messages_qs.filter(is_read=True, is_replied=False)
+    elif status_filter == 'replied':
+        messages_qs = messages_qs.filter(is_replied=True)
+        
+    # Search by keyword
+    search_query = request.GET.get('q', '').strip()
+    if search_query:
+        messages_qs = messages_qs.filter(
+            Q(full_name__icontains=search_query) |
+            Q(email__icontains=search_query) |
+            Q(subject__icontains=search_query) |
+            Q(message__icontains=search_query)
+        )
+        
+    counts = {
+        'ALL': ContactMessage.objects.count(),
+        'UNREAD': ContactMessage.objects.filter(is_read=False).count(),
+        'READ': ContactMessage.objects.filter(is_read=True, is_replied=False).count(),
+        'REPLIED': ContactMessage.objects.filter(is_replied=True).count(),
+    }
+    
+    paginator = Paginator(messages_qs, 15)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context.update({
+        'page_obj': page_obj,
+        'selected_status': status_filter,
+        'search_query': search_query,
+        'counts': counts,
+    })
+    return render(request, 'admin_panel/contact_messages.html', context)
+
+@login_required
+@admin_required
+def admin_contact_message_detail(request, id):
+    context = get_admin_context(request)
+    contact_msg = get_object_or_404(ContactMessage, id=id)
+    
+    # Mark as read automatically when viewed
+    if not contact_msg.is_read:
+        contact_msg.is_read = True
+        contact_msg.save()
+        
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'send_reply':
+            reply_message = request.POST.get('reply_message', '').strip()
+            if reply_message:
+                from django.core.mail import EmailMultiAlternatives
+                from django.template.loader import render_to_string
+                from django.utils import timezone
+                from django.conf import settings
+                
+                subject = f"Re: {contact_msg.subject} - AgroConnect Support"
+                plain_text = (
+                    f"Hello {contact_msg.full_name},\n\n"
+                    f"Thank you for contacting AgroConnect. Our administration team has reviewed your inquiry regarding \"{contact_msg.subject}\".\n\n"
+                    f"Official Response:\n{reply_message}\n\n"
+                    f"---\nYour Original Inquiry:\n\"{contact_msg.message}\"\n\n"
+                    f"Best regards,\nAgroConnect Support Team"
+                )
+                html_body = render_to_string('core/email_contact_reply.html', {
+                    'contact_msg': contact_msg,
+                    'reply_message': reply_message
+                })
+                
+                try:
+                    email = EmailMultiAlternatives(
+                        subject=subject,
+                        body=plain_text,
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        to=[contact_msg.email]
+                    )
+                    email.attach_alternative(html_body, "text/html")
+                    email.send(fail_silently=False)
+                    
+                    contact_msg.is_replied = True
+                    contact_msg.admin_reply = reply_message
+                    contact_msg.replied_at = timezone.now()
+                    contact_msg.save()
+                    
+                    log_admin_action(request, f"Sent email reply to contact message #{contact_msg.id} ({contact_msg.email})")
+                    messages.success(request, f"Official email reply sent successfully to {contact_msg.email}!")
+                except Exception as e:
+                    messages.error(request, f"Failed to send email reply: {e}")
+            else:
+                messages.error(request, "Reply message cannot be empty.")
+            return redirect('admin_contact_message_detail', id=contact_msg.id)
+            
+        elif action == 'toggle_read':
+            contact_msg.is_read = not contact_msg.is_read
+            contact_msg.save()
+            status_str = "READ" if contact_msg.is_read else "UNREAD"
+            log_admin_action(request, f"Marked contact message #{contact_msg.id} as {status_str}")
+            messages.info(request, f"Message marked as {status_str.lower()}.")
+            return redirect('admin_contact_message_detail', id=contact_msg.id)
+            
+        elif action == 'delete_message':
+            log_admin_action(request, f"Deleted contact message #{contact_msg.id} from {contact_msg.email}")
+            contact_msg.delete()
+            messages.warning(request, "Contact message deleted successfully.")
+            return redirect('admin_contact_messages')
+            
+    context.update({
+        'contact_msg': contact_msg,
+    })
+    return render(request, 'admin_panel/contact_message_detail.html', context)
 
 @login_required
 @admin_required

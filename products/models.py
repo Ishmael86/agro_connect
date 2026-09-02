@@ -70,7 +70,14 @@ class ContactMessage(models.Model):
     phone = models.CharField(max_length=20, blank=True, null=True)
     subject = models.CharField(max_length=255)
     message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    is_replied = models.BooleanField(default=False)
+    admin_reply = models.TextField(blank=True, null=True)
+    replied_at = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
 
     def __str__(self):
         return f"{self.subject} - {self.full_name}"

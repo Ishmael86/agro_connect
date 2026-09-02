@@ -226,11 +226,125 @@ def public_page_view(request, slug):
     }
     return render(request, 'core/public_page.html', context)
 
+def send_admin_contact_notification(request, contact_msg):
+    import logging
+    logger = logging.getLogger(__name__)
+    from django.core.mail import EmailMultiAlternatives
+    from django.template.loader import render_to_string
+    from django.conf import settings
+    from django.urls import reverse
+    
+    try:
+        admin_url = request.build_absolute_uri(
+            reverse('admin_contact_message_detail', kwargs={'id': contact_msg.id})
+        )
+    except Exception:
+        admin_url = None
+        
+    subject = f"📬 [AgroConnect Contact] {contact_msg.subject} - {contact_msg.full_name}"
+    admin_recipient = getattr(settings, 'CONTACT_EMAIL', settings.DEFAULT_FROM_EMAIL)
+    
+    plain_text = (
+        f"New Contact Message Received\n\n"
+        f"From: {contact_msg.full_name}\n"
+        f"Email: {contact_msg.email}\n"
+        f"Phone: {contact_msg.phone or 'Not Provided'}\n"
+        f"Subject: {contact_msg.subject}\n"
+        f"Date: {contact_msg.created_at.strftime('%b %d, %Y at %I:%M %p')}\n\n"
+        f"Message:\n{contact_msg.message}\n\n"
+        f"View & Reply in Admin Panel: {admin_url or 'Admin Dashboard'}"
+    )
+    
+    html_body = render_to_string('core/email_admin_contact_notification.html', {
+        'contact_msg': contact_msg,
+        'admin_url': admin_url
+    })
+    
+    try:
+        email = EmailMultiAlternatives(
+            subject=subject,
+            body=plain_text,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[admin_recipient],
+            reply_to=[contact_msg.email]
+        )
+        email.attach_alternative(html_body, "text/html")
+        email.send(fail_silently=False)
+        print(f"[AgroConnect] Admin contact notification email sent to {admin_recipient}")
+        logger.info(f"Admin contact notification email sent to {admin_recipient}")
+    except Exception as e:
+        print(f"[AgroConnect ERROR] Failed to send admin contact notification: {e}")
+        logger.error(f"Failed to send admin contact notification: {e}")
+
+def send_user_contact_confirmation(request, contact_msg):
+    import logging
+    logger = logging.getLogger(__name__)
+    from django.core.mail import EmailMultiAlternatives
+    from django.template.loader import render_to_string
+    from django.conf import settings
+    
+    if not contact_msg.email:
+        return
+        
+    subject = f"We have received your message - AgroConnect"
+    
+    plain_text = (
+        f"Hello {contact_msg.full_name},\n\n"
+        f"Thank you for reaching out to AgroConnect!\n\n"
+        f"We have received your inquiry regarding \"{contact_msg.subject}\". "
+        f"Our team is reviewing it and will get back to you shortly at {contact_msg.email}.\n\n"
+        f"Your Message:\n{contact_msg.message}\n\n"
+        f"Best regards,\nAgroConnect Support Team"
+    )
+    
+    html_body = render_to_string('core/email_contact_confirmation.html', {
+        'contact_msg': contact_msg
+    })
+    
+    try:
+        email = EmailMultiAlternatives(
+            subject=subject,
+            body=plain_text,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[contact_msg.email]
+        )
+        email.attach_alternative(html_body, "text/html")
+        email.send(fail_silently=False)
+        print(f"[AgroConnect] Contact confirmation email sent to {contact_msg.email}")
+        logger.info(f"Contact confirmation email sent to {contact_msg.email}")
+    except Exception as e:
+        print(f"[AgroConnect ERROR] Failed to send user contact confirmation: {e}")
+        logger.error(f"Failed to send user contact confirmation: {e}")
+
 def contact_view(request):
     if request.method == 'POST':
         form = ContactForm(request.POST)
         if form.is_valid():
-            form.save()
+            contact_msg = form.save()
+            
+            # 1. Send Email Notification to Admin
+            send_admin_contact_notification(request, contact_msg)
+            
+            # 2. Send Auto-confirmation to Sender
+            send_user_contact_confirmation(request, contact_msg)
+            
+            # 3. Create In-App Notification for Admin users
+            try:
+                from django.contrib.auth import get_user_model
+                from notifications.models import Notification
+                User = get_user_model()
+                admin_users = User.objects.filter(is_staff=True)
+                for admin_user in admin_users:
+                    Notification.objects.create(
+                        buyer=admin_user,
+                        title=f"New Contact Message: {contact_msg.subject}",
+                        message=f"From {contact_msg.full_name} ({contact_msg.email}): {contact_msg.message[:120]}...",
+                        notification_type='MESSAGE'
+                    )
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).warning(f"Could not create admin notification: {e}")
+                
             messages.success(request, "Your message has been sent successfully. We will get back to you soon!")
             return redirect('contact')
         else:
