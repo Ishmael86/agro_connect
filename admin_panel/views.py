@@ -1090,13 +1090,17 @@ def admin_ticket_detail(request, id):
                     ticket.status = 'IN_PROGRESS'
                     ticket.save()
                     
-                # Create a user notification for the farmer
+                # Create a user notification for the farmer/buyer
                 Notification.objects.create(
                     buyer=ticket.user,
                     title="Support Ticket Update",
                     message=f"Admin has replied to your support ticket #{ticket.id}: \"{ticket.subject}\". Check your support dashboard to view the reply.",
                     notification_type='MESSAGE'
                 )
+                
+                # Send email notification to the user's real email inbox
+                from notifications.email_service import send_user_support_reply_email
+                send_user_support_reply_email(request, ticket, reply.message)
                     
                 log_admin_action(request, f"Submitted official reply on support ticket ID {ticket.id}")
                 messages.success(request, "Your reply has been submitted successfully.")

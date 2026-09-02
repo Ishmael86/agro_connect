@@ -696,12 +696,17 @@ def farmer_messages(request):
     if request.method == 'POST' and active_conversation:
         msg_text = request.POST.get('message_text')
         if msg_text:
-            Message.objects.create(
+            msg = Message.objects.create(
                 conversation=active_conversation,
                 sender=request.user,
                 message=msg_text
             )
             active_conversation.save() # Updates updated_at timestamp
+            
+            # Send email alert to the buyer
+            from notifications.email_service import send_chat_message_email_notification
+            send_chat_message_email_notification(request, active_conversation, msg)
+            
             return redirect(reverse('farmer_messages') + f"?conv={active_conversation.id}")
             
     context.update({
@@ -853,6 +858,8 @@ def farmer_support(request):
             
             # Create a corresponding SupportTicket for Admin dashboard
             from admin_panel.models import SupportTicket, SupportTicketMessage
+            from notifications.email_service import send_admin_support_ticket_email
+            
             ticket = SupportTicket.objects.create(
                 user=request.user,
                 subject=contact_msg.subject or "Farmer Support Inquiry",
@@ -860,11 +867,14 @@ def farmer_support(request):
                 priority="MEDIUM",
                 status="OPEN"
             )
-            SupportTicketMessage.objects.create(
+            msg_obj = SupportTicketMessage.objects.create(
                 ticket=ticket,
                 sender=request.user,
                 message=contact_msg.message
             )
+            
+            # Send real-time Email Alert to Admin
+            send_admin_support_ticket_email(request, ticket, contact_msg.message, is_reply=False)
             
             messages.success(request, "Your support message has been sent successfully. We will get back to you shortly.")
             return redirect('farmer_support')
@@ -890,12 +900,14 @@ def farmer_support(request):
 @farmer_required
 def farmer_ticket_detail(request, ticket_id):
     from admin_panel.models import SupportTicket, SupportTicketMessage
+    from notifications.email_service import send_admin_support_ticket_email
+    
     ticket = get_object_or_404(SupportTicket, id=ticket_id, user=request.user)
     
     if request.method == 'POST':
         reply_text = request.POST.get('message_text')
         if reply_text:
-            SupportTicketMessage.objects.create(
+            msg_obj = SupportTicketMessage.objects.create(
                 ticket=ticket,
                 sender=request.user,
                 message=reply_text
@@ -904,6 +916,10 @@ def farmer_ticket_detail(request, ticket_id):
             if ticket.status in ['RESOLVED', 'CLOSED']:
                 ticket.status = 'OPEN'
             ticket.save()
+            
+            # Send real-time Email Alert to Admin
+            send_admin_support_ticket_email(request, ticket, reply_text, is_reply=True)
+            
             messages.success(request, "Your reply has been submitted successfully.")
             return redirect('farmer_ticket_detail', ticket_id=ticket.id)
             

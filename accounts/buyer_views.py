@@ -575,13 +575,18 @@ def buyer_messages(request):
     if request.method == 'POST' and active_conversation:
         msg_text = request.POST.get('message_text')
         if msg_text:
-            Message.objects.create(
+            msg = Message.objects.create(
                 conversation=active_conversation,
                 sender=user,
                 message=msg_text
             )
             # Update timestamp
             active_conversation.save()
+            
+            # Send email alert to the farmer
+            from notifications.email_service import send_chat_message_email_notification
+            send_chat_message_email_notification(request, active_conversation, msg)
+            
             return redirect(reverse('buyer_messages') + f"?conv={active_conversation.id}")
             
     context.update({
@@ -702,6 +707,40 @@ def buyer_change_password(request):
 @buyer_required
 def buyer_help(request):
     context = get_buyer_context(request)
+    from admin_panel.models import SupportTicket, SupportTicketMessage
+    from notifications.email_service import send_admin_support_ticket_email
+    
+    if request.method == 'POST':
+        subject = request.POST.get('subject', '').strip()
+        message_text = request.POST.get('message', '').strip()
+        category = request.POST.get('category', 'Buyer Support')
+        
+        if subject and message_text:
+            ticket = SupportTicket.objects.create(
+                user=request.user,
+                subject=subject,
+                category=category,
+                priority="MEDIUM",
+                status="OPEN"
+            )
+            SupportTicketMessage.objects.create(
+                ticket=ticket,
+                sender=request.user,
+                message=message_text
+            )
+            
+            # Send real-time Email Alert to Admin
+            send_admin_support_ticket_email(request, ticket, message_text, is_reply=False)
+            
+            messages.success(request, "Your support request has been submitted to administration. We will reply to your email shortly!")
+            return redirect('buyer_help')
+        else:
+            messages.error(request, "Please provide both a subject and message.")
+            
+    buyer_tickets = SupportTicket.objects.filter(user=request.user).order_by('-created_at')
+    context.update({
+        'buyer_tickets': buyer_tickets,
+    })
     return render(request, 'buyer/help.html', context)
 
 @login_required
@@ -795,6 +834,10 @@ def ajax_send_message(request, conv_id):
     # Update timestamp
     conv.save()
     
+    # Send email notification
+    from notifications.email_service import send_chat_message_email_notification
+    send_chat_message_email_notification(request, conv, msg)
+    
     return JsonResponse({
         'success': True,
         'message_data': {
@@ -825,12 +868,17 @@ def buyer_messages_init_post(request, farmer_id):
         conv, created = Conversation.objects.get_or_create(buyer=request.user, farmer=farmer)
         msg_text = request.POST.get('message_text')
         if msg_text and msg_text.strip():
-            Message.objects.create(
+            msg = Message.objects.create(
                 conversation=conv,
                 sender=request.user,
                 message=msg_text.strip()
             )
             conv.save()
+            
+            # Send email notification
+            from notifications.email_service import send_chat_message_email_notification
+            send_chat_message_email_notification(request, conv, msg)
+            
             messages.success(request, "Message sent to farmer successfully! 📩")
             
         # Redirect to buyer dashboard messages page with the conversation selected

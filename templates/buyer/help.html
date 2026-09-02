@@ -92,11 +92,86 @@
             </div>
         </div>
 
-        <!-- Contact support button -->
+        <!-- Contact Support Form Card -->
+        <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: var(--agro-radius);">
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <i class="fas fa-headset text-success fs-5"></i>
+                <h6 class="fw-bold text-dark mb-0">Submit a Support Request</h6>
+            </div>
+            <p class="text-muted font-sm mb-4">Send a direct inquiry or issue report to our administrative desk. You will receive real-time email updates as we resolve it.</p>
+
+            <form method="POST">
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label font-xs fw-bold text-muted">Category</label>
+                        <select name="category" class="form-select rounded-pill font-sm px-3 border">
+                            <option value="Order & Delivery">Order & Delivery</option>
+                            <option value="Payment & Refund">Payment & Refund</option>
+                            <option value="Product Quality">Product Quality</option>
+                            <option value="Account & Security">Account & Security</option>
+                            <option value="General Question">General Question</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label font-xs fw-bold text-muted">Subject</label>
+                        <input type="text" name="subject" class="form-control rounded-pill font-sm px-3 border" placeholder="Brief summary of your issue..." required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label font-xs fw-bold text-muted">Message Details</label>
+                        <textarea name="message" rows="4" class="form-control rounded-3 font-sm p-3 border" placeholder="Describe your question or issue in detail..." required></textarea>
+                    </div>
+                    <div class="col-12 text-end">
+                        <button type="submit" class="btn btn-success rounded-pill px-4 font-sm fw-bold">
+                            <i class="fas fa-paper-plane me-2"></i> Submit Request
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        {% if buyer_tickets %}
+        <!-- Ticket History Card -->
+        <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: var(--agro-radius);">
+            <h6 class="fw-bold text-dark mb-3"><i class="fas fa-history text-muted me-2"></i>Your Support Requests</h6>
+            <div class="table-responsive">
+                <table class="table align-middle font-sm mb-0">
+                    <thead>
+                        <tr class="text-muted font-xs">
+                            <th>Ticket ID</th>
+                            <th>Subject</th>
+                            <th>Category</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tkt in buyer_tickets %}
+                        <tr>
+                            <td class="fw-bold">#TKT-{{ tkt.id }}</td>
+                            <td>{{ tkt.subject }}</td>
+                            <td><span class="badge bg-light text-dark border font-xs">{{ tkt.category }}</span></td>
+                            <td>
+                                <span class="badge {% if tkt.status == 'RESOLVED' %}bg-success-light text-success{% elif tkt.status == 'IN_PROGRESS' %}bg-info-light text-info{% else %}bg-warning-light text-warning{% endif %} rounded-pill px-2 py-1 font-xs">
+                                    {{ tkt.get_status_display }}
+                                </span>
+                            </td>
+                            <td class="text-muted font-xs">{{ tkt.created_at|date:"M d, Y" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Contact Support Direct Info -->
         <div class="card border-0 shadow-sm p-4 text-center" style="border-radius: var(--agro-radius);">
-            <h6 class="fw-bold text-dark mb-2">Still need help?</h6>
-            <p class="text-muted font-sm mb-3">Our customer care representatives are available 24/7 to resolve issues.</p>
-            <button class="btn btn-success rounded-pill px-4" onclick="showAgroToast('Connecting to support desk... 📞')">Contact Support</button>
+            <h6 class="fw-bold text-dark mb-2">Need Immediate Phone Assistance?</h6>
+            <p class="text-muted font-sm mb-2">Our customer care representatives are available on call:</p>
+            <div class="d-inline-flex align-items-center justify-content-center gap-2 fw-bold text-success">
+                <i class="fas fa-phone-alt"></i> +233 24 123 4567
+            </div>
         </div>
     </div>
 </div>
