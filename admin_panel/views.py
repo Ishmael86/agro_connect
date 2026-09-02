@@ -64,46 +64,189 @@ def get_admin_context(request):
 @admin_required
 def admin_dashboard(request):
     context = get_admin_context(request)
+    period = request.GET.get('period', 'month').lower()
+    if period not in ['today', 'week', 'month', 'year', 'all']:
+        period = 'month'
+        
+    now = timezone.now()
+    today = timezone.localdate()
     
-    # 1. KPI Statistics
-    total_users = User.objects.filter(is_superuser=False, is_staff=False).count()
-    total_farmers = FarmerProfile.objects.count()
-    total_buyers = User.objects.filter(account_type='BUYER').count()
-    total_sales = OrderItem.objects.filter(order__status='DELIVERED').aggregate(sum_sales=Sum('subtotal'))['sum_sales'] or Decimal('0.00')
-    total_orders = Order.objects.count()
-    pending_orders = Order.objects.filter(status='PENDING').count()
+    # 1. Determine Date Boundaries for Current & Comparison Periods
+    if period == 'today':
+        start_date = timezone.make_aware(datetime.datetime.combine(today, datetime.time.min))
+        end_date = now
+        prev_start_date = start_date - datetime.timedelta(days=1)
+        prev_end_date = start_date
+        period_label = "yesterday"
+        
+        # Hourly breakdown for today in 3-hour blocks
+        chart_labels = []
+        chart_values = []
+        for hour in range(0, 24, 3):
+            slot_start = timezone.make_aware(datetime.datetime.combine(today, datetime.time(hour, 0)))
+            next_hour = hour + 3
+            if next_hour >= 24:
+                slot_end = timezone.make_aware(datetime.datetime.combine(today, datetime.time(23, 59, 59)))
+            else:
+                slot_end = timezone.make_aware(datetime.datetime.combine(today, datetime.time(next_hour, 0)))
+                
+            slot_sales = OrderItem.objects.filter(
+                order__status='DELIVERED',
+                order__created_at__gte=slot_start,
+                order__created_at__lt=slot_end
+            ).aggregate(sum_sales=Sum('subtotal'))['sum_sales'] or Decimal('0.00')
+            
+            time_str = slot_start.strftime('%I %p')
+            chart_labels.append(time_str)
+            chart_values.append(float(slot_sales))
+            
+    elif period == 'week':
+        start_of_week = today - datetime.timedelta(days=today.weekday())
+        start_date = timezone.make_aware(datetime.datetime.combine(start_of_week, datetime.time.min))
+        end_date = now
+        prev_start_date = start_date - datetime.timedelta(days=7)
+        prev_end_date = start_date
+        period_label = "last week"
+        
+        # 7 Days chart (Mon through Sun)
+        days = [start_of_week + datetime.timedelta(days=i) for i in range(7)]
+        chart_labels = [d.strftime('%a') for d in days]
+        chart_values = []
+        for d in days:
+            sales_day = OrderItem.objects.filter(
+                order__status='DELIVERED',
+                order__created_at__date=d
+            ).aggregate(sum_sales=Sum('subtotal'))['sum_sales'] or Decimal('0.00')
+            chart_values.append(float(sales_day))
+            
+    elif period == 'month':
+        start_of_month = today.replace(day=1)
+        start_date = timezone.make_aware(datetime.datetime.combine(start_of_month, datetime.time.min))
+        end_date = now
+        last_month_end = start_date - datetime.timedelta(days=1)
+        prev_start_date = timezone.make_aware(datetime.datetime.combine(last_month_end.replace(day=1), datetime.time.min))
+        prev_end_date = start_date
+        period_label = "last month"
+        
+        # 4-5 weekly buckets across the current month
+        chart_labels = ['Wk 1', 'Wk 2', 'Wk 3', 'Wk 4', 'Wk 5']
+        chart_values = []
+        import calendar
+        _, last_day = calendar.monthrange(today.year, today.month)
+        for w in range(5):
+            w_start_day = 1 + (w * 7)
+            if w_start_day > last_day:
+                continue
+            w_end_day = min(w_start_day + 6, last_day)
+            try:
+                w_start_dt = timezone.make_aware(datetime.datetime(today.year, today.month, w_start_day, 0, 0, 0))
+                w_end_dt = timezone.make_aware(datetime.datetime(today.year, today.month, w_end_day, 23, 59, 59))
+                w_sales = OrderItem.objects.filter(
+                    order__status='DELIVERED',
+                    order__created_at__gte=w_start_dt,
+                    order__created_at__lte=w_end_dt
+                ).aggregate(sum_sales=Sum('subtotal'))['sum_sales'] or Decimal('0.00')
+                chart_values.append(float(w_sales))
+            except Exception:
+                pass
+        chart_labels = chart_labels[:len(chart_values)]
+        
+    elif period == 'year':
+        start_of_year = today.replace(month=1, day=1)
+        start_date = timezone.make_aware(datetime.datetime.combine(start_of_year, datetime.time.min))
+        end_date = now
+        prev_start_date = timezone.make_aware(datetime.datetime(today.year - 1, 1, 1, 0, 0, 0))
+        prev_end_date = start_date
+        period_label = "last year"
+        
+        # 12 Months chart
+        chart_labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        chart_values = []
+        for m in range(1, 13):
+            m_sales = OrderItem.objects.filter(
+                order__status='DELIVERED',
+                order__created_at__year=today.year,
+                order__created_at__month=m
+            ).aggregate(sum_sales=Sum('subtotal'))['sum_sales'] or Decimal('0.00')
+            chart_values.append(float(m_sales))
+            
+    else: # 'all'
+        start_date = None
+        end_date = None
+        prev_start_date = None
+        prev_end_date = None
+        period_label = "all time"
+        
+        chart_labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        chart_values = []
+        for m in range(1, 13):
+            m_sales = OrderItem.objects.filter(
+                order__status='DELIVERED',
+                order__created_at__month=m
+            ).aggregate(sum_sales=Sum('subtotal'))['sum_sales'] or Decimal('0.00')
+            chart_values.append(float(m_sales))
+
+    # 2. Query Metrics Filtered by Selected Period
+    if start_date:
+        users_qs = User.objects.filter(is_superuser=False, is_staff=False, date_joined__gte=start_date, date_joined__lte=end_date)
+        farmers_qs = FarmerProfile.objects.filter(created_at__gte=start_date, created_at__lte=end_date)
+        buyers_qs = User.objects.filter(account_type='BUYER', date_joined__gte=start_date, date_joined__lte=end_date)
+        orders_qs = Order.objects.filter(created_at__gte=start_date, created_at__lte=end_date)
+        order_items_delivered = OrderItem.objects.filter(order__status='DELIVERED', order__created_at__gte=start_date, order__created_at__lte=end_date)
+        
+        # Previous period counts for growth calculations
+        prev_users_count = User.objects.filter(is_superuser=False, is_staff=False, date_joined__gte=prev_start_date, date_joined__lt=prev_end_date).count()
+        prev_farmers_count = FarmerProfile.objects.filter(created_at__gte=prev_start_date, created_at__lt=prev_end_date).count()
+        prev_orders_count = Order.objects.filter(created_at__gte=prev_start_date, created_at__lt=prev_end_date).count()
+        prev_sales = OrderItem.objects.filter(order__status='DELIVERED', order__created_at__gte=prev_start_date, order__created_at__lt=prev_end_date).aggregate(sum_sales=Sum('subtotal'))['sum_sales'] or Decimal('0.00')
+    else:
+        users_qs = User.objects.filter(is_superuser=False, is_staff=False)
+        farmers_qs = FarmerProfile.objects.all()
+        buyers_qs = User.objects.filter(account_type='BUYER')
+        orders_qs = Order.objects.all()
+        order_items_delivered = OrderItem.objects.filter(order__status='DELIVERED')
+        
+        prev_users_count = 0
+        prev_farmers_count = 0
+        prev_orders_count = 0
+        prev_sales = Decimal('0.00')
+
+    total_users = users_qs.count()
+    total_farmers = farmers_qs.count()
+    total_buyers = buyers_qs.count()
+    total_orders = orders_qs.count()
+    pending_orders = orders_qs.filter(status='PENDING').count()
+    total_sales = order_items_delivered.aggregate(sum_sales=Sum('subtotal'))['sum_sales'] or Decimal('0.00')
+    
     total_products = Product.objects.count()
     total_reviews = Review.objects.count()
     support_tickets = SupportTicket.objects.count()
+
+    # Calculate actual percentage growths
+    def calculate_growth(current, previous):
+        if previous and previous > 0:
+            growth_pct = ((float(current) - float(previous)) / float(previous)) * 100
+            sign = "+" if growth_pct >= 0 else ""
+            return f"{sign}{growth_pct:.1f}%"
+        elif current and current > 0:
+            return "+100%"
+        else:
+            return "0.0%"
+
+    users_growth = calculate_growth(total_users, prev_users_count)
+    farmers_growth = calculate_growth(total_farmers, prev_farmers_count)
+    orders_growth = calculate_growth(total_orders, prev_orders_count)
+    sales_growth = calculate_growth(total_sales, prev_sales)
     
-    # Growth rates placeholders (compared to past 7 days)
-    sales_growth = "+12.5%"
-    users_growth = "+8.3%"
-    orders_growth = "+15.3%"
-    pending_growth = "-4.2%"
-    
-    # 2. Charts Data
-    # Sales Overview (past 7 days)
-    today = timezone.localdate()
-    days = [today - datetime.timedelta(days=i) for i in range(6, -1, -1)]
-    chart_labels = [d.strftime('%a') for d in days]
-    chart_values = []
-    for d in days:
-        sales_day = OrderItem.objects.filter(
-            order__status='DELIVERED',
-            order__created_at__date=d
-        ).aggregate(sum_sales=Sum('subtotal'))['sum_sales'] or Decimal('0.00')
-        chart_values.append(float(sales_day))
-        
-    # Orders Overview doughnut (Delivered, Processing, Pending, Cancelled)
-    order_delivered = Order.objects.filter(status='DELIVERED').count()
-    order_processing = Order.objects.filter(status='PROCESSING').count()
-    order_pending = Order.objects.filter(status='PENDING').count()
-    order_cancelled = Order.objects.filter(status='CANCELLED').count()
+    # Orders Overview doughnut for period
+    order_delivered = orders_qs.filter(status='DELIVERED').count()
+    order_processing = orders_qs.filter(status='PROCESSING').count()
+    order_pending = orders_qs.filter(status='PENDING').count()
+    order_cancelled = orders_qs.filter(status='CANCELLED').count()
     order_status_values = [order_delivered, order_processing, order_pending, order_cancelled]
-    
-    # Top categories revenue splits
-    cat_sales = OrderItem.objects.filter(order__status='DELIVERED').values('product__category__name').annotate(sales=Sum('subtotal')).order_by('-sales')
+
+    # Top categories revenue splits for period
+    cat_sales = order_items_delivered.values('product__category__name').annotate(sales=Sum('subtotal')).order_by('-sales')
     top_categories = []
     grand_sales = sum(float(item['sales']) for item in cat_sales) if cat_sales else 1
     
@@ -115,9 +258,12 @@ def admin_dashboard(request):
             'revenue': rev,
             'percentage': round(pct, 1)
         })
-        
+
     # Recent Orders List
-    recent_orders = Order.objects.all().order_by('-created_at')[:5]
+    recent_orders = orders_qs.order_by('-created_at')[:5]
+    if not recent_orders.exists() and period != 'all':
+        recent_orders = Order.objects.all().order_by('-created_at')[:5]
+        
     formatted_recent_orders = []
     for ord in recent_orders:
         farmer_item = OrderItem.objects.filter(order=ord).first()
@@ -126,13 +272,15 @@ def admin_dashboard(request):
             'order': ord,
             'farm_name': farm_name
         })
-        
-    # Platform Summary metrics
+
+    # Platform Summary metrics (Global)
     active_products = Product.objects.filter(is_available=True).count()
     total_categories = Category.objects.count()
     recent_contact_messages = ContactMessage.objects.all().order_by('-created_at')[:4]
     
     context.update({
+        'period': period,
+        'period_label': period_label,
         'total_users': total_users,
         'total_farmers': total_farmers,
         'total_buyers': total_buyers,
@@ -146,8 +294,8 @@ def admin_dashboard(request):
         
         'sales_growth': sales_growth,
         'users_growth': users_growth,
+        'farmers_growth': farmers_growth,
         'orders_growth': orders_growth,
-        'pending_growth': pending_growth,
         
         'chart_labels': json.dumps(chart_labels),
         'chart_values': json.dumps(chart_values),

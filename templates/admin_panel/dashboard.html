@@ -12,12 +12,15 @@
     </div>
     <!-- Date filter dropdown -->
     <div>
-        <select class="form-select rounded-pill shadow-sm" style="width: 180px;">
-            <option>Today</option>
-            <option>This Week</option>
-            <option selected>This Month</option>
-            <option>This Year</option>
-        </select>
+        <form method="GET" class="d-inline">
+            <select name="period" class="form-select rounded-pill shadow-sm font-sm px-3 border" style="width: 190px;" onchange="this.form.submit()">
+                <option value="today" {% if period == 'today' %}selected{% endif %}>📅 Today</option>
+                <option value="week" {% if period == 'week' %}selected{% endif %}>📅 This Week</option>
+                <option value="month" {% if period == 'month' or not period %}selected{% endif %}>📅 This Month</option>
+                <option value="year" {% if period == 'year' %}selected{% endif %}>📅 This Year</option>
+                <option value="all" {% if period == 'all' %}selected{% endif %}>📅 All Time</option>
+            </select>
+        </form>
     </div>
 </div>
 
@@ -29,9 +32,9 @@
             <div>
                 <div class="stat-card-title">Total Users</div>
                 <div class="stat-card-number">{{ total_users }}</div>
-                <div class="stat-card-trend trend-up">
-                    <i class="fas fa-arrow-up"></i>
-                    <span>{{ users_growth }} vs last month</span>
+                <div class="stat-card-trend {% if '-' in users_growth %}trend-down text-danger{% else %}trend-up{% endif %}">
+                    {% if '-' in users_growth %}<i class="fas fa-arrow-down"></i>{% else %}<i class="fas fa-arrow-up"></i>{% endif %}
+                    <span>{{ users_growth }} vs {{ period_label }}</span>
                 </div>
             </div>
             <div class="stat-icon-box">
@@ -46,9 +49,9 @@
             <div>
                 <div class="stat-card-title">Total Farmers</div>
                 <div class="stat-card-number">{{ total_farmers }}</div>
-                <div class="stat-card-trend trend-up">
-                    <i class="fas fa-arrow-up"></i>
-                    <span>+18.2% vs last month</span>
+                <div class="stat-card-trend {% if '-' in farmers_growth %}trend-down text-danger{% else %}trend-up{% endif %}">
+                    {% if '-' in farmers_growth %}<i class="fas fa-arrow-down"></i>{% else %}<i class="fas fa-arrow-up"></i>{% endif %}
+                    <span>{{ farmers_growth }} vs {{ period_label }}</span>
                 </div>
             </div>
             <div class="stat-icon-box">
@@ -63,9 +66,9 @@
             <div>
                 <div class="stat-card-title">Total Sales</div>
                 <div class="stat-card-number">GHS {{ total_sales|floatformat:2 }}</div>
-                <div class="stat-card-trend trend-up">
-                    <i class="fas fa-arrow-up"></i>
-                    <span>{{ sales_growth }} vs last month</span>
+                <div class="stat-card-trend {% if '-' in sales_growth %}trend-down text-danger{% else %}trend-up{% endif %}">
+                    {% if '-' in sales_growth %}<i class="fas fa-arrow-down"></i>{% else %}<i class="fas fa-arrow-up"></i>{% endif %}
+                    <span>{{ sales_growth }} vs {{ period_label }}</span>
                 </div>
             </div>
             <div class="stat-icon-box">
@@ -80,9 +83,9 @@
             <div>
                 <div class="stat-card-title">Total Orders</div>
                 <div class="stat-card-number">{{ total_orders }}</div>
-                <div class="stat-card-trend trend-up">
-                    <i class="fas fa-arrow-up"></i>
-                    <span>{{ orders_growth }} vs last month</span>
+                <div class="stat-card-trend {% if '-' in orders_growth %}trend-down text-danger{% else %}trend-up{% endif %}">
+                    {% if '-' in orders_growth %}<i class="fas fa-arrow-down"></i>{% else %}<i class="fas fa-arrow-up"></i>{% endif %}
+                    <span>{{ orders_growth }} vs {{ period_label }}</span>
                 </div>
             </div>
             <div class="stat-icon-box">
